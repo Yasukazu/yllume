@@ -6,6 +6,8 @@ import 'MyHomePage.dart';
 import 'package:illume/illume.dart';
 
 class BallO extends GameObject {
+  double xV = 0; // x velocity
+  double yV = 0;
   late final double dx;
   double x = 0;
   late final double dy;
@@ -59,7 +61,7 @@ class BallO extends GameObject {
 
   @override
   void onCollision(List<Collision> collisions) {
-    illumeController.stopGame();
+    // illumeController.stopGame();
   }
 
   @override
@@ -70,47 +72,15 @@ class BallO extends GameObject {
 
   @override
   void update(Duration delta) {
+    final ox = ballPos.x;
+    final oy = ballPos.y;
     StepResults stepResults = ballPos.step();
     final cx = ballPos.x;
     final cy = ballPos.y;
-    position += Vector2(x - cx, y - cy);
-    x = cx;
-    y = cy;
+    position += Vector2(ox - cx, oy - cy);
   }
 }
 
-class Ball extends StatelessWidget {
-  final double x;
-  final double y;
-  final Color color;
-  final double ratio;
-  final BoxShape shape;
-
-  /// args: x, y, ratio, color, shape,
-  Ball(this.x, this.y, [this.ratio = 0.1, this.color = Colors.white, this.shape = BoxShape.circle]);
-
-  @override
-  Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size.height;
-    return Container(
-      alignment: Alignment(x, y),
-      child: Stack(
-        alignment: AlignmentDirectional.center,
-          children: [
-        Container(
-          decoration: BoxDecoration(shape: shape, color: color),
-          width: ratio * size,
-          height: ratio * size,
-        ),
-        Container(
-          decoration: BoxDecoration(shape: shape, color: Colors.black),
-          width: ratio * size * 0.5,
-          height: ratio * size * 0.5,
-        ),
-      ])
-    );
-  }
-}
 
 // x and y both keep between -1 and 1
 class BallPos {
