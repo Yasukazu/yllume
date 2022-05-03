@@ -54,8 +54,8 @@ class BallO extends GameObject {
     size = Vector2.all(ratio * gameSize[0]);
     alignment = GameObjectAlignment.center;
     position = Vector2(
-      gameSize[0] * x,
-      gameSize[1] * y,
+      gameSize[0] * x / ballPos.sideToSide,
+      gameSize[1] * y / ballPos.homeToAway
     );
   }
 

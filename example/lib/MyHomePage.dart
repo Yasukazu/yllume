@@ -8,7 +8,9 @@ class Screen {
   static const sideToSide = centerToSide * 2;
   static const centerToPlayer = 1.0;
 }
+
 class MyHomePage extends StatefulWidget {
+  static const wallT = 5.0; // wall thickness1
   const MyHomePage({Key? key}) : super(key: key);
 
   @override
@@ -22,11 +24,12 @@ class _MyHomePageState extends State<MyHomePage> {
   // FlappyWidget flappyWidget = FlappyWidget();
   // Wall wall = Wall(200, false);
   // Wall wall2 = Wall(400, true);
-  final ball = BallO.withAngleDivider(25 / 360 * 2 * pi, 20);
   final topWall = WallO(wallPos.top);
   final bottomWall = WallO(wallPos.bottom);
   final leftWall = WallO(wallPos.left);
   final rightWall = WallO(wallPos.right);
+  List<WallO> get walls => [topWall, bottomWall, leftWall, rightWall];
+  final ball = BallO.withAngleDivider(25 / 360 * 2 * pi, 20);
 
   @override
   void initState() {
@@ -43,7 +46,7 @@ class _MyHomePageState extends State<MyHomePage> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Ball train'),
+          title: const Text('Pong game'),
         ),
         body: Stack(
           children: [
@@ -68,55 +71,25 @@ class _MyHomePageState extends State<MyHomePage> {
   );
 }
 
-class BouncerO extends GameObject {
-  var velocity = Vector2(0, 0);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.blue,
-      child: const Text('Demo'),
-    );
-  }
-
-  @override
-  void init() {
-    size = Vector2.all(50);
-    alignment = GameObjectAlignment.center;
-    position = (gameSize / 2);
-  }
-
-  @override
-  void onCollision(List<Collision> collisions) {
-    illumeController.stopGame();
-  }
-
-  @override
-  void onScreenSizeChange(Vector2 size) {
-  }
-
-  @override
-  void update(Duration delta) {
-    position += velocity;
-  }
-}
 
 enum wallPos {top, bottom, left, right}
+enum gameSizez {sizeX, sizeY}
 
 class WallO extends GameObject {
   static const shape = BoxShape.rectangle;
-  static const b = 5.0;
-  double get x => xy[0];
-  double get y => xy[1];
-  Vector2 get xy {
+  static const b = MyHomePage.wallT;
+  static topOffset(Vector2 gameSize) => Vector2(gameSize[0] / 2, b / 2);
+  double get x => offset[0];
+  double get y => offset[1];
+  Vector2 get offset {
     switch(pos) {
-      case wallPos.top: return Vector2(gameSize[0] / 2, b / 2);
+      case wallPos.top: return WallO.topOffset(gameSize);
       case wallPos.left: return Vector2(b / 2, gameSize[1] / 2);
       case wallPos.bottom: return Vector2(gameSize[0] / 2, gameSize[1] - b / 2);
       case wallPos.right: return Vector2(gameSize[0] - b / 2, gameSize[1] / 2);
     }
   }
-  Vector2 get wh {
+  Vector2 get rect {
     switch(pos) {
       case wallPos.top:
       case wallPos.bottom:
@@ -132,9 +105,9 @@ class WallO extends GameObject {
 
   @override
   void init() {
-    size = wh;
+    size = rect;
     alignment = GameObjectAlignment.center;
-    position = xy;
+    position = offset;
   }
 
   @override
@@ -171,5 +144,38 @@ class WallO extends GameObject {
 
   @override
   void update(Duration delta) {
+  }
+}
+
+class BouncerO extends GameObject {
+  var velocity = Vector2(0, 0);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.blue,
+      child: const Text('Demo'),
+    );
+  }
+
+  @override
+  void init() {
+    size = Vector2.all(50);
+    alignment = GameObjectAlignment.center;
+    position = (gameSize / 2);
+  }
+
+  @override
+  void onCollision(List<Collision> collisions) {
+    illumeController.stopGame();
+  }
+
+  @override
+  void onScreenSizeChange(Vector2 size) {
+  }
+
+  @override
+  void update(Duration delta) {
+    position += velocity;
   }
 }
