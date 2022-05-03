@@ -77,7 +77,9 @@ class BallO extends GameObject {
     StepResults stepResults = ballPos.step();
     final cx = ballPos.x;
     final cy = ballPos.y;
-    position += Vector2(ox - cx, oy - cy);
+    final rDx = (ox - cx) / ballPos.sideToSide * gameSize[0];
+    final rDy = (oy - cy) / ballPos.homeToAway * gameSize[1];
+    position += Vector2(rDx, rDy);
   }
 }
 
@@ -89,9 +91,11 @@ class BallPos {
   double get dx => bX.d;
   double get dy => bY.d;
   double get toSide => bX.w; // side from home
+  double get sideToSide => 2 * toSide;
   double get w => toSide; // side from home
-  double get homeToAway => 2 * bY.w; // home from center
-  double get h => homeToAway / 2; // home from center
+  double get homeToAway => 2 * bY.w;
+  double get toAway => bY.w; // home from center
+  double get h => toAway; // home from center
   final Bouncer bX;
   final Bouncer bY;
 
