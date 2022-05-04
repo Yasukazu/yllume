@@ -96,7 +96,7 @@ class BallO extends GameObject {
     final dyD = dy * gameSize[1];
     final double step = speed / delta.inMilliseconds;
     if (delta.inMilliseconds % 100 == 0) {
-      logger.info("update in Ball. Duration = ${delta.inMilliseconds} seconds.")
+      logger.info("update in Ball. Duration = ${delta.inMilliseconds} seconds.");
     }
     position += Vector2(dxD * step, dyD * step);
   }
