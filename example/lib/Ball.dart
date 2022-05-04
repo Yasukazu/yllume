@@ -64,9 +64,19 @@ class BallO extends GameObject {
     );
   }
 
+  bool on1stCollision = true;
   @override
   void onCollision(List<Collision> collisions) {
+    assert(collisions.isNotEmpty);
     final collision = collisions[0];
+    int n = 0;
+    for (Collision col in collisions) {
+      final rect = col.intersectionRect;
+      final xCenter = (rect.left + rect.top) / 2;
+      final yCenter = (rect.top + rect.bottom) / 2;
+      logger.info("${n + 1} collision: Center = ($xCenter, $yCenter)");
+      ++n;
+    }
     if (collision.intersectionRect.center == WallO.rightOffset(gameSize)) {
       logger.info("Wall rightOffset collision");
       _dx = -dx;
@@ -84,6 +94,8 @@ class BallO extends GameObject {
       _dy = -dy;
     }
     lastPos = Vector2(x, y);
+    stepCount = 0;
+    on1stCollision = false;
     // illumeController.stopGame();
   }
 
@@ -95,16 +107,23 @@ class BallO extends GameObject {
 
   @override
   void update(Duration delta) {
+    assert(x > 0 && x < 1);
+    assert(y > 0 && y < 1);
     ++stepCount;
-    x += dx;
-    y += dy;
-    final double step = speed / delta.inMilliseconds;
-    final dxD = step * dx * gameSize[1];
-    final dyD = step * dy * gameSize[1];
+
+    final ox = lastPos[0];
+    final oy = lastPos[1];
+    final nx = ox * (1 + dx * stepCount);
+    final ny = oy + (1 + dy * stepCount);
+    assert(nx.abs() < 1.0);
+    assert(ny.abs() < 1.0);
+    final nxD = nx * gameSize[0];
+    final nyD = ny * gameSize[1];
     if (delta.inMilliseconds % 100 == 0) {
-      logger.info("update in Ball. Duration = ${delta.inMilliseconds} seconds.");
+      logger.info("update in Ball. Duration = ${delta.inMilliseconds} seconds. nxD: $nxD, nyD: $nyD");
     }
-    position += Vector2(dxD * step, dyD * step);
+    position = Vector2(nxD, nyD);
+
   }
 }
 
