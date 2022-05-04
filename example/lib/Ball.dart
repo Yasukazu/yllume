@@ -70,29 +70,39 @@ class BallO extends GameObject {
     assert(collisions.isNotEmpty);
     final collision = collisions[0];
     int n = 0;
+    var centerText = '';
     for (Collision col in collisions) {
       final rect = col.intersectionRect;
       final xCenter = (rect.left + rect.top) / 2;
       final yCenter = (rect.top + rect.bottom) / 2;
-      logger.info("${n + 1} collision: Center = ($xCenter, $yCenter)");
+      centerText =("${n + 1} collision: Center = ($xCenter, $yCenter)");
       ++n;
     }
-    if (collision.intersectionRect.center == WallO.rightOffset(gameSize)) {
-      logger.info("Wall rightOffset collision");
+    var wallText = '';
+    final colRect = collision.intersectionRect;
+    final colXCenter = (colRect.left + colRect.right) / 2;
+    final colYCenter = (colRect.top + colRect.bottom) / 2;
+    final colCenterSize = Vector2(colXCenter * gameSize[0], colYCenter * gameSize[1]);
+    if (colCenterSize == WallO.rightOffset(gameSize)) {
+      wallText =("Wall rightOffset collision");
       _dx = -dx;
     }
-    else if (collision.intersectionRect.center == WallO.leftOffset(gameSize)) {
-      logger.info("Wall leftOffset collision");
+    else if (colCenterSize == WallO.leftOffset(gameSize)) {
+      wallText =("Wall leftOffset collision");
       _dx = -dx;
     }
-    else if (collision.intersectionRect.center == WallO.topOffset(gameSize)) {
-      logger.info("Wall topOffset collision");
+    else if (colCenterSize == WallO.topOffset(gameSize)) {
+      wallText =("Wall topOffset collision");
       _dy = -dy;
     }
-    else if (collision.intersectionRect.center == WallO.bottomOffset(gameSize)) {
-      logger.info("Wall bottomOffset collision");
+    else if (colCenterSize == WallO.bottomOffset(gameSize)) {
+      wallText =("Wall bottomOffset collision");
       _dy = -dy;
     }
+    else {
+      wallText = "No wall!";
+    }
+    MyHomePage.statusBar = centerText + ';' + wallText;
     lastPos = Vector2(x, y);
     stepCount = 0;
     on1stCollision = false;
@@ -105,7 +115,7 @@ class BallO extends GameObject {
     // real world app or at least lock orientation.
   }
 
-  final stepRatio = 100;
+  final stepRatio = 0.01;
   bool update1st = true;
   @override
   void update(Duration delta) {
@@ -113,7 +123,7 @@ class BallO extends GameObject {
     assert(y > 0 && y < 1);
     if (stepCount == 1) {
       MyHomePage.statusBar = "delta.inmcs:${delta.inMicroseconds},delta.inmls:${delta.inMilliseconds},delta.ins:${delta.inSeconds}.";
-    }
+    } // inmln: 4049
     ++stepCount;
     final ox = lastPos[0];
     final oy = lastPos[1];
@@ -123,12 +133,11 @@ class BallO extends GameObject {
     assert(dy.abs() < 1);
     final nx = ox * (1 + dx * stepCount * stepRatio);
     final ny = oy * (1 + dy * stepCount * stepRatio);
-    if (update1st) {
-      logger.info("ox: $ox, oy: $oy");
-      logger.info("nx: $nx, ny: $ny");
+    if (nx.abs() > 1.0) {
+      MyHomePage.statusBar = "ox: $ox, oy: $oy, dx: $dx, dy: $dy, nx: $nx, ny: $ny";
     }
-    assert(nx.abs() < 1.0);
-    assert(ny.abs() < 1.0);
+    assert(nx.abs() <= 1.0);
+    assert(ny.abs() <= 1.0);
     final nxD = nx * gameSize[0];
     final nyD = ny * gameSize[1];
     if (delta.inMilliseconds % 100 == 0) {
