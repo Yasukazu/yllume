@@ -29,7 +29,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final leftWall = WallO(wallPos.left);
   final rightWall = WallO(wallPos.right);
   List<WallO> get walls => [topWall, bottomWall, leftWall, rightWall];
-  final ball = BallO.withAngleDivider(25 / 360 * 2 * pi, 20);
+  final ball = BallO.withAngle(100, 30);
 
   @override
   void initState() {
@@ -74,7 +74,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
 enum wallPos {top, bottom, left, right}
 enum gameSizez {sizeX, sizeY}
-typedef Vector2 Function(Vector2) v2ToV2
+typedef Vector2 v2ToV2(Vector2 vector2);
 
 class WallO extends GameObject {
   static const shape = BoxShape.rectangle;

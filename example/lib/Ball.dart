@@ -19,6 +19,8 @@ class BallO extends GameObject {
   static const Color color = Colors.white;
   static const double ratio = 0.05;
   static const BoxShape shape = BoxShape.circle;
+  var lastPos = Vector2(0.5, 0.5);
+  var stepCount = 0;
   // late final BallPos ballPos;
   /// args: x, y, ratio, color, shape,
   BallO(this._speed, this._dx, this._dy);
@@ -42,21 +44,21 @@ class BallO extends GameObject {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size.height;
+    final size = gameSize; // MediaQuery.of(context).size.height;
     return Container(
-        alignment: Alignment(x, y),
+        alignment: Alignment((x * 2) - 1, (y * 2 ) - 1),
         child: Stack(
             alignment: AlignmentDirectional.center,
             children: [
               Container(
                 decoration: BoxDecoration(shape: shape, color: color),
-                width: ratio * size,
-                height: ratio * size,
+                width: ratio * size[0],
+                height: ratio * size[1],
               ),
               Container(
                 decoration: BoxDecoration(shape: shape, color: Colors.black),
-                width: ratio * size * 0.5,
-                height: ratio * size * 0.5,
+                width: ratio * size[0] * 0.5,
+                height: ratio * size[1] * 0.5,
               ),
             ])
     );
@@ -81,6 +83,7 @@ class BallO extends GameObject {
       logger.info("Wall bottomOffset collision");
       _dy = -dy;
     }
+    lastPos = Vector2(x, y);
     // illumeController.stopGame();
   }
 
@@ -92,9 +95,12 @@ class BallO extends GameObject {
 
   @override
   void update(Duration delta) {
-    final dxD = dx * gameSize[0];
-    final dyD = dy * gameSize[1];
+    ++stepCount;
+    x += dx;
+    y += dy;
     final double step = speed / delta.inMilliseconds;
+    final dxD = step * dx * gameSize[1];
+    final dyD = step * dy * gameSize[1];
     if (delta.inMilliseconds % 100 == 0) {
       logger.info("update in Ball. Duration = ${delta.inMilliseconds} seconds.");
     }
