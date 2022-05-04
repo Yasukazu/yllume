@@ -74,19 +74,24 @@ class _MyHomePageState extends State<MyHomePage> {
 
 enum wallPos {top, bottom, left, right}
 enum gameSizez {sizeX, sizeY}
+typedef Vector2 Function(Vector2) v2ToV2
 
 class WallO extends GameObject {
   static const shape = BoxShape.rectangle;
   static const b = MyHomePage.wallT;
   static topOffset(Vector2 gameSize) => Vector2(gameSize[0] / 2, b / 2);
+  static leftOffset(Vector2 gameSize) => Vector2(b / 2, gameSize[1] / 2);
+  static bottomOffset(Vector2 gameSize) => Vector2(gameSize[0] / 2, gameSize[1] - b / 2);
+  static rightOffset(Vector2 gameSize) => Vector2(gameSize[0] - b / 2, gameSize[1] / 2);
+  static const offsets = [topOffset, leftOffset, bottomOffset, rightOffset];
   double get x => offset[0];
   double get y => offset[1];
   Vector2 get offset {
     switch(pos) {
-      case wallPos.top: return WallO.topOffset(gameSize);
-      case wallPos.left: return Vector2(b / 2, gameSize[1] / 2);
-      case wallPos.bottom: return Vector2(gameSize[0] / 2, gameSize[1] - b / 2);
-      case wallPos.right: return Vector2(gameSize[0] - b / 2, gameSize[1] / 2);
+      case wallPos.top: return topOffset(gameSize);
+      case wallPos.left: return leftOffset(gameSize);
+      case wallPos.bottom: return bottomOffset(gameSize);
+      case wallPos.right: return rightOffset(gameSize) ;
     }
   }
   Vector2 get rect {

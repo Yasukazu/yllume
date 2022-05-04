@@ -2,29 +2,42 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:tuple/tuple.dart';
 import 'orgMain.dart';
-import 'MyHomePage.dart';
+import 'MyHomePage.dart'; // WallO
 import 'package:illume/illume.dart';
 
 class BallO extends GameObject {
+  final int _speed; // millisecond
+  int get speed => _speed;
   double xV = 0; // x velocity
   double yV = 0;
-  late final double dx;
-  double x = 0;
-  late final double dy;
-  double y = 0;
-  final Color color;
-  final double ratio;
-  final BoxShape shape;
-  late final BallPos ballPos;
+  double _dx = 0;
+  double get dx => _dx;
+  double x = 0.5; // center
+  double _dy = 0;
+  double get dy => _dy;
+  double y = 0.5; // center
+  static const Color color = Colors.white;
+  static const double ratio = 0.05;
+  static const BoxShape shape = BoxShape.circle;
+  // late final BallPos ballPos;
   /// args: x, y, ratio, color, shape,
-  BallO(this.dx, this.dy, [this.x = 0, this.y = 0, this.ratio = 0.1, this.color = Colors.white, this.shape = BoxShape.circle]) {
-    ballPos = BallPos(dx, dy);
+  BallO(this._speed, this._dx, this._dy);
+
+  /// angle to Y-axis
+  BallO.withAngle(this._speed, int angle) {
+    final rad = angle / 360.0 * 2 * pi;
+    _dx = cos(rad);
+    _dy = sin(rad);
   }
 
-  BallO.withAngleDivider(double angle, int divider, [this.ratio = 0.1, this.color = Colors.white, this.shape = BoxShape.circle])  {
-    ballPos = BallPos.withAngleDivider(angle, divider);
-    dx = ballPos.dx;
-    dy = ballPos.dy;
+  @override
+  void init() {
+    size = Vector2.all(ratio * gameSize[0]);
+    alignment = GameObjectAlignment.center;
+    position = Vector2(
+        gameSize[0] * x, // / ballPos.sideToSide,
+        gameSize[1] * y // ballPos.homeToAway
+    );
   }
 
   @override
@@ -50,17 +63,24 @@ class BallO extends GameObject {
   }
 
   @override
-  void init() {
-    size = Vector2.all(ratio * gameSize[0]);
-    alignment = GameObjectAlignment.center;
-    position = Vector2(
-      gameSize[0] * x / ballPos.sideToSide,
-      gameSize[1] * y / ballPos.homeToAway
-    );
-  }
-
-  @override
   void onCollision(List<Collision> collisions) {
+    final collision = collisions[0];
+    if (collision.intersectionRect.center == WallO.rightOffset(gameSize)) {
+      logger.info("Wall rightOffset collision");
+      _dx = -dx;
+    }
+    else if (collision.intersectionRect.center == WallO.leftOffset(gameSize)) {
+      logger.info("Wall leftOffset collision");
+      _dx = -dx;
+    }
+    else if (collision.intersectionRect.center == WallO.topOffset(gameSize)) {
+      logger.info("Wall topOffset collision");
+      _dy = -dy;
+    }
+    else if (collision.intersectionRect.center == WallO.bottomOffset(gameSize)) {
+      logger.info("Wall bottomOffset collision");
+      _dy = -dy;
+    }
     // illumeController.stopGame();
   }
 
@@ -72,14 +92,13 @@ class BallO extends GameObject {
 
   @override
   void update(Duration delta) {
-    final ox = ballPos.x;
-    final oy = ballPos.y;
-    StepResults stepResults = ballPos.step();
-    final cx = ballPos.x;
-    final cy = ballPos.y;
-    final rDx = (ox - cx) / ballPos.sideToSide * gameSize[0];
-    final rDy = (oy - cy) / ballPos.homeToAway * gameSize[1];
-    position += Vector2(rDx, rDy);
+    final dxD = dx * gameSize[0];
+    final dyD = dy * gameSize[1];
+    final double step = speed / delta.inMilliseconds;
+    if (delta.inMilliseconds % 100 == 0) {
+      logger.info("update in Ball. Duration = ${delta.inMilliseconds} seconds.")
+    }
+    position += Vector2(dxD * step, dyD * step);
   }
 }
 
