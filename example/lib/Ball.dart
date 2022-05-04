@@ -21,6 +21,7 @@ class BallO extends GameObject {
   static const BoxShape shape = BoxShape.circle;
   var lastPos = Vector2(0.5, 0.5);
   var stepCount = 0;
+  // var autoRatio = 1.0;
   // late final BallPos ballPos;
   /// args: x, y, ratio, color, shape,
   BallO(this._speed, this._dx, this._dy);
@@ -105,25 +106,38 @@ class BallO extends GameObject {
     // real world app or at least lock orientation.
   }
 
+  final stepRatio = 100;
+  bool update1st = true;
   @override
   void update(Duration delta) {
     assert(x > 0 && x < 1);
     assert(y > 0 && y < 1);
+    if (stepCount == 1) {
+      // autoRatio = delta.inMilliseconds * speed / 1000;
+      MyHomePage.statusBar = "delta.inmcs:${delta.inMicroseconds},delta.inmls:${delta.inMilliseconds},delta.ins:${delta.inSeconds},autoRatio:$autoRatio";
+    }
     ++stepCount;
-
     final ox = lastPos[0];
     final oy = lastPos[1];
-    final nx = ox * (1 + dx * stepCount);
-    final ny = oy + (1 + dy * stepCount);
+    assert(ox.abs() < 1);
+    assert(ox.abs() < 1);
+    assert(dx.abs() < 1);
+    assert(dy.abs() < 1);
+    final nx = ox * (1 + dx * stepCount * stepRatio);
+    final ny = oy * (1 + dy * stepCount * stepRatio);
+    if (update1st) {
+      logger.info("ox: $ox, oy: $oy");
+      logger.info("nx: $nx, ny: $ny");
+    }
     assert(nx.abs() < 1.0);
     assert(ny.abs() < 1.0);
     final nxD = nx * gameSize[0];
     final nyD = ny * gameSize[1];
     if (delta.inMilliseconds % 100 == 0) {
-      logger.info("update in Ball. Duration = ${delta.inMilliseconds} seconds. nxD: $nxD, nyD: $nyD");
+      logger.info("update in Ball. Duration = ${delta.inMilliseconds} sec. autoRatio: $autoRatio, nxD: $nxD, nyD: $nyD");
     }
     position = Vector2(nxD, nyD);
-
+    update1st = false;
   }
 }
 

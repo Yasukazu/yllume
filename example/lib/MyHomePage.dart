@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:illume/illume.dart';
 import 'Ball.dart';
@@ -12,6 +11,8 @@ class Screen {
 class MyHomePage extends StatefulWidget {
   static const wallT = 5.0; // wall thickness1
   const MyHomePage({Key? key}) : super(key: key);
+  static const mainText = 'Pong game';
+  static String statusBar = '$mainText';
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -35,6 +36,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     gameController.startGame();
+    MyHomePage.statusBar = MyHomePage.mainText + ":started";
     gameController.gameObjects.addAll([ball, topWall, bottomWall, leftWall, rightWall]);
   }
 
@@ -46,7 +48,7 @@ class _MyHomePageState extends State<MyHomePage> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Pong game'),
+          title: Text(MyHomePage.statusBar),
         ),
         body: Stack(
           children: [
