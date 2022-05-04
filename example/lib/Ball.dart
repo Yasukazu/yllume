@@ -134,7 +134,7 @@ class BallO extends GameObject {
     final nxD = nx * gameSize[0];
     final nyD = ny * gameSize[1];
     if (delta.inMilliseconds % 100 == 0) {
-      logger.info("update in Ball. Duration = ${delta.inMilliseconds} sec. autoRatio: $autoRatio, nxD: $nxD, nyD: $nyD");
+      logger.info("update in Ball. Duration = ${delta.inMilliseconds} sec., nxD: $nxD, nyD: $nyD");
     }
     position = Vector2(nxD, nyD);
     update1st = false;
