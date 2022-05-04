@@ -23,7 +23,7 @@ class BallO extends GameObject {
   var stepCount = 0;
   // late final BallPos ballPos;
   /// args: x, y, ratio, color, shape,
-  BallO(this._speed, this._dx, this._dy);
+  BallO([this._speed = 1, this._dx = 0.7, this._dy = 0.7]);
 
   /// angle to Y-axis
   BallO.withAngle(this._speed, int angle) {
