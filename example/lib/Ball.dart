@@ -21,7 +21,6 @@ class BallO extends GameObject {
   static const BoxShape shape = BoxShape.circle;
   var lastPos = Vector2(0.5, 0.5);
   var stepCount = 0;
-  // var autoRatio = 1.0;
   // late final BallPos ballPos;
   /// args: x, y, ratio, color, shape,
   BallO(this._speed, this._dx, this._dy);
@@ -113,8 +112,7 @@ class BallO extends GameObject {
     assert(x > 0 && x < 1);
     assert(y > 0 && y < 1);
     if (stepCount == 1) {
-      // autoRatio = delta.inMilliseconds * speed / 1000;
-      MyHomePage.statusBar = "delta.inmcs:${delta.inMicroseconds},delta.inmls:${delta.inMilliseconds},delta.ins:${delta.inSeconds},autoRatio:$autoRatio";
+      MyHomePage.statusBar = "delta.inmcs:${delta.inMicroseconds},delta.inmls:${delta.inMilliseconds},delta.ins:${delta.inSeconds}.";
     }
     ++stepCount;
     final ox = lastPos[0];
