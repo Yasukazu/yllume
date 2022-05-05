@@ -33,10 +33,10 @@ class WallO extends GameObject {
     switch(pos) {
       case wallPos.top:
       case wallPos.bottom:
-        return Vector2(gameSize[0], b);
+        return Vector2((1 - b) * gameSize[0], b * gameSize[1]);
       case wallPos.left:
       case wallPos.right:
-        return Vector2(b, gameSize[1]);
+        return Vector2(b * gameSize[0], (1 - b) * gameSize[1]);
     }
   }
   final wallPos pos;
@@ -53,7 +53,6 @@ class WallO extends GameObject {
   @override
   Widget build(BuildContext context) {
     const color = Colors.yellow;
-    final Vector2 size = gameSize; // MediaQuery.of(context).size.height;
     return Container(
         alignment: Alignment(x, y),
         child: Stack(
@@ -76,6 +75,21 @@ class WallO extends GameObject {
 
   @override
   void onCollision(List<Collision> collisions) {
+    final lenText = "collisions.length=${collisions.length}";
+    switch(pos) {
+      case wallPos.left:
+      case wallPos.right:
+        MyHomePage.ballDxRev = !MyHomePage.ballDxRev;
+        MyHomePage.wallMsg =
+        "$lenText:ballDxRev is reverted to: ${MyHomePage.ballDxRev}";
+        return;
+      case wallPos.top:
+      case wallPos.bottom:
+        MyHomePage.ballDxRev = !MyHomePage.ballDxRev;
+        MyHomePage.wallMsg =
+        "$lenText:ballDyRev is reverted to: ${MyHomePage.ballDyRev}";
+        return;
+    }
   }
 
   @override

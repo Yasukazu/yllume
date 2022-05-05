@@ -10,11 +10,13 @@ class Screen {
 }
 
 class MyHomePage extends StatefulWidget {
-  static const wallT = 5.0; // wall thickness1
+  static const wallT = 0.05; // wall thickness1 per 1
   const MyHomePage({Key? key}) : super(key: key);
   static const mainText = 'Pong game';
   static String statusBar = '$mainText';
-  static BallO ball = BallO();
+  static bool ballDxRev = false; // reflex sign
+  static bool ballDyRev = false;
+  static String wallMsg = '';
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -27,6 +29,8 @@ class _MyHomePageState extends State<MyHomePage> {
   // FlappyWidget flappyWidget = FlappyWidget();
   // Wall wall = Wall(200, false);
   // Wall wall2 = Wall(400, true);
+  static const speed = 100;
+  final ball = BallO.withAngle(speed, RandAngleIterator(14).current);
   final topWall = WallO(wallPos.top);
   final bottomWall = WallO(wallPos.bottom);
   final leftWall = WallO(wallPos.left);
@@ -38,8 +42,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     gameController.startGame();
     MyHomePage.statusBar = MyHomePage.mainText + ":started";
-    MyHomePage.ball = BallO.withAngle(100, 30);
-    gameController.gameObjects.addAll([MyHomePage.ball, topWall, bottomWall, leftWall, rightWall]);
+    gameController.gameObjects.addAll([ball, topWall, bottomWall, leftWall, rightWall]);
   }
 
   @override

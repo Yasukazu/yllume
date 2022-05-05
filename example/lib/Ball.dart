@@ -11,23 +11,22 @@ class BallO extends GameObject {
   double xV = 0; // x velocity
   double yV = 0;
   double _dx = 0;
-  double get dx => _dx;
+  double get dx => MyHomePage.ballDxRev ? -_dx : _dx;
   double x = 0.5; // center
   double _dy = 0;
-  double get dy => _dy;
+  double get dy => MyHomePage.ballDyRev ? -_dy : _dy;
   double y = 0.5; // center
   static const Color color = Colors.white;
   static const double ratio = 0.05;
   static const BoxShape shape = BoxShape.circle;
-  var lastPos = Vector2(0.5, 0.5);
+  var lastPos = Vector2(0.5, 0.5); // start from center of game screen
   var stepCount = 0;
   // late final BallPos ballPos;
   /// args: x, y, ratio, color, shape,
   BallO([this._speed = 1, this._dx = 0.7, this._dy = 0.7]);
 
   /// angle to Y-axis
-  BallO.withAngle(this._speed, int angle) {
-    final rad = angle / 360.0 * 2 * pi;
+  BallO.withAngle(this._speed, double rad) {
     _dx = cos(rad);
     _dy = sin(rad);
   }
@@ -64,9 +63,10 @@ class BallO extends GameObject {
     );
   }
 
-  bool on1stCollision = true;
+  // bool on1stCollision = true;
   @override
   void onCollision(List<Collision> collisions) {
+    /*
     assert(collisions.isNotEmpty);
     final collision = collisions[0];
     int n = 0;
@@ -106,7 +106,7 @@ class BallO extends GameObject {
     lastPos = Vector2(x, y);
     stepCount = 0;
     on1stCollision = false;
-    // illumeController.stopGame();
+    */
   }
 
   @override
@@ -115,7 +115,7 @@ class BallO extends GameObject {
     // real world app or at least lock orientation.
   }
 
-  final stepRatio = 0.01;
+  final stepRatio = 0.015;
   bool update1st = true;
   @override
   void update(Duration delta) {
@@ -131,10 +131,11 @@ class BallO extends GameObject {
     assert(ox.abs() < 1);
     assert(dx.abs() < 1);
     assert(dy.abs() < 1);
-    final nx = ox * (1 + dx * stepCount * stepRatio);
-    final ny = oy * (1 + dy * stepCount * stepRatio);
+    final firstRatio = update1st ? 0.5 : 1;
+    final nx = ox * (1 + dx * stepCount * stepRatio * firstRatio);
+    final ny = oy * (1 + dy * stepCount * stepRatio * firstRatio);
     if (nx.abs() > 1.0) {
-      MyHomePage.statusBar = "ox: $ox, oy: $oy, dx: $dx, dy: $dy, nx: $nx, ny: $ny";
+      MyHomePage.statusBar = MyHomePage.wallMsg + "ox: $ox, oy: $oy, dx: $dx, dy: $dy, nx: $nx, ny: $ny";
     }
     assert(nx.abs() <= 1.0);
     assert(ny.abs() <= 1.0);
@@ -358,7 +359,7 @@ class HalfBouncer extends Bouncer {
 
 class RandAngleIterator extends Iterable with Iterator {
   final int range;
-  final rand = new Random(new DateTime.now().millisecondsSinceEpoch);
+  final rand = Random(DateTime.now().millisecondsSinceEpoch);
   var _e = 0;
   var _s = false;
   int get v => (30 + _e) * (_s ? 1 : -1);
