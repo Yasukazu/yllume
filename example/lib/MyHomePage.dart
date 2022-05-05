@@ -10,7 +10,8 @@ class Screen {
 }
 
 class MyHomePage extends StatefulWidget {
-  static const wallT = 0.05; // wall thickness1 per 1
+  static const ballSize = 0.05;
+  static const wallT = 0.04; // wall thickness1 per 1
   const MyHomePage({Key? key}) : super(key: key);
   static const mainText = 'Pong game';
   static String statusBar = '$mainText';

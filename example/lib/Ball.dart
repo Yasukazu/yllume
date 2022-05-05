@@ -17,16 +17,16 @@ class BallO extends GameObject {
   double get dy => MyHomePage.ballDyRev ? -_dy : _dy;
   double y = 0.5; // center
   static const Color color = Colors.white;
-  static const double ratio = 0.05;
+  final double ratio;
   static const BoxShape shape = BoxShape.circle;
   var lastPos = Vector2(0.5, 0.5); // start from center of game screen
   var stepCount = 0;
   // late final BallPos ballPos;
   /// args: x, y, ratio, color, shape,
-  BallO([this._speed = 1, this._dx = 0.7, this._dy = 0.7]);
+  BallO([this._speed = 1, this._dx = 0.7, this._dy = 0.7, this.ratio = MyHomePage.ballSize]);
 
   /// angle to Y-axis
-  BallO.withAngle(this._speed, double rad) {
+  BallO.withAngle(this._speed, double rad, [this.ratio = MyHomePage.ballSize]) {
     _dx = cos(rad);
     _dy = sin(rad);
   }

@@ -35,10 +35,10 @@ class WallO extends GameObject {
     switch(pos) {
       case wallPos.top:
       case wallPos.bottom:
-        return Vector2((1 - b) * gameSize[0], b * gameSize[1]);
+        return Vector2((1 - b - MyHomePage.ballSize) * gameSize[0], b * gameSize[1]);
       case wallPos.left:
       case wallPos.right:
-        return Vector2(b * gameSize[0], (1 - b) * gameSize[1]);
+        return Vector2(b * gameSize[0], (1 - b - MyHomePage.ballSize) * gameSize[1]);
     }
   }
   final wallPos pos;
