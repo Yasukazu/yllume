@@ -1,9 +1,11 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:tuple/tuple.dart';
 import 'orgMain.dart';
 import 'MyHomePage.dart';
 import 'package:illume/illume.dart';
+import 'package:intl/intl.dart';
 
 enum wallPos {top, bottom, left, right}
 
@@ -75,7 +77,8 @@ class WallO extends GameObject {
 
   @override
   void onCollision(List<Collision> collisions) {
-    final lenText = "collisions.length=${collisions.length}";
+    final fmt = NumberFormat('##.0#', 'en_US');
+    final lenText = "Wall .len=${collisions.length} at ballX=${fmt.format(MyHomePage.ballX)},ballY=${fmt.format(MyHomePage.ballY)}";
     switch(pos) {
       case wallPos.left:
       case wallPos.right:

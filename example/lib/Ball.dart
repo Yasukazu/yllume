@@ -144,6 +144,8 @@ class BallO extends GameObject {
     if (delta.inMilliseconds % 100 == 0) {
       logger.info("update in Ball. Duration = ${delta.inMilliseconds} sec., nxD: $nxD, nyD: $nyD");
     }
+    MyHomePage.ballX = x = nx;
+    MyHomePage.ballY = y = ny;
     position = Vector2(nxD, nyD);
     update1st = false;
   }

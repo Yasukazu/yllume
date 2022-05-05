@@ -17,6 +17,8 @@ class MyHomePage extends StatefulWidget {
   static bool ballDxRev = false; // reflex sign
   static bool ballDyRev = false;
   static String wallMsg = '';
+  static var ballX = 0.0;
+  static var ballY = 0.0;
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
