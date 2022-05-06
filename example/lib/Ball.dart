@@ -1,386 +1,146 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
-import 'package:tuple/tuple.dart';
-import 'orgMain.dart';
 import 'MyHomePage.dart'; // WallO
 import 'package:illume/illume.dart';
 
 class BallO extends GameObject {
+  static const defaultBallSpeed = 1;
+  static const initialX = 0.5;
+  static const initialY = 0.5;
   final int _speed; // millisecond
   int get speed => _speed;
-  double xV = 0; // x velocity
-  double yV = 0;
-  double _dx = 0;
-  double get dx => MyHomePage.ballDxRev ? -_dx : _dx;
-  double x = 0.5; // center
-  double _dy = 0;
-  double get dy => MyHomePage.ballDyRev ? -_dy : _dy;
-  double y = 0.5; // center
-  static const Color color = Colors.white;
-  final double ratio;
-  static const BoxShape shape = BoxShape.circle;
-  var lastPos = Vector2(0.5, 0.5); // start from center of game screen
-  var stepCount = 0;
-  // late final BallPos ballPos;
-  /// args: x, y, ratio, color, shape,
-  BallO([this._speed = 1, this._dx = 0.7, this._dy = 0.7, this.ratio = MyHomePage.ballSize]);
-
-  /// angle to Y-axis
-  BallO.withAngle(this._speed, double rad, [this.ratio = MyHomePage.ballSize]) {
-    _dx = cos(rad);
-    _dy = sin(rad);
-  }
-
-  @override
-  void init() {
-    size = Vector2.all(ratio * gameSize[0]);
-    alignment = GameObjectAlignment.center;
-    position = Vector2(
-        gameSize[0] * x, // / ballPos.sideToSide,
-        gameSize[1] * y // ballPos.homeToAway
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final size = gameSize; // MediaQuery.of(context).size.height;
-    return Container(
-        alignment: Alignment((x * 2) - 1, (y * 2 ) - 1),
-        child: Stack(
-            alignment: AlignmentDirectional.center,
-            children: [
-              Container(
-                decoration: BoxDecoration(shape: shape, color: color),
-                width: ratio * size[0],
-                height: ratio * size[1],
-              ),
-              Container(
-                decoration: BoxDecoration(shape: shape, color: Colors.black),
-                width: ratio * size[0] * 0.5,
-                height: ratio * size[1] * 0.5,
-              ),
-            ])
-    );
-  }
-
-  // bool on1stCollision = true;
-  @override
-  void onCollision(List<Collision> collisions) {
-    /*
-    assert(collisions.isNotEmpty);
-    final collision = collisions[0];
-    int n = 0;
-    var centerText = '';
-    for (Collision col in collisions) {
-      final rect = col.intersectionRect;
-      final xCenter = (rect.left + rect.top) / 2;
-      final yCenter = (rect.top + rect.bottom) / 2;
-      centerText =("${n + 1} collision: Center = ($xCenter, $yCenter)");
-      ++n;
+  late final double _dx;
+  bool dxReverse = false;
+  bool dyReverse = false;
+  double get dx => dxReverse ? -_dx : _dx;
+  double get dy => dyReverse ? -_dy : _dy;
+  double get orgAngle => atan2(_dx, _dy);
+    /// current position is x + dx * _stepCount
+    double get x => curXY[0];
+  double get y => curXY[1];
+  late final double _dy;
+    static const Color color = Colors.white;
+    final double ratio; // self size
+    static const BoxShape shape = BoxShape.circle;
+    Vector2 get lastPos => Vector2(gameSize[0] * lastXY[0], gameSize[1] * lastXY[1]);
+    set lastPos(Vector2 nxy) {
+      final x_ = nxy[0] / gameSize[0];
+      final y_ = nxy[1] / gameSize[1];
+      lastXY = Vector2(x_, y_);
     }
-    var wallText = '';
-    final colRect = collision.intersectionRect;
-    final colXCenter = (colRect.left + colRect.right) / 2;
-    final colYCenter = (colRect.top + colRect.bottom) / 2;
-    final colCenterSize = Vector2(colXCenter * gameSize[0], colYCenter * gameSize[1]);
-    if (colCenterSize == WallO.rightOffset(gameSize)) {
-      wallText =("Wall rightOffset collision");
-      _dx = -dx;
+
+    final _lastXY = Vector2(initialX, initialY);
+    Vector2 get lastXY => _lastXY;
+    set lastXY(Vector2 nxy) {
+      final x_ = nxy[0];
+      final y_ = nxy[1];
+      assert(x_ >= 0 && x_ <= 1.0);
+      assert(y_ >= 0 && y_ <= 1.0);
+      _lastXY[0] = x_;
+      _lastXY[1] = y_;
     }
-    else if (colCenterSize == WallO.leftOffset(gameSize)) {
-      wallText =("Wall leftOffset collision");
-      _dx = -dx;
+    int _stepCount = 0;
+    int get stepCount => _stepCount;
+    Vector2 get curXY {
+      final x_ = lastXY[0];
+      final y_ = lastXY[1];
+      final ndx = stepCount * dx;
+      final ndy = stepCount * dy;
+      return Vector2(x_ + ndx, y_ + ndy);
     }
-    else if (colCenterSize == WallO.topOffset(gameSize)) {
-      wallText =("Wall topOffset collision");
-      _dy = -dy;
+    Vector2 get curPos {
+      final x_ = curXY[0];
+      final y_ = curXY[1];
+      return Vector2(x_ * gameSize[0], y_ * gameSize[1]);
     }
-    else if (colCenterSize == WallO.bottomOffset(gameSize)) {
-      wallText =("Wall bottomOffset collision");
-      _dy = -dy;
-    }
-    else {
-      wallText = "No wall!";
-    }
-    MyHomePage.statusBar = centerText + ';' + wallText;
-    lastPos = Vector2(x, y);
-    stepCount = 0;
-    on1stCollision = false;
-    */
-  }
+      // late final BallPos ballPos;
+      /// args: x, y, ratio, color, shape,
+      BallO(this._dx, this._dy,
+          [this._speed = defaultBallSpeed, this.ratio = MyHomePage.ballSize]) {
+        assert(_dx > 0 && _dy > 0);
+        assert(_speed > 0);
+        assert(ratio > 0);
+      }
 
-  @override
-  void onScreenSizeChange(Vector2 size) {
-    // This is a quick demo but you really should shift your positions in a
-    // real world app or at least lock orientation.
-  }
+      /// angle to Y-axis
+      BallO.withAngle(this._speed, double rad, [this.ratio = MyHomePage.ballSize]) {
+        _dx = cos(rad);
+        _dy = sin(rad);
+      }
 
-  final stepRatio = 0.015;
-  bool update1st = true;
-  @override
-  void update(Duration delta) {
-    assert(x > 0 && x < 1);
-    assert(y > 0 && y < 1);
-    if (stepCount == 1) {
-      MyHomePage.statusBar = "delta.inmcs:${delta.inMicroseconds},delta.inmls:${delta.inMilliseconds},delta.ins:${delta.inSeconds}.";
-    } // inmln: 4049
-    ++stepCount;
-    final ox = lastPos[0];
-    final oy = lastPos[1];
-    assert(ox.abs() < 1);
-    assert(ox.abs() < 1);
-    assert(dx.abs() < 1);
-    assert(dy.abs() < 1);
-    final firstRatio = update1st ? 0.5 : 1;
-    final nx = ox * (1 + dx * stepCount * stepRatio * firstRatio);
-    final ny = oy * (1 + dy * stepCount * stepRatio * firstRatio);
-    if (nx.abs() > 1.0) {
-      MyHomePage.statusBar = MyHomePage.wallMsg + "ox: $ox, oy: $oy, dx: $dx, dy: $dy, nx: $nx, ny: $ny";
-    }
-    assert(nx.abs() <= 1.0);
-    assert(ny.abs() <= 1.0);
-    final nxD = nx * gameSize[0];
-    final nyD = ny * gameSize[1];
-    if (delta.inMilliseconds % 100 == 0) {
-      logger.info("update in Ball. Duration = ${delta.inMilliseconds} sec., nxD: $nxD, nyD: $nyD");
-    }
-    MyHomePage.ballX = x = nx;
-    MyHomePage.ballY = y = ny;
-    position = Vector2(nxD, nyD);
-    update1st = false;
-  }
-}
+      @override
+      void init() {
+        size = Vector2.all(ratio * gameSize[0]);
+        alignment = GameObjectAlignment.center;
+        position = curPos;
+      }
 
+      @override
+      Widget build(BuildContext context) {
+        final size = gameSize; // MediaQuery.of(context).size.height;
+        return Container(
+            alignment: Alignment(x, y), // (x * 2) - 1, (y * 2 ) - 1),
+            child: Stack(
+                alignment: AlignmentDirectional.center,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(shape: shape, color: color),
+                    width: ratio * size[0],
+                    height: ratio * size[1],
+                  ),
+                  Container(
+                    decoration: BoxDecoration(shape: shape, color: Colors.black),
+                    width: ratio * size[0] * 0.5,
+                    height: ratio * size[1] * 0.5,
+                  ),
+                ])
+        );
+      }
 
-// x and y both keep between -1 and 1
-class BallPos {
-  double get x => bX.x;
-  double get y => bY.x;
-  double get dx => bX.d;
-  double get dy => bY.d;
-  double get toSide => bX.w; // side from home
-  double get sideToSide => 2 * toSide;
-  double get w => toSide; // side from home
-  double get homeToAway => 2 * bY.w;
-  double get toAway => bY.w; // home from center
-  double get h => toAway; // home from center
-  final Bouncer bX;
-  final Bouncer bY;
+      // bool on1stCollision = true;
+      @override
+      void onCollision(List<Collision> collisions) {
 
-  BallPos(double dx, double dy,
-      {x = Bouncer.XDFLT,
-      y = Bouncer.XDFLT,
-      xf = Screen.sideToSide,
-      yf = Screen.centerToPlayer})
-      : bX = FullBouncer(dx, wall: xf, x: x),
-        bY = FullBouncer(dy, wall: yf, x: y);
+      }
 
-  // angle[radian] to Y axis
-  BallPos.withAngleDivider(double angle, int divider, {xf = Screen.centerToSide, yf = Screen.centerToPlayer})
-      : bY = FullBouncer(1 / divider, wall: yf),
-        bX = FullBouncer(tan(angle) / divider, wall: xf);
+      @override
+      void onScreenSizeChange(Vector2 size) {
+        // This is a quick demo but you really should shift your positions in a
+        // real world app or at least lock orientation.
+      }
 
-  BallPos.withBouncers(Bouncer xB, Bouncer yB)
-      : bY = yB,
-        bX = xB;
+      final stepRatio = 0.015;
+      bool update1st = true;
+      @override
+      void update(Duration delta) {
+        forward();
 
-  /// return: [x._neg, y._neg]
-  StepResults step() {
-    final x = bX.step();
-    final y = bY.step();
-    return StepResults(x, y);
-  }
+      }
 
-  /// jump to wall
-  Tuple2<double, int> jumpDown() {
-    BallPos vp = clone();
-    // const limit = 65535;
-    var n = 0;
-    StepResults sr;
-    do {
-      sr = vp.step();
-      ++n;
-    } while (sr.y == stepResult.keep);
-    // final x = bX.jumpCount();
-    // final y = bY.jumpCount();
-    // final n = min(x, y);
-    // logger.info("$n steps jumpCount min.");
-    // StepResults? sr;
-    // for (int i = 0; i < n; ++i) sr = step();
-    logger.info("jumpDown returns with count: $n");
-    return Tuple2(vp.x, n);
-  }
+      void _step() {
+        final nx = 1 + stepCount * dx * stepRatio;
+        final rnx = lastPos[0] + (nx * gameSize[0]).round();
+        final ny = 1 + stepCount * dy * stepRatio;
+        final rny = lastPos[1] + (ny * gameSize[1]).round();
+        position = Vector2(rnx, rny);
+      }
 
-  double _calcBallLandingPos() {
-    const k = 0.01;
-    logger.fine("x: $x, y: $y, h: $h, w: $w, dx: $dx, dy: $dy");
-    assert(y.abs() < k ||
-        h / 2 - y.abs() < k); // Tolerate 5% ball Y position from top side.
-    final w2 = w * 2;
-    final h2 = h * 2;
-    final x2 = x + w; // offset +w
-    final ft = dx / dy * h2;
-    final d = x2 - ft;
-    logger.fine("x2: $x2, ft: $ft, d: $d");
-    if (d >= 0 && d <= w2) {
-      logger.fine("d(x2 + ft): $d");
-      return d;
-    }
-    // double hd = (d < 0) ? h * (ft - x) / ft : h * (x + ft - w2) / ft;
-    if (d < 0) {
-      final ft2 = ft.abs() - x2;
-      logger.fine("ft2: $ft2");
-      return ft2;
-    }
-    final ft3 = x2 + ft.abs() - w2;
-    final ft4 = w2 - ft3;
-    logger.fine("ft4: $ft4");
-    return ft4;
-  }
+      void forward() {
+        ++_stepCount;
+        _step();
+      }
 
-  double calcBallLandingPos() {
-    final r = _calcBallLandingPos() - w;
-    logger.fine("r: $r");
-    return r;
-  }
+      void backward() {
+        --_stepCount;
+        _step();
+      }
 
-  static arrivalXFromCenter(double ballAngle) => tan(ballAngle / 360 * 2 * pi);
-}
+      void clearStepCount() {
+        _stepCount = 0;
+      }
 
-extension Cloning on BallPos {
-  BallPos clone() {
-    return BallPos(dx, dy, x: x, y: y, xf: w, yf: h / 2);
-  }
-}
-
-enum stepResult { toPlus, toMinus, keep }
-
-class StepResults {
-  final stepResult x;
-  final stepResult y;
-  StepResults(this.x, this.y);
-}
-
-abstract class Bouncer {
-  set x(v);
-  double get x;
-  double get d;
-  double get w;
-  bool get neg;
-  set neg(v);
-  static const XDFLT = 0.0;
-  static const WDFLT = 1.0;
-  stepResult step();
-
-  /// count how many steps to jump (about)
-  int jumpCount() => neg ? x ~/ d : (w - x) ~/ d;
-
-  /// jump until direction change
-  int jump() {
-    int n = 0;
-    while (step() == stepResult.keep) ++n;
-    return n;
-  }
-}
-
-// between -wall and wall bouncing number
-class FullBouncer extends Bouncer {
-  double _x;
-  //double _d;
-  final double _e;
-  bool _neg;
-  final double wall;
-  set x(v) => _x = v;
-  double get x => _x;
-  double get d => _neg ? -_e : _e;
-  double get w => wall;
-  bool get neg => _neg;
-  set neg(v) => _neg = v;
-
-  /// wall > 0
-  FullBouncer(d, {x = Bouncer.XDFLT, wall = Bouncer.WDFLT})
-      : this._e = d.abs(),
-        _neg = d < 0,
-        _x = x,
-        this.wall = wall;
-
-  /// return: bounced ? _neg : null
-  stepResult step() {
-    final a = _x + d;
-    if (a < -wall) {
-      _x = -a - 2 * wall;
-      _neg = false;
-      return stepResult.toPlus;
-    } else if (a > wall) {
-      _x = 2 * wall - a;
-      _neg = true;
-      return stepResult.toMinus;
-    }
-    _x = a;
-    return stepResult.keep;
-  }
-}
-
-// between 0 and wall bouncing number
-class HalfBouncer extends Bouncer {
-  double _x;
-  //double _d;
-  final double _e;
-  bool _neg;
-  final double wall;
-  set x(v) => _x = v;
-  double get x => _x;
-  double get d => _neg ? -_e : _e;
-  double get w => wall;
-  bool get neg => _neg;
-  set neg(v) => _neg = v;
-
-  /// wall > 0
-  HalfBouncer(d, {x = Bouncer.XDFLT, wall = Bouncer.WDFLT})
-      : this._e = d.abs(),
-        _neg = d < 0,
-        _x = x,
-        this.wall = wall;
-
-  /// return: bounced ? _neg : null
-  stepResult step() {
-    final a = _x + d;
-    if (a < 0) {
-      _x = -a;
-      _neg = false;
-      return stepResult.toPlus;
-    } else if (a > wall) {
-      _x = 2 * wall - a;
-      _neg = true;
-      return stepResult.toMinus;
-    }
-    _x = a;
-    return stepResult.keep;
-  }
-}
-
-class RandAngleIterator extends Iterable with Iterator {
-  final int range;
-  final rand = Random(DateTime.now().millisecondsSinceEpoch);
-  var _e = 0;
-  var _s = false;
-  int get v => (30 + _e) * (_s ? 1 : -1);
-
-  RandAngleIterator(this.range) {
-    _e = rand.nextInt(range);
-    _s = rand.nextBool();
-  }
-
-  @override
-  double get current => v / 180 * pi;
-
-  @override
-  bool moveNext() {
-    _e = rand.nextInt(range);
-    _s = rand.nextBool();
-    return true;
-  }
-
-  @override
-  Iterator get iterator => this;
+      void updateLastPosWithPosition() {
+        lastPos[0] = position[0];
+        lastPos[1] = position[1];
+      }
 }
