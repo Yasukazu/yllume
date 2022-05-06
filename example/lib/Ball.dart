@@ -144,3 +144,29 @@ class BallO extends GameObject {
         lastPos[1] = position[1];
       }
 }
+
+class RandAngleIterator extends Iterable with Iterator {
+  final int range;
+  final rand = new Random(new DateTime.now().millisecondsSinceEpoch);
+  var _e = 0;
+  var _s = false;
+  int get v => (30 + _e) * (_s ? 1 : -1);
+
+  RandAngleIterator(this.range) {
+    _e = rand.nextInt(range);
+    _s = rand.nextBool();
+  }
+
+  @override
+  double get current => v / 180 * pi;
+
+  @override
+  bool moveNext() {
+    _e = rand.nextInt(range);
+    _s = rand.nextBool();
+    return true;
+  }
+
+  @override
+  Iterator get iterator => this;
+}
