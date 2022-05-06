@@ -15,11 +15,8 @@ class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key}) : super(key: key);
   static const mainText = 'Pong game';
   static String statusBar = '$mainText';
-  static bool ballDxRev = false; // reflex sign
-  static bool ballDyRev = false;
   static String wallMsg = '';
-  static var ballX = 0.0;
-  static var ballY = 0.0;
+  static IllumeController gameController = IllumeController();
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -27,18 +24,26 @@ class MyHomePage extends StatefulWidget {
 
 /// Quick demo for vertical screens
 class _MyHomePageState extends State<MyHomePage> {
-  IllumeController gameController = IllumeController();
-
   // FlappyWidget flappyWidget = FlappyWidget();
   // Wall wall = Wall(200, false);
   // Wall wall2 = Wall(400, true);
   static const speed = 100;
-  final ball = BallO.withAngle(speed, RandAngleIterator(14).current);
-  final topWall = WallO(wallPos.top);
-  final bottomWall = WallO(wallPos.bottom);
-  final leftWall = WallO(wallPos.left);
-  final rightWall = WallO(wallPos.right);
+  late final BallO ball;
+  late final WallO topWall;
+  late final WallO bottomWall;
+  late final WallO leftWall;
+  late final WallO rightWall;
   List<WallO> get walls => [topWall, bottomWall, leftWall, rightWall];
+  IllumeController get gameController => MyHomePage.gameController;
+
+  _MyHomePageState() {
+    ball = BallO.withAngle(speed, RandAngleIterator(14).current);
+    topWall = WallO(wallPos.top, ball);
+    bottomWall = WallO(wallPos.bottom, ball);
+    rightWall = WallO(wallPos.right, ball);
+    leftWall = WallO(wallPos.left, ball);
+  }
+
 
   @override
   void initState() {
