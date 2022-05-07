@@ -44,20 +44,20 @@ class _MyHomePageState extends State<MyHomePage> {
     leftWall = WallO(wallPos.left, ball);
   }
 
-
   @override
   void initState() {
     super.initState();
     gameController.startGame();
     MyHomePage.statusBar = MyHomePage.mainText + ":started";
-    gameController.gameObjects.addAll([ball, topWall, bottomWall, leftWall, rightWall]);
+    gameController.gameObjects
+        .addAll([topWall, bottomWall, leftWall, rightWall, ball]);
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // flappyWidget.jump();
+        // ball.forward();
       },
       child: Scaffold(
         appBar: AppBar(
@@ -86,8 +86,6 @@ class _MyHomePageState extends State<MyHomePage> {
   );
 }
 
-
-
 class BouncerO extends GameObject {
   var velocity = Vector2(0, 0);
 
@@ -112,8 +110,7 @@ class BouncerO extends GameObject {
   }
 
   @override
-  void onScreenSizeChange(Vector2 size) {
-  }
+  void onScreenSizeChange(Vector2 size) {}
 
   @override
   void update(Duration delta) {
