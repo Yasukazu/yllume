@@ -1,4 +1,6 @@
+import 'package:example/orgMain.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:illume/illume.dart';
 import 'Ball.dart';
 import 'Wall.dart';
@@ -22,7 +24,7 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-/// Quick demo for vertical screens
+/// Pong game
 class _MyHomePageState extends State<MyHomePage> {
   // FlappyWidget flappyWidget = FlappyWidget();
   // Wall wall = Wall(200, false);
@@ -35,6 +37,7 @@ class _MyHomePageState extends State<MyHomePage> {
   late final WallO rightWall;
   List<WallO> get walls => [topWall, bottomWall, leftWall, rightWall];
   IllumeController get gameController => MyHomePage.gameController;
+  bool gameStarted = false;
 
   _MyHomePageState() {
     ball = BallO.withAngle(speed, RandAngleIterator(14).current);
@@ -47,7 +50,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    gameController.startGame();
+    // gameController.startGame();
     MyHomePage.statusBar = MyHomePage.mainText + ":started";
     gameController.gameObjects
         .addAll([topWall, bottomWall, leftWall, rightWall, ball]);
@@ -55,21 +58,35 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        // ball.forward();
+    return RawKeyboardListener(
+      focusNode: FocusNode(),
+      autofocus: true,
+      onKey: (event) {
+        if (event.isKeyPressed(LogicalKeyboardKey.arrowLeft)) {
+          logger.info("arrowLeft key");
+        } else if (event.isKeyPressed(LogicalKeyboardKey.arrowRight)) {
+          logger.info("arrowRight key");
+        }
       },
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(MyHomePage.statusBar),
-        ),
-        body: Stack(
-          children: [
-            gradient,
-            Illume(
-              illumeController: gameController,
-            ),
-          ],
+      child: GestureDetector(
+        onTap: () {
+          if (!gameStarted) {
+            gameController.startGame();
+            gameStarted = true;
+          }
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(MyHomePage.statusBar),
+          ),
+          body: Stack(
+            children: [
+              gradient,
+              Illume(
+                illumeController: gameController,
+              ),
+            ],
+          ),
         ),
       ),
     );
