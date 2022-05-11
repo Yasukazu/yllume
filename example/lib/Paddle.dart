@@ -11,12 +11,14 @@ class PaddleO extends HWallO {
 
   static const gapToWall = 5;
   static const b = 12;
+  @override
+  Color getColor() => Colors.yellow;
 
   @override
   Vector2 getOffset() {
     final baseOffset = super.offset;
-    return pos == wallPos.bottom ? Vector2(baseOffset[0], (1 - WallO.b - b - gapToWall) * gameSize[1]):
-    Vector2(baseOffset[0], (WallO.b + gapToWall + b / 2) * gameSize[1]);
+    return pos == wallPos.bottom
+        ? Vector2(baseOffset[0], (1 - WallO.b - b - gapToWall) * gameSize[1])
+        : Vector2(baseOffset[0], (WallO.b + gapToWall + b / 2) * gameSize[1]);
   }
-
 }
