@@ -50,7 +50,8 @@ abstract class WallO extends GameObject {
     }
   }
 
-  Vector2 get rect {
+  Vector2 get rect => getRect();
+  Vector2 getRect() {
     switch (pos) {
       case wallPos.top:
       case wallPos.bottom:

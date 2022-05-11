@@ -15,7 +15,7 @@ class PaddleO extends HWallO {
   @override
   Vector2 getOffset() {
     final baseOffset = super.offset;
-    return pos == wallPos.bottom ? Vector2(baseOffset[0], baseOffset[1] - b - gapToWall):
+    return pos == wallPos.bottom ? Vector2(baseOffset[0], (1 - WallO.b - b - gapToWall) * gameSize[1]):
     Vector2(baseOffset[0], (WallO.b + gapToWall + b / 2) * gameSize[1]);
   }
 
