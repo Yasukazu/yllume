@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:illume/illume.dart';
 import 'Ball.dart';
 import 'Wall.dart';
+import 'Paddle.dart';
 
 class Screen {
   static const centerToSide = 1.0;
@@ -36,6 +37,8 @@ class _MyHomePageState extends State<MyHomePage> {
   late final WallO bottomWall;
   late final WallO leftWall;
   late final WallO rightWall;
+  late final PaddleO enemyPaddle;
+  late final PaddleO selfPaddle;
   List<WallO> get walls => [topWall, bottomWall, leftWall, rightWall];
   IllumeController get gameController => MyHomePage.gameController;
   bool gameStarted = false;
@@ -46,6 +49,8 @@ class _MyHomePageState extends State<MyHomePage> {
     bottomWall = HWallO(wallPos.bottom);
     rightWall = VWallO(wallPos.right);
     leftWall = VWallO(wallPos.left);
+    enemyPaddle = PaddleO(wallPos.top);
+    selfPaddle = PaddleO(wallPos.bottom);
   }
 
   @override
@@ -54,7 +59,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // gameController.startGame();
     MyHomePage.statusBar = MyHomePage.mainText + ":started";
     gameController.gameObjects
-        .addAll([topWall, bottomWall, leftWall, rightWall, ball]);
+        .addAll([topWall, bottomWall, leftWall, rightWall, ball, enemyPaddle, selfPaddle]);
   }
 
   @override
