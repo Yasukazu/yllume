@@ -9,6 +9,7 @@ late final MyApp myApp;
 
 void main() {
   Logger.root.level = Level.ALL; // defaults to Level.INFO
+  logger.level = Level.INFO;
   Logger.root.onRecord.listen((record) {
     print('${record.level.name}: ${record.time}: ${record.message}');
   });
@@ -25,11 +26,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Train Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: homePage
-    );
+        title: 'Pong game',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        home: homePage);
   }
 }

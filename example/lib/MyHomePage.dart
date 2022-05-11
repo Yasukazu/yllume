@@ -19,6 +19,7 @@ class MyHomePage extends StatefulWidget {
   static String statusBar = '$mainText';
   static String wallMsg = '';
   static IllumeController gameController = IllumeController();
+  static wallPos? collisionWallPos;
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -41,10 +42,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   _MyHomePageState() {
     ball = BallO.withAngle(speed, RandAngleIterator(14).current);
-    topWall = WallO(wallPos.top, ball);
-    bottomWall = WallO(wallPos.bottom, ball);
-    rightWall = WallO(wallPos.right, ball);
-    leftWall = WallO(wallPos.left, ball);
+    topWall = HWallO(wallPos.top);
+    bottomWall = HWallO(wallPos.bottom);
+    rightWall = VWallO(wallPos.right);
+    leftWall = VWallO(wallPos.left);
   }
 
   @override

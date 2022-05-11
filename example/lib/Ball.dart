@@ -107,7 +107,16 @@ class BallO extends GameObject {
 
   // bool on1stCollision = true;
   @override
-  void onCollision(List<Collision> collisions) {}
+  void onCollision(List<Collision> collisions) {
+    /*
+    logger.info("Ball colided with ${collisions.length} collisions:");
+    for (Collision col in collisions) {
+      WallO colWall = col.component as WallO;
+      final p = colWall.pos;
+      logger.info("    $p :pos.");
+    }
+    */
+  }
 
   @override
   void onScreenSizeChange(Vector2 size) {
@@ -130,9 +139,9 @@ class BallO extends GameObject {
     final np = Vector2(rnx, rny);
     final fmt = NumberFormat('##.0#', 'en_US');
     final ifmt = NumberFormat('###', 'en_US');
-    logger
-        .info("lastPos:${ifmt.format(lastPos[0])},${ifmt.format(lastPos[0])}");
-    logger.info("stepCount:$stepCount, dx: $dx, dy: $dy, stepRatio: $stepRatio" +
+    logger.finest(
+        "lastPos:${ifmt.format(lastPos[0])},${ifmt.format(lastPos[0])}");
+    logger.finest("stepCount:$stepCount, dx: $dx, dy: $dy, stepRatio: $stepRatio" +
         "position:${fmt.format(position[0])}, ${fmt.format(position[1])}. np:${ifmt.format(np[0])},${ifmt.format(np[1])}.");
     position = np;
   }
@@ -160,9 +169,12 @@ class BallO extends GameObject {
   void reverseDx() => dxReverse = !dxReverse;
   void reverseDy() => dyReverse = !dyReverse;
 
-  void bounceAtWall(wallPos wp) {
+  void bounceAtWall(WallO wall) {
+    // wallPos wp) {
     clearStepCount();
     updateLastPosWithPosition();
+    wall.bounce(this);
+    /*
     switch (wp) {
       case wallPos.right:
       case wallPos.left:
@@ -172,7 +184,7 @@ class BallO extends GameObject {
       case wallPos.bottom:
         reverseDy();
         return;
-    }
+    } */
   }
 }
 

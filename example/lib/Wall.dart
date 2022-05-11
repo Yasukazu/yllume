@@ -7,11 +7,22 @@ import 'package:intl/intl.dart';
 
 enum wallPos { top, bottom, left, right }
 
+abstract class Axis {
+  Vector2 bounce(Vector2 v);
+}
+
+class XAxis implements Axis {
+  @override
+  Vector2 bounce(Vector2 v) => Vector2(v[0], -v[1]);
+}
+
+class WallPos {}
+
 enum gameSizes { sizeX, sizeY }
 
 typedef Vector2 v2ToV2(Vector2 vector2);
 
-class WallO extends GameObject {
+abstract class WallO extends GameObject {
   static const shape = BoxShape.rectangle;
   static const b = MyHomePage.wallT;
   static topOffset(Vector2 gameSize) =>
@@ -25,7 +36,8 @@ class WallO extends GameObject {
   static const offsets = [topOffset, leftOffset, bottomOffset, rightOffset];
   double get x => offset[0];
   double get y => offset[1];
-  Vector2 get offset {
+  Vector2 get offset => getOffset();
+  Vector2 getOffset() {
     switch (pos) {
       case wallPos.top:
         return topOffset(gameSize);
@@ -52,9 +64,9 @@ class WallO extends GameObject {
   }
 
   final wallPos pos;
-  final BallO ball;
+  // final BallO ball;
 
-  WallO(this.pos, this.ball);
+  WallO(this.pos);
 
   @override
   void init() {
@@ -84,13 +96,22 @@ class WallO extends GameObject {
 
   @override
   void onCollision(List<Collision> collisions) {
-    // final fmt = NumberFormat('##.0#', 'en_US');
-    // final lenText = "Wall .len=${collisions.length} at ballX=${fmt.format(MyHomePage.ballX)},ballY=${fmt.format(MyHomePage.ballY)}";
+    /*
     assert(collisions.length == 1); // only ball
     assert(collisions[0].component == ball);
+    MyHomePage.collisionWallPos = pos;
     ball.backward();
     logger.info("ball backward by wall $pos.");
     ball.bounceAtWall(pos);
+    */
+    logger.fine("Wall colided with ${collisions.length} collisions:");
+    var n = 1;
+    for (Collision col in collisions) {
+      BallO ball = col.component as BallO;
+      ball.bounceAtWall(this);
+      logger.finer("Wall($pos) bounced ball $n.");
+      ++n;
+    }
   }
 
   @override
@@ -98,4 +119,28 @@ class WallO extends GameObject {
 
   @override
   void update(Duration delta) {}
+
+  void bounce(BallO ball);
+}
+
+class HWallO extends WallO {
+  HWallO(wallPos pos) : super(pos) {
+    assert(pos == wallPos.top || pos == wallPos.bottom);
+  }
+
+  @override
+  void bounce(BallO ball) {
+    ball.reverseDy();
+  }
+}
+
+class VWallO extends WallO {
+  VWallO(wallPos pos) : super(pos) {
+    assert(pos == wallPos.left || pos == wallPos.right);
+  }
+
+  @override
+  void bounce(BallO ball) {
+    ball.reverseDx();
+  }
 }
