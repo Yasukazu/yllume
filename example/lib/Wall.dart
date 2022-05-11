@@ -23,6 +23,8 @@ enum gameSizes { sizeX, sizeY }
 typedef Vector2 v2ToV2(Vector2 vector2);
 
 abstract class WallO extends GameObject {
+  Color get color => getColor();
+  Color getColor() => Colors.brown;
   static const shape = BoxShape.rectangle;
   static const b = MyHomePage.wallT;
   static topOffset(Vector2 gameSize) =>
@@ -78,12 +80,11 @@ abstract class WallO extends GameObject {
 
   @override
   Widget build(BuildContext context) {
-    const color = Colors.yellow;
     return Container(
         alignment: Alignment(x, y),
         child: Stack(alignment: AlignmentDirectional.center, children: [
           Container(
-            decoration: const BoxDecoration(shape: shape, color: color),
+            decoration: BoxDecoration(shape: shape, color: color),
             width: size[0],
             height: size[1],
           ),
