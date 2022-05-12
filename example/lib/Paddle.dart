@@ -6,7 +6,7 @@ import 'Wall.dart';
 import 'package:illume/illume.dart';
 import 'package:intl/intl.dart';
 
-class PaddleO extends HWallO {
+class PaddleO extends WallO {
   static const wRatio = 0.2;
   PaddleO(wallPos pos) : super(pos) {
     assert(pos == wallPos.top || pos == wallPos.bottom);

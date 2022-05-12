@@ -22,7 +22,9 @@ enum gameSizes { sizeX, sizeY }
 
 typedef Vector2 v2ToV2(Vector2 vector2);
 
-abstract class WallO extends GameObject {
+typedef DoWithBall = void Function(BallO ball);
+
+class WallO extends GameObject {
   Color get color => getColor();
   Color getColor() => Colors.brown;
   static const shape = BoxShape.rectangle;
@@ -67,9 +69,15 @@ abstract class WallO extends GameObject {
   }
 
   final wallPos pos;
-  // final BallO ball;
+  late final DoWithBall bounce;
 
-  WallO(this.pos);
+  WallO(this.pos) {
+    if (pos == wallPos.top || pos == wallPos.bottom) {
+      bounce = (ball) => ball.reverseDy;
+    } else {
+      bounce = (ball) => ball.reverseDx;
+    }
+  }
 
   @override
   void init() {
@@ -107,11 +115,11 @@ abstract class WallO extends GameObject {
     ball.bounceAtWall(pos);
     */
     logger.fine("Wall colided with ${collisions.length} collisions:");
-    var n = 1;
+    var n = 0;
     for (Collision col in collisions) {
       BallO ball = col.component as BallO;
       ball.bounceAtWall(this);
-      logger.finer("Wall($pos) bounced ball $n.");
+      logger.finer("Wall($pos) bounced $n th ball.");
       ++n;
     }
   }
@@ -122,9 +130,9 @@ abstract class WallO extends GameObject {
   @override
   void update(Duration delta) {}
 
-  void bounce(BallO ball);
+  // void bounce(BallO ball);
 }
-
+/*
 class HWallO extends WallO {
   HWallO(wallPos pos) : super(pos) {
     assert(pos == wallPos.top || pos == wallPos.bottom);
@@ -146,3 +154,4 @@ class VWallO extends WallO {
     ball.reverseDx();
   }
 }
+*/

@@ -173,18 +173,18 @@ class BallO extends GameObject {
     // wallPos wp) {
     clearStepCount();
     updateLastPosWithPosition();
-    wall.bounce(this);
-    /*
-    switch (wp) {
+    switch (wall.pos) {
       case wallPos.right:
       case wallPos.left:
         reverseDx();
+        logger.finer("Ball dx is reversed.");
         return;
       case wallPos.top:
       case wallPos.bottom:
+        logger.finer("Ball dy is reversed.");
         reverseDy();
         return;
-    } */
+    }
   }
 }
 

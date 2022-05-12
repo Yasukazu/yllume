@@ -45,10 +45,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   _MyHomePageState() {
     ball = BallO.withAngle(speed, RandAngleIterator(14).current);
-    topWall = HWallO(wallPos.top);
-    bottomWall = HWallO(wallPos.bottom);
-    rightWall = VWallO(wallPos.right);
-    leftWall = VWallO(wallPos.left);
+    topWall = WallO(wallPos.top);
+    bottomWall = WallO(wallPos.bottom);
+    rightWall = WallO(wallPos.right);
+    leftWall = WallO(wallPos.left);
     enemyPaddle = PaddleO(wallPos.top);
     selfPaddle = PaddleO(wallPos.bottom);
   }
