@@ -1,12 +1,15 @@
-import 'package:example/Wall.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'MyHomePage.dart'; // WallO
 import 'orgMain.dart'; // logger
 import 'package:illume/illume.dart';
 import 'package:intl/intl.dart';
+import 'WallBase.dart';
+import 'Wall.dart';
+import 'Paddle.dart';
+import 'Backwardable.dart';
 
-class BallO extends GameObject {
+class BallO extends GameObject with Backwardable {
   static const defaultBallSpeed = 1;
   static const initialX = 0.5;
   static const initialY = 0.5;
@@ -108,14 +111,20 @@ class BallO extends GameObject {
   // bool on1stCollision = true;
   @override
   void onCollision(List<Collision> collisions) {
-    /*
-    logger.info("Ball colided with ${collisions.length} collisions:");
+    logger.info("Ball colided with ${collisions.length} collisions.");
     for (Collision col in collisions) {
-      WallO colWall = col.component as WallO;
-      final p = colWall.pos;
-      logger.info("    $p :pos.");
+      if (col.component is PaddleO) {
+        final paddle = col.component as PaddleO;
+        bounceAtWall(paddle.pos);
+      } else if (col.component is WallO) {
+        final wall = col.component as WallO;
+        if (wall.pos == wallPos.left || wall.pos == wallPos.right) {
+          bounceAtWall(wall.pos);
+        } else {}
+      }
+      // WallO colWall = col.component as WallO;
+      // final p = colWall.pos;
     }
-    */
   }
 
   @override
@@ -147,16 +156,17 @@ class BallO extends GameObject {
   }
 
   void forward() {
+    lastPosForBackward = position;
     ++_stepCount;
     logger.finer(
         "position=${position[0]},${position[1]}. stepCount=$_stepCount;Calling step().");
     _step();
   }
 
-  void backward() {
+  /* void backward() {
     --_stepCount;
     _step();
-  }
+  } */
 
   void clearStepCount() {
     _stepCount = 0;
@@ -169,11 +179,11 @@ class BallO extends GameObject {
   void reverseDx() => dxReverse = !dxReverse;
   void reverseDy() => dyReverse = !dyReverse;
 
-  void bounceAtWall(WallO wall) {
+  void bounceAtWall(wallPos pos) {
     // wallPos wp) {
     clearStepCount();
     updateLastPosWithPosition();
-    switch (wall.pos) {
+    switch (pos) {
       case wallPos.right:
       case wallPos.left:
         reverseDx();

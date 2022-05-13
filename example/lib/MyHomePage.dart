@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:illume/illume.dart';
 import 'Ball.dart';
+import 'WallBase.dart';
 import 'Wall.dart';
 import 'Paddle.dart';
 
@@ -58,8 +59,15 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     // gameController.startGame();
     MyHomePage.statusBar = MyHomePage.mainText + ":started";
-    gameController.gameObjects
-        .addAll([topWall, bottomWall, leftWall, rightWall, ball, enemyPaddle, selfPaddle]);
+    gameController.gameObjects.addAll([
+      topWall,
+      bottomWall,
+      leftWall,
+      rightWall,
+      ball,
+      enemyPaddle,
+      selfPaddle
+    ]);
   }
 
   @override
