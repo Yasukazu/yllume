@@ -117,34 +117,15 @@ class _MyHomePageState extends State<MyHomePage> {
   );
 }
 
-class BouncerO extends GameObject {
-  var velocity = Vector2(0, 0);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.blue,
-      child: const Text('Demo'),
-    );
+class GameEndException implements Exception {
+    late final String _message;
+  
+    GameEndException([String message = 'Game end.']) {
+      _message = message;
+    }
+  
+    @override
+    String toString() {
+      return _message;
+    }
   }
-
-  @override
-  void init() {
-    size = Vector2.all(50);
-    alignment = GameObjectAlignment.center;
-    position = (gameSize / 2);
-  }
-
-  @override
-  void onCollision(List<Collision> collisions) {
-    illumeController.stopGame();
-  }
-
-  @override
-  void onScreenSizeChange(Vector2 size) {}
-
-  @override
-  void update(Duration delta) {
-    position += velocity;
-  }
-}

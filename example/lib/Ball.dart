@@ -120,7 +120,9 @@ class BallO extends GameObject with Backwardable {
         final wall = col.component as WallO;
         if (wall.pos == wallPos.left || wall.pos == wallPos.right) {
           bounceAtWall(wall.pos);
-        } else {}
+        } else {
+          throw GameEndException("Ball hit top/bottom wall!");
+        }
       }
       // WallO colWall = col.component as WallO;
       // final p = colWall.pos;
