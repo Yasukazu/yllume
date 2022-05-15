@@ -6,7 +6,7 @@ enum wallPos { top, bottom, left, right }
 abstract class WallBaseO extends GameObject {
   static const shape = BoxShape.rectangle;
   final wallPos pos;
-  late final Vector2 lastPosBeforeCollision;
+  // late final Vector2 lastPosBeforeCollision;
   Vector2 get rect => getRect();
   Vector2 getRect();
   Color get color => getColor();

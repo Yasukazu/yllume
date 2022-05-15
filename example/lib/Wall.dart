@@ -7,8 +7,7 @@ import 'package:illume/illume.dart';
 typedef DoWithBall = void Function(BallO ball);
 
 class WallO extends WallBaseO {
-  @override
-  Color getColor() => Colors.brown;
+  @override Color getColor() => Colors.brown;
   static const shape = BoxShape.rectangle;
   static const b = MyHomePage.wallT;
   static topOffset(Vector2 gameSize) =>
@@ -20,8 +19,6 @@ class WallO extends WallBaseO {
   static rightOffset(Vector2 gameSize) =>
       Vector2(gameSize[0] * (1 - b / 2), gameSize[1] / 2);
   static const offsets = [topOffset, leftOffset, bottomOffset, rightOffset];
-  double get x => offset[0];
-  double get y => offset[1];
 
   @override
   Vector2 getOffset() {
