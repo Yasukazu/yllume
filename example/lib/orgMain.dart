@@ -10,7 +10,7 @@ late final MyApp myApp;
 void main() {
   Logger.root.level = Level.ALL; // defaults to Level.INFO
   Logger.root.onRecord.listen((record) {
-    print('${record.level.name}: ${record.time}: ${record.message}');
+    print('${record.level.name}: ${record.message}'); // ${record.time}:
   });
   myApp = MyApp();
   runApp(myApp);
