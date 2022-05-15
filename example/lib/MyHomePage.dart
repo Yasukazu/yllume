@@ -16,8 +16,10 @@ class Screen {
 class MyHomePage extends StatefulWidget {
   static const ballSize = 0.05;
   static const wallT = 0.04; // wall thickness1 per 1
+  static const wpGap = 0.01; // wall and paddle
   static const paddleStep = 0.1;
   static const paddleWidth = 0.25;
+  static const paddleT = 0.06;
   const MyHomePage({Key? key}) : super(key: key);
   static const mainText = 'Pong game';
   static String statusBar = '$mainText';
@@ -78,11 +80,11 @@ class _MyHomePageState extends State<MyHomePage> {
       autofocus: true,
       onKey: (event) {
         if (event.isKeyPressed(LogicalKeyboardKey.arrowLeft)) {
-          logger.info("arrowLeft key");
           selfPaddle.moveLeft();
+          logger.info("arrowLeft key");
         } else if (event.isKeyPressed(LogicalKeyboardKey.arrowRight)) {
-          logger.info("arrowRight key");
           selfPaddle.moveRight();
+          logger.info("arrowRight key");
         }
       },
       child: GestureDetector(
