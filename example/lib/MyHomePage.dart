@@ -16,12 +16,13 @@ class Screen {
 class MyHomePage extends StatefulWidget {
   static const ballSize = 0.05;
   static const wallT = 0.04; // wall thickness1 per 1
+  static const paddleStep = 0.1;
+  static const paddleWidth = 0.25;
   const MyHomePage({Key? key}) : super(key: key);
   static const mainText = 'Pong game';
   static String statusBar = '$mainText';
   static String wallMsg = '';
   static IllumeController gameController = IllumeController();
-  static wallPos? collisionWallPos;
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -50,8 +51,8 @@ class _MyHomePageState extends State<MyHomePage> {
     bottomWall = WallO(wallPos.bottom);
     rightWall = WallO(wallPos.right);
     leftWall = WallO(wallPos.left);
-    enemyPaddle = PaddleO(wallPos.top);
-    selfPaddle = PaddleO(wallPos.bottom);
+    enemyPaddle = PaddleO(wallPos.top, MyHomePage.paddleWidth, MyHomePage.paddleStep);
+    selfPaddle = PaddleO(wallPos.bottom, MyHomePage.paddleWidth, MyHomePage.paddleStep);
   }
 
   @override
@@ -78,8 +79,10 @@ class _MyHomePageState extends State<MyHomePage> {
       onKey: (event) {
         if (event.isKeyPressed(LogicalKeyboardKey.arrowLeft)) {
           logger.info("arrowLeft key");
+          selfPaddle.moveLeft();
         } else if (event.isKeyPressed(LogicalKeyboardKey.arrowRight)) {
           logger.info("arrowRight key");
+          selfPaddle.moveRight();
         }
       },
       child: GestureDetector(
@@ -118,14 +121,14 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class GameEndException implements Exception {
-    late final String _message;
-  
-    GameEndException([String message = 'Game end.']) {
-      _message = message;
-    }
-  
-    @override
-    String toString() {
-      return _message;
-    }
+  late final String _message;
+
+  GameEndException([String message = 'Game end.']) {
+    _message = message;
   }
+
+  @override
+  String toString() {
+    return _message;
+  }
+}
