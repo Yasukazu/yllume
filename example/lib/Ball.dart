@@ -21,8 +21,13 @@ class BallO extends GameObject with Backwardable {
   double get dx => dxReverse ? -_dx : _dx;
   double get dy => dyReverse ? -_dy : _dy;
   double get orgAngle => atan2(_dx, _dy);
-
-  /// current position is x + dx * _stepCount
+  static const coreAlignments = [
+    Alignment.topCenter,
+    Alignment.centerRight,
+    Alignment.bottomCenter,
+    Alignment.centerLeft,
+  ];
+  int corePos = 0;
   double get x => curXY[0];
   double get y => curXY[1];
   late final double _dy;
@@ -94,16 +99,23 @@ class BallO extends GameObject with Backwardable {
     // assert(y >= 0 && y <= 1.0);
     return Container(
         alignment: Alignment(x, y),
-        child: Stack(alignment: AlignmentDirectional.center, children: [
-          Container(
-            decoration: const BoxDecoration(shape: shape, color: color),
-            width: ratio * size[0],
-            height: ratio * size[0],
+        child: Stack(children: [
+          Align(
+            alignment: Alignment.center,
+            child: Container(
+              decoration: const BoxDecoration(shape: shape, color: color),
+              width: ratio * size[0],
+              height: ratio * size[0],
+            ),
           ),
-          Container(
-            decoration: const BoxDecoration(shape: shape, color: Colors.black),
-            width: ratio * size[0] * 0.5,
-            height: ratio * size[0] * 0.5,
+          Align(
+            alignment: coreAlignments[corePos % 4],
+            child: Container(
+              decoration:
+                  const BoxDecoration(shape: shape, color: Colors.black),
+              width: ratio * size[0] * 0.5,
+              height: ratio * size[0] * 0.5,
+            ),
           ),
         ]));
   }
@@ -142,6 +154,10 @@ class BallO extends GameObject with Backwardable {
   @override
   void update(Duration delta) {
     forward();
+    if (delta.inMilliseconds % 200 == 0) {
+      ++corePos;
+      logger.fine("corePos:$corePos");
+    }
   }
 
   void _step() {
