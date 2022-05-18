@@ -36,6 +36,7 @@ class _MyHomePageState extends State<MyHomePage> {
   // Wall wall = Wall(200, false);
   // Wall wall2 = Wall(400, true);
   static const speed = 100;
+  
   late final BallO ball;
   late final WallO topWall;
   late final WallO bottomWall;

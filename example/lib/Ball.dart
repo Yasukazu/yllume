@@ -109,7 +109,7 @@ class BallO extends GameObject with Backwardable {
             ),
           ),
           Align(
-            alignment: coreAlignments[corePos % 4],
+            alignment: Alignment.center, // coreAlignments[corePos % 4],
             child: Container(
               decoration:
                   const BoxDecoration(shape: shape, color: Colors.black),
@@ -127,7 +127,7 @@ class BallO extends GameObject with Backwardable {
     for (Collision col in collisions) {
       if (col.component is PaddleO) {
         final paddle = col.component as PaddleO;
-        bounceAtWall(paddle.pos);
+        bounceAtPaddle(paddle.pos, col.intersectionRect);
       } else if (col.component is WallO) {
         final wall = col.component as WallO;
         if (wall.pos == wallPos.left || wall.pos == wallPos.right) {
@@ -214,6 +214,22 @@ class BallO extends GameObject with Backwardable {
         logger.finer("Ball dy is reversed.");
         reverseDy();
         return;
+    }
+  }
+
+  void bounceAtPaddle(wallPos pos, Rect rect) {
+    // wallPos wp) {
+    clearStepCount();
+    updateLastPosWithPosition();
+    if (x >= rect.left && x <= rect.right) {
+      logger.finer("Paddle hit Ball top/bottom.");
+      reverseDy();
+      return;
+    }
+    if (pos == wallPos.top && y <= rect.bottom ||
+        pos == wallPos.bottom && y >= rect.top) {
+      logger.finer("Paddle hit Ball side.");
+      reverseDx();
     }
   }
 }
