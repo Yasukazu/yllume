@@ -42,8 +42,6 @@ abstract class WallBaseO extends GameObject {
         ]));
   }
 
-  @override
-  void onCollision(List<Collision> collisions) {}
 
   @override
   void onScreenSizeChange(Vector2 size) {}

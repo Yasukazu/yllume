@@ -49,6 +49,9 @@ class WallO extends WallBaseO {
     }
   }
 
+  @override
+  void onCollision(List<Collision> collisions) {}
+
   late final DoWithBall bounce;
 
   WallO(wallPos pos) : super(pos) {

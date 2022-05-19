@@ -134,7 +134,7 @@ class BallO extends GameObject with Backwardable {
           bounceAtWall(wall.pos);
         } else {
           logger.info("Ball hit top/bottom wall!");
-          MyHomePage.gameController.stopGame();
+          MyHomePage.gameController.pause();
           // throw GameEndException("Ball hit top/bottom wall!");
         }
       }
@@ -221,16 +221,15 @@ class BallO extends GameObject with Backwardable {
     // wallPos wp) {
     clearStepCount();
     updateLastPosWithPosition();
-    if (x >= rect.left && x <= rect.right) {
-      logger.finer("Paddle hit Ball top/bottom.");
+    final rx = x * gameSize[0];
+    if (rx >= rect.left && rx <= rect.right) {
+      logger.finer("Paddle top/bottom hit Ball.");
       reverseDy();
       return;
     }
-    if (pos == wallPos.top && y <= rect.bottom ||
-        pos == wallPos.bottom && y >= rect.top) {
-      logger.finer("Paddle hit Ball side.");
-      reverseDx();
-    }
+    logger.finer("Paddle side hit Ball.");
+    reverseDx();
+    return;
   }
 }
 

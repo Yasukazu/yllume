@@ -10,6 +10,7 @@ class PaddleO extends WallO with Backwardable {
   late final double step;
   late final double width;
   late final RangeNum rn;
+  // Vector2? lastPosForBackward;
   @override
   double x = 0;
   // @override double get x => rn.d + offset[0];
@@ -19,8 +20,8 @@ class PaddleO extends WallO with Backwardable {
     final offset = super.getOffset();
     final diff =
         (MyHomePage.wpGap + MyHomePage.wallT / 2 + b / 2) * gameSize[1];
-    offset[1] += pos == wallPos.top ? diff : -diff;
-    return offset;
+    final rdiff = pos == wallPos.top ? diff : -diff;
+    return Vector2(offset[0], offset[1] + rdiff);
   }
 
   PaddleO(wallPos pos, this.width, this.step) : super(pos) {
@@ -36,8 +37,9 @@ class PaddleO extends WallO with Backwardable {
   @override
   void update(Duration delta) {
     super.update(delta);
-    x = rn.d + offset[0];
-    position = Vector2(x, y);
+    // x = rn.d + offset[0];
+    position = Vector2(x * gameSize[0] + offset[0], offset[1]);
+    logger.finer("Paddle.x = $x; position[0]= ${position[0]}");
   }
 
   @override
@@ -46,18 +48,27 @@ class PaddleO extends WallO with Backwardable {
   @override
   Vector2 getRect() => Vector2(width * gameSize[0], b * gameSize[1]);
 
+  @override
+  void onCollision(List<Collision> collisions) {
+    backward(this);
+    x = (position[0] - offset[0]) / gameSize[0];
+    logger.finer("Paddle backward.");
+  }
+
   void moveRight() {
     // if (lastPosForBackward != null) { return; }
-    // lastPosForBackward = position;
-    rn.inc(step);
-    logger.finer("move Right. rn =${rn.d}");
+    lastPosForBackward = position;
+    x += MyHomePage.paddleStep;
+    // rn.inc(step);
+    logger.finer("move Right. x = $x");
   }
 
   void moveLeft() {
     // if (lastPosForBackward != null) { return; }
-    // lastPosForBackward = position;
-    rn.dec(step);
-    logger.finer("move Left. rn =${rn.d}");
+    lastPosForBackward = position;
+    x -= MyHomePage.paddleStep;
+    // rn.dec(step);
+    logger.finer("move Left. x = $x");
   }
 }
 
