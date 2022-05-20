@@ -71,6 +71,9 @@ class BallO extends GameObject with Backwardable {
 
   // late final BallPos ballPos;
   /// args: x, y, ratio, color, shape,
+  late double iSize;
+  static const iRatio = 0.5;
+
   BallO(this._dx, this._dy,
       [this._speed = defaultBallSpeed, this.ratio = MyHomePage.ballSize]) {
     assert(_dx > 0 && _dy > 0);
@@ -86,38 +89,37 @@ class BallO extends GameObject with Backwardable {
 
   @override
   void init() {
-    size = Vector2.all(ratio * gameSize[0]);
+    final x_ = ratio * gameSize[0];
+    final y_ = ratio * gameSize[1];
+    final oSize = sqrt(x_ * x_ + y_ * y_);
+    iSize = oSize * iRatio;
+    logger.finer("oSize = $oSize");
+    size = Vector2.all(oSize);
     alignment = GameObjectAlignment.center;
     position = curPos;
   }
 
   @override
   Widget build(BuildContext context) {
-    final size = gameSize; // MediaQuery.of(context).size.height;
-    assert(ratio > 0);
-    // assert(x >= 0 && x <= 1.0);
-    // assert(y >= 0 && y <= 1.0);
-    return Container(
-        alignment: Alignment(x, y),
-        child: Stack(children: [
-          Align(
-            alignment: Alignment.center,
-            child: Container(
-              decoration: const BoxDecoration(shape: shape, color: color),
-              width: ratio * size[0],
-              height: ratio * size[0],
-            ),
-          ),
-          Align(
-            alignment: Alignment.center, // coreAlignments[corePos % 4],
-            child: Container(
-              decoration:
-                  const BoxDecoration(shape: shape, color: Colors.black),
-              width: ratio * size[0] * 0.5,
-              height: ratio * size[0] * 0.5,
-            ),
-          ),
-        ]));
+    return // Container( // alignment: Alignment(x, y), child:
+        Stack(children: [
+      Align(
+        alignment: Alignment.center,
+        child: Container(
+          decoration: const BoxDecoration(shape: shape, color: color),
+          // width: oSize,
+          // height: oSize,
+        ),
+      ),
+      Align(
+        alignment: Alignment.center, // coreAlignments[corePos % 4],
+        child: Container(
+          decoration: const BoxDecoration(shape: shape, color: Colors.black),
+          width: iSize,
+          height: iSize,
+        ),
+      ),
+    ]);
   }
 
   // bool on1stCollision = true;
