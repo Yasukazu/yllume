@@ -13,9 +13,12 @@ class BallO extends GameObject with Backwardable {
   static const defaultBallSpeed = 1;
   static const initialX = 0.5;
   static const initialY = 0.5;
+  static final initialXY = Vector2(initialX, initialY);
   final int _speed; // millisecond
   int get speed => _speed;
   late final double _dx;
+  late Vector2 _realXY; 
+  late Vector2 _realOffsets;
   bool dxReverse = false;
   bool dyReverse = false;
   double get dx => dxReverse ? -_dx : _dx;
@@ -28,8 +31,8 @@ class BallO extends GameObject with Backwardable {
     Alignment.centerLeft,
   ];
   int corePos = 0;
-  double get x => curXY[0];
-  double get y => curXY[1];
+  // double get x => curXY[0];
+  // double get y => curXY[1];
   late final double _dy;
   static const Color color = Color.fromRGBO(255, 255, 255, 1);
   final double ratio; // self size
@@ -76,17 +79,25 @@ class BallO extends GameObject with Backwardable {
     assert(_dx > 0 && _dy > 0);
     assert(_speed > 0);
     assert(ratio > 0);
+    _realXY[0] = initialX * gameSize[0];
+    _realXY[1] = initialY * gameSize[1];
+    _realOffsets = Vector2(0.0, 0.0);
   }
 
   /// angle to Y-axis
   BallO.withAngle(this._speed, double rad, [this.ratio = MyHomePage.ballSize]) {
     _dx = cos(rad);
     _dy = sin(rad);
+    _realXY[0] = initialX * gameSize[0];
+    _realXY[1] = initialY * gameSize[1];
+    _realOffsets = Vector2(0.0, 0.0);
   }
 
   @override
   void init() {
-    size = Vector2.all(ratio * gameSize[0]);
+    final x_ = gameSize[0];
+    final y_ = gameSize[1];
+    size = Vector2.all(ratio * sqrt(x_ * x_ + y_ * y_));
     alignment = GameObjectAlignment.center;
     position = curPos;
   }
