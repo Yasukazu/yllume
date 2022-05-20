@@ -7,7 +7,8 @@ import 'package:illume/illume.dart';
 typedef DoWithBall = void Function(BallO ball);
 
 class WallO extends WallBaseO {
-  @override Color getColor() => Colors.brown;
+  @override
+  Color getColor() => Colors.brown;
   static const shape = BoxShape.rectangle;
   static const b = MyHomePage.wallT;
   static topOffset(Vector2 gameSize) =>
@@ -34,7 +35,6 @@ class WallO extends WallBaseO {
     }
   }
 
-  
   @override
   Vector2 getRect() {
     switch (pos) {
@@ -71,20 +71,19 @@ class WallO extends WallBaseO {
 
   @override
   Widget build(BuildContext context) {
-    return // Container( alignment: Alignment(x, y), child: 
-        Stack(alignment: AlignmentDirectional.center, children: [
-          Container(
-            decoration: BoxDecoration(shape: shape, color: color),
-            width: size[0],
-            height: size[1],
-          ),
-          /*
+    return // Container( alignment: Alignment(x, y), child:
+        // Stack(alignment: AlignmentDirectional.center, children: [
+        Container(
+      color: color,
+      // decoration: BoxDecoration(shape: shape, color: color),
+      // width: size[0],
+      // height: size[1],
+    );
+    /*
           Container(
             decoration: const BoxDecoration(shape: shape, color: Colors.black),
             width: 0.2 * size[0],
             height: 0.2 * size[1],
           ), */
-        ]);
   }
-
 }
