@@ -71,20 +71,20 @@ class WallO extends WallBaseO {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        alignment: Alignment(x, y),
-        child: Stack(alignment: AlignmentDirectional.center, children: [
+    return // Container( alignment: Alignment(x, y), child: 
+        Stack(alignment: AlignmentDirectional.center, children: [
           Container(
             decoration: BoxDecoration(shape: shape, color: color),
             width: size[0],
             height: size[1],
           ),
+          /*
           Container(
             decoration: const BoxDecoration(shape: shape, color: Colors.black),
             width: 0.2 * size[0],
             height: 0.2 * size[1],
-          ),
-        ]));
+          ), */
+        ]);
   }
 
 }
