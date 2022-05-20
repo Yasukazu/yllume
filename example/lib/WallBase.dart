@@ -26,9 +26,9 @@ abstract class WallBaseO extends GameObject {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        alignment: Alignment(x, y),
-        child: Stack(alignment: AlignmentDirectional.center, children: [
+    return 
+     // Container( //alignment: Alignment(x, y), child: 
+        Stack(alignment: AlignmentDirectional.center, children: [
           Container(
             decoration: BoxDecoration(shape: shape, color: color),
             width: size[0],
@@ -39,7 +39,7 @@ abstract class WallBaseO extends GameObject {
             width: 0.2 * size[0],
             height: 0.2 * size[1],
           ),
-        ]));
+        ]);
   }
 
 
