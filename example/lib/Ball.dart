@@ -20,8 +20,10 @@ class BallO extends GameObject with Backwardable {
   late final double _angle;
   double get angle => _angle;
   late final double stepInterval;
-  late final double stepX;
-  late final double stepY;
+  late final double _stepX;
+  late final double _stepY;
+  double get stepX => dxReverse ? -_stepX : _stepX;
+  double get stepY => dyReverse ? -_stepY : _stepY;
   Vector2 get stepVector => Vector2(stepX, stepY);
   late final double _dx;
   late final double _dy;
@@ -111,8 +113,8 @@ class BallO extends GameObject with Backwardable {
     final diagonal = sqrt(gx * gx + gy * gy);
     final stepLength = diagonal / defaultBallFPS * speed / 1000;
     stepInterval = diagonal / stepLength;
-    stepX = stepLength * dx;
-    stepY = stepLength * dy;
+    _stepX = stepLength * dx;
+    _stepY = stepLength * dy;
     logger.finer("stepInterval = $stepInterval");
     // final virtualLandingPoint = y * dx / dy;
     final x_ = ratio * gameSize[0];
