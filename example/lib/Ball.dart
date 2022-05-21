@@ -10,14 +10,31 @@ import 'Paddle.dart';
 import 'Backwardable.dart';
 
 class BallO extends GameObject with Backwardable {
-  static const defaultBallSpeed = 1;
+  static const defaultBallSpeed = 1000; // ms / diagonal
+  static const defaultBallFPS = 30;
   static const initialX = 0.5;
   static const initialY = 0.5;
-  final int _speed; // millisecond
+  static final initialXY = Vector2(initialX, initialY);
+  final int _speed; // millisecond per diagonal
   int get speed => _speed;
+  late final double _angle;
+  double get angle => _angle;
+  late final double stepInterval;
+  late final double stepX;
+  late final double stepY;
+  Vector2 get stepVector => Vector2(stepX, stepY);
   late final double _dx;
-  bool dxReverse = false;
-  bool dyReverse = false;
+  late final double _dy;
+  /*
+  late final double _x;
+  late final double _y;
+  double get x => _x;
+  double get y => _y;
+  */
+  bool _dxReverse = false;
+  bool _dyReverse = false;
+  bool get dxReverse => _dxReverse;
+  bool get dyReverse => _dyReverse;
   double get dx => dxReverse ? -_dx : _dx;
   double get dy => dyReverse ? -_dy : _dy;
   double get orgAngle => atan2(_dx, _dy);
@@ -27,23 +44,22 @@ class BallO extends GameObject with Backwardable {
     Alignment.bottomCenter,
     Alignment.centerLeft,
   ];
-  int corePos = 0;
-  double get x => curXY[0];
-  double get y => curXY[1];
-  late final double _dy;
+  // int corePos = 0;
   static const Color color = Color.fromRGBO(255, 255, 255, 1);
   final double ratio; // self size
   static const BoxShape shape = BoxShape.circle;
-  Vector2 get lastPos =>
-      Vector2(gameSize[0] * lastXY[0], gameSize[1] * lastXY[1]);
+  /* Vector2 get lastPos => Vector2(x, y);
   set lastPos(Vector2 nxy) {
-    final x_ = nxy[0] / gameSize[0];
-    final y_ = nxy[1] / gameSize[1];
-    lastXY = Vector2(x_, y_);
-  }
+    assert(nxy[0] >= 0 && nxy[0] <= gameSize[0]);
+    assert(nxy[1] >= 0 && nxy[1] <= gameSize[1]);
+    _x = nxy[0];
+    _y = nxy[1];
+  } */
 
-  final _lastXY = Vector2(initialX, initialY);
-  Vector2 get lastXY => _lastXY;
+  // final _lastPos = Vector2(0, 0);
+  // final _lastXY = Vector2(initialX, initialY);
+  // Vector2 get lastXY => _lastXY;
+  /*
   set lastXY(Vector2 nxy) {
     final x_ = nxy[0];
     final y_ = nxy[1];
@@ -51,26 +67,24 @@ class BallO extends GameObject with Backwardable {
     assert(y_ >= 0 && y_ <= 1.0);
     _lastXY[0] = x_;
     _lastXY[1] = y_;
-  }
+  } */
 
   int _stepCount = 0;
   int get stepCount => _stepCount;
+  /*
   Vector2 get curXY {
     final x_ = lastXY[0];
     final y_ = lastXY[1];
     final ndx = stepCount * dx;
     final ndy = stepCount * dy;
     return Vector2(x_ + ndx, y_ + ndy);
-  }
+  } */
 
-  Vector2 get curPos {
-    final x_ = curXY[0];
-    final y_ = curXY[1];
-    return Vector2(x_ * gameSize[0], y_ * gameSize[1]);
-  }
+  /* Vector2 get curPos {
+    return lastPos + _offsets;
+  } */
 
-  // late final BallPos ballPos;
-  /// args: x, y, ratio, color, shape,
+  // final _offsets = Vector2(0, 0);
   late double iSize;
   static const iRatio = 0.5;
 
@@ -79,16 +93,28 @@ class BallO extends GameObject with Backwardable {
     assert(_dx > 0 && _dy > 0);
     assert(_speed > 0);
     assert(ratio > 0);
+    _angle = atan2(_dx, _dy);
   }
 
-  /// angle to Y-axis
-  BallO.withAngle(this._speed, double rad, [this.ratio = MyHomePage.ballSize]) {
-    _dx = cos(rad);
-    _dy = sin(rad);
+  /// _angle to Y-axis
+  BallO.withAngle(double angl,
+      [this._speed = defaultBallSpeed, this.ratio = MyHomePage.ballSize]) {
+    _angle = angl;
+    _dy = cos(angl);
+    _dx = sin(angl);
   }
 
   @override
   void init() {
+    final gx = gameSize[0];
+    final gy = gameSize[1];
+    final diagonal = sqrt(gx * gx + gy * gy);
+    final stepLength = diagonal / defaultBallFPS * speed / 1000;
+    stepInterval = diagonal / stepLength;
+    stepX = stepLength * dx;
+    stepY = stepLength * dy;
+    logger.finer("stepInterval = $stepInterval");
+    // final virtualLandingPoint = y * dx / dy;
     final x_ = ratio * gameSize[0];
     final y_ = ratio * gameSize[1];
     final oSize = sqrt(x_ * x_ + y_ * y_);
@@ -96,7 +122,7 @@ class BallO extends GameObject with Backwardable {
     logger.finer("oSize = $oSize");
     size = Vector2.all(oSize);
     alignment = GameObjectAlignment.center;
-    position = curPos;
+    position = Vector2(gx / 2, gy / 2);
   }
 
   @override
@@ -107,8 +133,6 @@ class BallO extends GameObject with Backwardable {
         alignment: Alignment.center,
         child: Container(
           decoration: const BoxDecoration(shape: shape, color: color),
-          // width: oSize,
-          // height: oSize,
         ),
       ),
       Align(
@@ -122,7 +146,6 @@ class BallO extends GameObject with Backwardable {
     ]);
   }
 
-  // bool on1stCollision = true;
   @override
   void onCollision(List<Collision> collisions) {
     logger.info("Ball colided with ${collisions.length} collisions.");
@@ -153,58 +176,60 @@ class BallO extends GameObject with Backwardable {
 
   final stepRatio = 0.015;
   bool update1st = true;
+  int _lastUpdate = 0;
   @override
   void update(Duration delta) {
-    forward();
-    if (delta.inMilliseconds % 200 == 0) {
+    if (delta.inMilliseconds - _lastUpdate > stepInterval) {
+      _lastUpdate = delta.inMilliseconds;
+      stepForward();
+    }
+    /* if (delta.inMilliseconds % 200 == 0) {
       ++corePos;
       logger.fine("corePos:$corePos");
-    }
+    } */
   }
 
   void _step() {
+    /*
     final nx = stepCount * dx * stepRatio;
     final rnx = lastPos[0] + (nx * gameSize[0]).round();
     final ny = stepCount * dy * stepRatio;
     final rny = lastPos[1] + (ny * gameSize[1]).round();
-    final np = Vector2(rnx, rny);
-    final fmt = NumberFormat('##.0#', 'en_US');
-    final ifmt = NumberFormat('###', 'en_US');
-    logger.finest(
-        "lastPos:${ifmt.format(lastPos[0])},${ifmt.format(lastPos[0])}");
-    logger.finest("stepCount:$stepCount, dx: $dx, dy: $dy, stepRatio: $stepRatio" +
-        "position:${fmt.format(position[0])}, ${fmt.format(position[1])}. np:${ifmt.format(np[0])},${ifmt.format(np[1])}.");
+    */
+    final x = position[0];
+    final y = position[1];
+    final np = Vector2(x + stepX, y + stepY);
+    // final fmt = NumberFormat('##.0#', 'en_US');
+    // final ifmt = NumberFormat('###', 'en_US');
+    // logger.finest( "lastPos:${ifmt.format(lastPos[0])},${ifmt.format(lastPos[0])}");
+    // logger.finest("stepCount:$stepCount, dx: $dx, dy: $dy, stepRatio: $stepRatio" + "position:${fmt.format(position[0])}, ${fmt.format(position[1])}. np:${ifmt.format(np[0])},${ifmt.format(np[1])}.");
     position = np;
   }
 
-  void forward() {
+  void stepForward() {
     lastPosForBackward = position;
     ++_stepCount;
-    logger.finer(
-        "position=${position[0]},${position[1]}. stepCount=$_stepCount;Calling step().");
     _step();
   }
 
-  /* void backward() {
-    --_stepCount;
-    _step();
-  } */
-
-  void clearStepCount() {
-    _stepCount = 0;
+  void stepBackward() {
+    if (lastPosForBackward != null) {
+      position = lastPosForBackward as Vector2;
+    }
   }
 
-  void updateLastPosWithPosition() {
-    lastPos = position;
-  }
+  // void clearStepCount() { _stepCount = 0; }
 
-  void reverseDx() => dxReverse = !dxReverse;
-  void reverseDy() => dyReverse = !dyReverse;
+  // void updateLastPosWithPosition() { lastPos = position; }
+
+  void reverseDx() => _dxReverse = !_dxReverse;
+  void reverseDy() => _dyReverse = !_dyReverse;
 
   void bounceAtWall(wallPos pos) {
     // wallPos wp) {
-    clearStepCount();
-    updateLastPosWithPosition();
+    // clearStepCount();
+    // updateLastPosWithPosition();
+    stepBackward();
     switch (pos) {
       case wallPos.right:
       case wallPos.left:
@@ -221,9 +246,10 @@ class BallO extends GameObject with Backwardable {
 
   void bounceAtPaddle(wallPos pos, Rect rect) {
     // wallPos wp) {
-    clearStepCount();
-    updateLastPosWithPosition();
-    final rx = x * gameSize[0];
+    // clearStepCount();
+    // updateLastPosWithPosition();
+    stepBackward();
+    final rx = position[0];
     if (rx >= rect.left && rx <= rect.right) {
       logger.finer("Paddle top/bottom hit Ball.");
       reverseDy();
@@ -237,7 +263,7 @@ class BallO extends GameObject with Backwardable {
 
 class RandAngleIterator extends Iterable with Iterator {
   final int range;
-  final rand = new Random(new DateTime.now().millisecondsSinceEpoch);
+  final rand = Random(DateTime.now().millisecondsSinceEpoch);
   var _e = 0;
   var _s = false;
   int get v => (30 + _e) * (_s ? 1 : -1);
