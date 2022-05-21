@@ -2,6 +2,7 @@ import 'package:example/MyHomePage.dart';
 import 'package:example/orgMain.dart';
 import 'package:flutter/material.dart';
 import 'Wall.dart';
+import 'Ball.dart';
 import 'WallBase.dart';
 import 'Backwardable.dart';
 import 'package:illume/illume.dart';
@@ -50,9 +51,12 @@ class PaddleO extends WallO with Backwardable {
 
   @override
   void onCollision(List<Collision> collisions) {
-    backward(this);
-    x = (position[0] - offset[0]) / gameSize[0];
-    logger.finer("Paddle backward.");
+    final col = collisions[0];
+    if (col is WallO) {
+      backward(this);
+      x = (position[0] - offset[0]) / gameSize[0];
+      logger.finer("Paddle backward with Wall.");
+    }
   }
 
   void moveRight() {
