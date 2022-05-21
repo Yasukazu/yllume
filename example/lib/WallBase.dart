@@ -15,6 +15,9 @@ abstract class WallBaseO extends GameObject {
   double get y => offset[1];
   Vector2 get offset => getOffset();
   Vector2 getOffset();
+  late Vector2 sSize;
+  static const sRatio = 0.2;
+
   WallBaseO(this.pos);
 
   @override
@@ -22,26 +25,26 @@ abstract class WallBaseO extends GameObject {
     size = rect;
     alignment = GameObjectAlignment.center;
     position = offset;
+    sSize = Vector2(sRatio * size[0], sRatio * size[1]);
   }
 
   @override
   Widget build(BuildContext context) {
-    return 
-     // Container( //alignment: Alignment(x, y), child: 
+    return
+        // Container( //alignment: Alignment(x, y), child:
         Stack(alignment: AlignmentDirectional.center, children: [
-          Container(
-            decoration: BoxDecoration(shape: shape, color: color),
-            width: size[0],
-            height: size[1],
-          ),
-          Container(
-            decoration: const BoxDecoration(shape: shape, color: Colors.black),
-            width: 0.2 * size[0],
-            height: 0.2 * size[1],
-          ),
-        ]);
+      Container(
+        decoration: BoxDecoration(shape: shape, color: color),
+        // width: size[0],
+        // height: size[1],
+      ),
+      Container(
+        decoration: const BoxDecoration(shape: shape, color: Colors.black),
+        width: sSize[0],
+        height: sSize[1],
+      ),
+    ]);
   }
-
 
   @override
   void onScreenSizeChange(Vector2 size) {}
