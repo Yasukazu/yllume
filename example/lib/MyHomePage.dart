@@ -14,6 +14,7 @@ class Screen {
 }
 
 class MyHomePage extends StatefulWidget {
+  static const ballFPS = 30;
   static const ballSize = 0.06;
   static const wpGap = 0.01; // wall and paddle
   static const wallT = ballSize / 2 - wpGap - 0.001; // wall thickness1 per 1
@@ -35,8 +36,8 @@ class _MyHomePageState extends State<MyHomePage> {
   // FlappyWidget flappyWidget = FlappyWidget();
   // Wall wall = Wall(200, false);
   // Wall wall2 = Wall(400, true);
-  static const speed = 100;
-  
+  static const speed = 500;
+
   late final BallO ball;
   late final WallO topWall;
   late final WallO bottomWall;
@@ -49,13 +50,15 @@ class _MyHomePageState extends State<MyHomePage> {
   bool gameStarted = false;
 
   _MyHomePageState() {
-    ball = BallO.withAngle(speed, RandAngleIterator(14).current);
+    ball = BallO.withAngle(RandAngleIterator(14).current, speed);
     topWall = WallO(wallPos.top);
     bottomWall = WallO(wallPos.bottom);
     rightWall = WallO(wallPos.right);
     leftWall = WallO(wallPos.left);
-    enemyPaddle = PaddleO(wallPos.top, MyHomePage.paddleWidth, MyHomePage.paddleStep);
-    selfPaddle = PaddleO(wallPos.bottom, MyHomePage.paddleWidth, MyHomePage.paddleStep);
+    enemyPaddle =
+        PaddleO(wallPos.top, MyHomePage.paddleWidth, MyHomePage.paddleStep);
+    selfPaddle =
+        PaddleO(wallPos.bottom, MyHomePage.paddleWidth, MyHomePage.paddleStep);
   }
 
   @override
