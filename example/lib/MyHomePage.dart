@@ -56,7 +56,7 @@ class _MyHomePageState extends State<MyHomePage> {
     rightWall = WallO(wallPos.right);
     leftWall = WallO(wallPos.left);
     enemyPaddle =
-        PaddleO(wallPos.top, MyHomePage.paddleWidth, MyHomePage.paddleStep);
+        EnemyPaddleO(wallPos.top, MyHomePage.paddleWidth, MyHomePage.paddleStep, ball);
     selfPaddle =
         PaddleO(wallPos.bottom, MyHomePage.paddleWidth, MyHomePage.paddleStep);
   }

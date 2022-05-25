@@ -1,27 +1,33 @@
 import 'package:example/MyHomePage.dart';
 import 'package:example/orgMain.dart';
 import 'package:flutter/material.dart';
-import 'Wall.dart';
 import 'Ball.dart';
+import 'Wall.dart';
 import 'WallBase.dart';
 import 'Backwardable.dart';
 import 'package:illume/illume.dart';
 
-class PaddleO extends WallO with Backwardable {
+class PaddleO extends WallBaseO with Backwardable {
   late final double step;
   late final double width;
   late final RangeNum rn;
-  // Vector2? lastPosForBackward;
+  static const wallGapRatio = MyHomePage.ballSize / 2;
+  late final double wallGap;
+  double _x = 0;
   @override
-  double x = 0;
-  // @override double get x => rn.d + offset[0];
-
+  double get x => _x;
+  late final _dx;
+  double get dx => _dx;
+  late final double _y;
+  @override
+  double get y => _y;
+  /*
+  final _offset = Vector2(0, 0);
+  @override
+  Vector2 get offset => _offset;
+  */
   @override
   Vector2 getOffset() {
-    final offset = super.getOffset();
-    final diff =
-        (MyHomePage.wpGap + MyHomePage.wallT / 2 + b / 2) * gameSize[1];
-    final rdiff = pos == wallPos.top ? diff : -diff;
     return Vector2(offset[0], offset[1] + rdiff);
   }
 
@@ -36,10 +42,23 @@ class PaddleO extends WallO with Backwardable {
   late final RangeNum range;
 
   @override
+  void init() {
+    super.init();
+    // _offset[0] = super.offset[0];
+    final diff =
+        (MyHomePage.wpGap + MyHomePage.wallT / 2 + b / 2) * gameSize[1];
+    _y = pos == wallPos.top
+        ? WallBaseO.topOffset(gameSize) + diff
+        : WallBaseO.bottomOffset(gameSize) - diff;
+    _x = gameSize[0] / 2;
+    _dx = MyHomePage.paddleStep * gameSize[0];
+  }
+
+  @override
   void update(Duration delta) {
     super.update(delta);
     // x = rn.d + offset[0];
-    position = Vector2(x * gameSize[0] + offset[0], offset[1]);
+    position[0] = x;
     logger.finer("Paddle.x = $x; position[0]= ${position[0]}");
   }
 
@@ -54,7 +73,7 @@ class PaddleO extends WallO with Backwardable {
     final col = collisions[0];
     if (col is WallO) {
       backward(this);
-      x = (position[0] - offset[0]) / gameSize[0];
+      _x = lastPosForBackward[0];
       logger.finer("Paddle backward with Wall.");
     }
   }
@@ -62,7 +81,7 @@ class PaddleO extends WallO with Backwardable {
   void moveRight() {
     // if (lastPosForBackward != null) { return; }
     lastPosForBackward = position;
-    x += MyHomePage.paddleStep;
+    _x += dx;
     // rn.inc(step);
     logger.finer("move Right. x = $x");
   }
@@ -70,10 +89,15 @@ class PaddleO extends WallO with Backwardable {
   void moveLeft() {
     // if (lastPosForBackward != null) { return; }
     lastPosForBackward = position;
-    x -= MyHomePage.paddleStep;
+    _x -= dx;
     // rn.dec(step);
     logger.finer("move Left. x = $x");
   }
+}
+
+class EnemyPaddleO extends PaddleO {
+  final BallO ball;
+  EnemyPaddleO(super.pos, super.width, super.step, this.ball);
 }
 
 class RangeNum {
