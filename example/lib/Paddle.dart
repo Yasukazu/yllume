@@ -15,11 +15,13 @@ class PaddleO extends GameObject with Backwardable {
   late final RangeNum rn;
   static const wallGapRatio = MyHomePage.ballSize / 2;
   late final double wallGap;
-  double _x = 0;
-  double get x => _x;
+  double get x => rn.d;
+  set x(double v) => rn.assign(v);
+
   late final double _dx;
   double get dx => _dx;
   late final double _y;
+  double get y => _y;
   final wallPos pos;
 
   PaddleO(this.pos, this.width, this.step) {
@@ -37,17 +39,19 @@ class PaddleO extends GameObject with Backwardable {
     final diff =
         (MyHomePage.wpGap + MyHomePage.wallT / 2 + b / 2) * gameSize[1];
     _y = pos == wallPos.top
-        ? WallBaseO.topOffset(gameSize) + diff
-        : WallBaseO.bottomOffset(gameSize) - diff;
-    _x = gameSize[0] / 2;
+        ? WallBaseO.topOffset(gameSize)[1] + diff
+        : WallBaseO.bottomOffset(gameSize)[1] - diff;
     _dx = MyHomePage.paddleStep * gameSize[0];
     rn = RangeNum((1 - width) * gameSize[0]);
+    position = Vector2(x, y);
+    size = Vector2(width * gameSize[0], MyHomePage.paddleT * gameSize[1]);
   }
 
   @override
   void update(Duration delta) {
     // x = rn.d + offset[0];
     position[0] = x;
+    position[1] = y;
     logger.finer("Paddle.x = $x; position[0]= ${position[0]}");
   }
 
@@ -57,7 +61,7 @@ class PaddleO extends GameObject with Backwardable {
     if (col is WallO) {
       backward(this);
       if (lastPosForBackward != null) {
-        _x = (lastPosForBackward as Vector2)[0];
+        x = (lastPosForBackward as Vector2)[0];
         logger.finer("Paddle backward with Wall.");
       }
     }
@@ -73,11 +77,11 @@ class PaddleO extends GameObject with Backwardable {
         // width: size[0],
         // height: size[1],
       ),
-      Container(
+      /* Container(
         decoration: const BoxDecoration(shape: shape, color: Colors.black),
         width: 100,
         height: 100,
-      ),
+      ), */
     ]);
   }
 
@@ -88,7 +92,6 @@ class PaddleO extends GameObject with Backwardable {
     // if (lastPosForBackward != null) { return; }
     lastPosForBackward = position;
     rn.inc(dx);
-    _x = rn.d;
     // rn.inc(step);
     logger.finer("move Right. x = $x");
   }
@@ -97,7 +100,6 @@ class PaddleO extends GameObject with Backwardable {
     // if (lastPosForBackward != null) { return; }
     lastPosForBackward = position;
     rn.dec(dx);
-    _x = rn.d;
     logger.finer("move Left. x = $x");
   }
 }
@@ -112,7 +114,9 @@ class RangeNum {
   double get d => _d;
   final double range;
 
-  RangeNum(this.range);
+  RangeNum(this.range) {
+    _d = range / 2;
+  }
 
   void inc(double step) {
     if ((_d + step) <= range / 2) {
@@ -127,6 +131,16 @@ class RangeNum {
       _d -= step;
     } else {
       _d = -range / 2;
+    }
+  }
+
+  void assign(double v) {
+    if (v < -range / 2) {
+      _d = -range / 2;
+    } else if (v > range / 2) {
+      _d = range / 2;
+    } else {
+      _d = v;
     }
   }
 }
