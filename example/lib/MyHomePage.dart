@@ -65,7 +65,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     // gameController.startGame();
-    MyHomePage.statusBar = MyHomePage.mainText + ":started";
+    MyHomePage.statusBar = MyHomePage.mainText + "Tap to start:";
     gameController.gameObjects.addAll([
       topWall,
       bottomWall,
