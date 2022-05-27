@@ -12,11 +12,12 @@ class PaddleO extends GameObject with Backwardable {
   static const shape = BoxShape.rectangle;
   late final double step;
   late final double width;
-  late final RangeNum rn;
+  late final RangeNum offset;
+  late final double xCenter;
   static const wallGapRatio = MyHomePage.ballSize / 2;
   late final double wallGap;
-  double get x => rn.d;
-  set x(double v) => rn.assign(v);
+  double get x => xCenter + offset.d;
+  set x(double v) => offset.assign(v - xCenter);
 
   late final double _dx;
   double get dx => _dx;
@@ -31,7 +32,6 @@ class PaddleO extends GameObject with Backwardable {
   }
 
   static const b = MyHomePage.paddleT;
-  late final RangeNum range;
 
   @override
   void init() {
@@ -42,14 +42,15 @@ class PaddleO extends GameObject with Backwardable {
         ? WallBaseO.topOffset(gameSize)[1] + diff
         : WallBaseO.bottomOffset(gameSize)[1] - diff;
     _dx = MyHomePage.paddleStep * gameSize[0];
-    rn = RangeNum((1 - width) * gameSize[0]);
+    offset = RangeNum((1 - width) * gameSize[0]);
+    xCenter = gameSize[0] / 2;
     position = Vector2(x, y);
     size = Vector2(width * gameSize[0], MyHomePage.paddleT * gameSize[1]);
   }
 
   @override
   void update(Duration delta) {
-    // x = rn.d + offset[0];
+    // x = offset.d + offset[0];
     // position[0] = x; position[1] = y;
     position = Vector2(x, y);
     logger.finer("Paddle.x = $x; position[0]= ${position[0]}");
@@ -91,15 +92,15 @@ class PaddleO extends GameObject with Backwardable {
   void moveRight() {
     // if (lastPosForBackward != null) { return; }
     lastPosForBackward = position;
-    rn.inc(dx);
-    // rn.inc(step);
+    offset.inc(dx);
+    // offset.inc(step);
     logger.finer("move Right. x = $x");
   }
 
   void moveLeft() {
     // if (lastPosForBackward != null) { return; }
     lastPosForBackward = position;
-    rn.dec(dx);
+    offset.dec(dx);
     logger.finer("move Left. x = $x");
   }
 }
@@ -115,14 +116,14 @@ class RangeNum {
   final double range;
 
   RangeNum(this.range) {
-    _d = range / 2;
+    // _d = range / 2;
   }
 
   void inc(double step) {
     if ((_d + step) <= range) {
       _d += step;
     } else {
-      _d = range;
+      _d = range / 2;
     }
   }
 
@@ -130,7 +131,7 @@ class RangeNum {
     if ((_d - step) >= 0) {
       _d -= step;
     } else {
-      _d = 0;
+      _d = -range / 2;
     }
   }
 
