@@ -35,22 +35,22 @@ class WallO extends WallBaseO {
   @override
   void init() {
     _rect = (pos == wallPos.top || pos == wallPos.bottom)
-        ? Vector2((1 - b - MyHomePage.ballSize) * gameSize[0], b * gameSize[1])
-        : Vector2(b * gameSize[0], (1 - b - MyHomePage.ballSize) * gameSize[1]);
+        ? Vector2((1 - WallBaseO.b - MyHomePage.ballSize) * gameSize[0], WallBaseO.b * gameSize[1])
+        : Vector2(WallBaseO.b * gameSize[0], (1 - WallBaseO.b - MyHomePage.ballSize) * gameSize[1]);
     size = rect;
     alignment = GameObjectAlignment.center;
     switch(pos) {
       case wallPos.top:
-        _offset = topOffset(gameSize);
+        _offset = WallBaseO.topOffset(gameSize);
         break;
       case wallPos.left:
-        _offset = leftOffset(gameSize);
+        _offset = WallBaseO.leftOffset(gameSize);
         break;
       case wallPos.bottom:
-        _offset = bottomOffset(gameSize);
+        _offset = WallBaseO.bottomOffset(gameSize);
         break;
       case wallPos.right:
-        _offset = rightOffset(gameSize);
+        _offset = WallBaseO.rightOffset(gameSize);
         break;
     }
     position = offset;

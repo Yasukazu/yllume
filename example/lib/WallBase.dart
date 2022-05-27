@@ -1,10 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:illume/illume.dart';
-
+import 'MyHomePage.dart';
 enum wallPos { top, bottom, left, right }
 
 abstract class WallBaseO extends GameObject {
   static const shape = BoxShape.rectangle;
+  static const b = MyHomePage.wallT;
+  static topOffset(Vector2 gameSize) =>
+      Vector2(gameSize[0] / 2, b / 2 * gameSize[1]);
+  static leftOffset(Vector2 gameSize) =>
+      Vector2(b / 2 * gameSize[0], gameSize[1] / 2);
+  static bottomOffset(Vector2 gameSize) =>
+      Vector2(gameSize[0] / 2, gameSize[1] * (1 - b / 2));
+  static rightOffset(Vector2 gameSize) =>
+      Vector2(gameSize[0] * (1 - b / 2), gameSize[1] / 2);
+  static const offsets = [topOffset, leftOffset, bottomOffset, rightOffset];
   final wallPos pos;
   // late final Vector2 lastPosBeforeCollision;
   Vector2 get rect => getRect();
