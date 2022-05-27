@@ -50,8 +50,8 @@ class PaddleO extends GameObject with Backwardable {
   @override
   void update(Duration delta) {
     // x = rn.d + offset[0];
-    position[0] = x;
-    position[1] = y;
+    // position[0] = x; position[1] = y;
+    position = Vector2(x, y);
     logger.finer("Paddle.x = $x; position[0]= ${position[0]}");
   }
 
@@ -119,18 +119,18 @@ class RangeNum {
   }
 
   void inc(double step) {
-    if ((_d + step) <= range / 2) {
+    if ((_d + step) <= range) {
       _d += step;
     } else {
-      _d = range / 2;
+      _d = range;
     }
   }
 
   void dec(double step) {
-    if ((_d - step) >= -range / 2) {
+    if ((_d - step) >= 0) {
       _d -= step;
     } else {
-      _d = -range / 2;
+      _d = 0;
     }
   }
 
