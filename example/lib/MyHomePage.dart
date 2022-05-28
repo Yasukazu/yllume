@@ -48,15 +48,16 @@ class _MyHomePageState extends State<MyHomePage> {
   List<WallO> get walls => [topWall, bottomWall, leftWall, rightWall];
   IllumeController get gameController => MyHomePage.gameController;
   bool gameStarted = false;
+  final ballPos = Vector2(0, 0);
 
   _MyHomePageState() {
-    ball = BallO.withAngle(RandAngleIterator(14).current, speed);
+    ball = BallO.withAngle(ballPos, RandAngleIterator(14).current, speed);
     topWall = WallO(wallPos.top);
     bottomWall = WallO(wallPos.bottom);
     rightWall = WallO(wallPos.right);
     leftWall = WallO(wallPos.left);
-    enemyPaddle =
-        EnemyPaddleO(wallPos.top, MyHomePage.paddleWidth, MyHomePage.paddleStep, ball);
+    enemyPaddle = EnemyPaddleO(
+        wallPos.top, MyHomePage.paddleWidth, MyHomePage.paddleStep, ballPos);
     selfPaddle =
         PaddleO(wallPos.bottom, MyHomePage.paddleWidth, MyHomePage.paddleStep);
   }
