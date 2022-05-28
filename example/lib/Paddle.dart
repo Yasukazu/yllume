@@ -9,8 +9,8 @@ import 'package:illume/illume.dart';
 class PaddleO extends GameObject with Backwardable {
   static const color = Colors.yellow;
   static const shape = BoxShape.rectangle;
-  late final double step;
-  late final double width;
+  final double stepRatio;
+  late final double widthRatio;
   late final RangeNum offset;
   late final double xCenter;
   static const wallGapRatio = MyHomePage.ballSize / 2;
@@ -18,16 +18,16 @@ class PaddleO extends GameObject with Backwardable {
   double get x => xCenter + offset.d;
   set x(double v) => offset.assign(v - xCenter);
 
-  late final double _dx;
-  double get dx => _dx;
+  late final double _step;
+  double get step => _step;
   late final double _y;
   double get y => _y;
   final wallPos pos;
 
-  PaddleO(this.pos, this.width, this.step) {
+  PaddleO(this.pos, this.widthRatio, this.stepRatio) {
     assert(pos == wallPos.top || pos == wallPos.bottom);
-    assert(width > 0 && width <= 1);
-    assert(step > 0 && step <= 1);
+    assert(widthRatio > 0 && widthRatio <= 1);
+    assert(stepRatio > 0 && stepRatio <= 1);
   }
 
   static const b = MyHomePage.paddleT;
@@ -40,13 +40,13 @@ class PaddleO extends GameObject with Backwardable {
     _y = pos == wallPos.top
         ? WallBaseO.topOffset(gameSize)[1] + diff
         : WallBaseO.bottomOffset(gameSize)[1] - diff;
-    _dx = MyHomePage.paddleStep * gameSize[0];
+    _step = stepRatio * gameSize[0];
     offset = RangeNum(
-        (1 - width - 2 * MyHomePage.wallT - 2 * MyHomePage.wpGap) *
+        (1 - widthRatio - 2 * MyHomePage.wallT - 2 * MyHomePage.wpGap) *
             gameSize[0]);
     xCenter = gameSize[0] / 2;
     position = Vector2(x, y);
-    size = Vector2(width * gameSize[0], MyHomePage.paddleT * gameSize[1]);
+    size = Vector2(widthRatio * gameSize[0], MyHomePage.paddleT * gameSize[1]);
     wallGap = MyHomePage.wpGap * gameSize[0];
   }
 
@@ -117,7 +117,7 @@ class PaddleO extends GameObject with Backwardable {
     }
     // if (lastPosForBackward != null) { return; }
     lastPosForBackward = position;
-    offset.inc(dx);
+    offset.inc(step);
     // offset.inc(step);
     logger.finer("move Right. x = $x");
   }
@@ -128,14 +128,38 @@ class PaddleO extends GameObject with Backwardable {
     }
     // if (lastPosForBackward != null) { return; }
     lastPosForBackward = position;
-    offset.dec(dx);
+    offset.dec(step);
     logger.finer("move Left. x = $x");
   }
 }
 
 class EnemyPaddleO extends PaddleO {
   final Vector2 ballPos;
-  EnemyPaddleO(super.pos, super.width, super.step, this.ballPos);
+  final Vector2 lastBallPos = Vector2(0, 0);
+  EnemyPaddleO(super.pos, super.width, super.step, this.ballPos) {
+    lastBallPos[0] = ballPos[0];
+    lastBallPos[1] = ballPos[1];
+  }
+
+  @override
+  void update(Duration delta) {
+    if (ballPos[0] == 0.0) {
+      return;
+    }
+    if (lastBallPos[0] == 0.0) {
+      lastBallPos[0] = ballPos[0];
+      lastBallPos[1] = ballPos[1];
+      return;
+    }
+    if (lastBallPos[0] != ballPos[0]) {
+      final dx = ballPos[0] - lastBallPos[0];
+      offset.moveBy(dx);
+      position = Vector2(x, y);
+      logger.finer("Paddle.x = $x; position[0]= ${position[0]}");
+      lastBallPos[0] = ballPos[0];
+      lastBallPos[1] = ballPos[1];
+    }
+  }
 }
 
 class RangeNum {
@@ -176,8 +200,8 @@ class RangeNum {
     }
   }
 
-  void moveBy(double v) {
-    final moved = d + v;
+  void moveBy(double dx) {
+    final moved = d + dx;
     if (moved < -halfRange) {
       _d = -halfRange;
     } else if (moved > halfRange) {
