@@ -112,6 +112,9 @@ class PaddleO extends GameObject with Backwardable {
   void onScreenSizeChange(Vector2 size) {}
 
   void moveRight() {
+    if (offset.isRightLimit) {
+      return;
+    }
     // if (lastPosForBackward != null) { return; }
     lastPosForBackward = position;
     offset.inc(dx);
@@ -120,6 +123,9 @@ class PaddleO extends GameObject with Backwardable {
   }
 
   void moveLeft() {
+    if (offset.isLeftLimit) {
+      return;
+    }
     // if (lastPosForBackward != null) { return; }
     lastPosForBackward = position;
     offset.dec(dx);
@@ -137,6 +143,8 @@ class RangeNum {
   double get d => _d;
   final double range;
   late final double halfRange;
+  bool get isLeftLimit => d == -halfRange;
+  bool get isRightLimit => d == halfRange;
 
   RangeNum(this.range) {
     halfRange = range.abs() / 2;
