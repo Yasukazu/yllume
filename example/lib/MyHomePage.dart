@@ -51,13 +51,13 @@ class _MyHomePageState extends State<MyHomePage> {
   final ballPos = Vector2(0, 0);
 
   _MyHomePageState() {
-    ball = BallO.withAngle(ballPos, RandAngleIterator(14).current, speed);
+    ball = BallO.withAngle(getBallPos, RandAngleIterator(14).current, speed);
     topWall = WallO(wallPos.top);
     bottomWall = WallO(wallPos.bottom);
     rightWall = WallO(wallPos.right);
     leftWall = WallO(wallPos.left);
     enemyPaddle = EnemyPaddleO(
-        wallPos.top, MyHomePage.paddleWidth, MyHomePage.paddleStep, ballPos);
+        wallPos.top, MyHomePage.paddleWidth, MyHomePage.paddleStep, peekBallPos);
     selfPaddle =
         PaddleO(wallPos.bottom, MyHomePage.paddleWidth, MyHomePage.paddleStep);
   }
@@ -125,6 +125,10 @@ class _MyHomePageState extends State<MyHomePage> {
           end: Alignment.bottomRight),
     ),
   );
+
+  void getBallPos(Vector2 ballPos) {}
+
+  Vector2 peekBallPos() => ball.position;
 }
 
 class GameEndException implements Exception {

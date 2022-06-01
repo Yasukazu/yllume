@@ -134,23 +134,21 @@ class PaddleO extends GameObject with Backwardable {
 }
 
 class EnemyPaddleO extends PaddleO {
-  final Vector2 ballPos;
-  final Vector2 lastBallPos = Vector2(0, 0);
-  EnemyPaddleO(super.pos, super.width, super.step, this.ballPos) {
-    lastBallPos[0] = ballPos[0];
-    lastBallPos[1] = ballPos[1];
-  }
+  // Vector2 ballPos = Vector2.zero();
+  Vector2 lastBallPos = Vector2.zero();
+  final Vector2 Function() peekBallPos;
+  EnemyPaddleO(super.pos, super.width, super.step, this.peekBallPos) {}
 
   @override
   void update(Duration delta) {
-    if (ballPos[0] == 0.0) {
+    if (peekBallPos() == Vector2.zero()) {
       return;
     }
-    if (lastBallPos[0] == 0.0) {
-      lastBallPos[0] = ballPos[0];
-      lastBallPos[1] = ballPos[1];
+    if (lastBallPos == Vector2.zero()) {
+      lastBallPos = peekBallPos();
       return;
     }
+    final ballPos = peekBallPos();
     if (lastBallPos[0] != ballPos[0]) {
       final dx = ballPos[0] - lastBallPos[0];
       offset.moveBy(dx);

@@ -44,7 +44,7 @@ class BallO extends GameObject with Backwardable {
   static const Color color = Color.fromRGBO(255, 255, 255, 1);
   final double ratio; // self size
   static const BoxShape shape = BoxShape.circle;
-  final Vector2 ballPos;
+  // final Vector2 ballPos;
 
   int _stepCount = 0;
   int get stepCount => _stepCount;
@@ -52,7 +52,7 @@ class BallO extends GameObject with Backwardable {
   late double iSize;
   static const iRatio = 0.5;
 
-  BallO(this.ballPos, this._dx, this._dy,
+  BallO(this.getBallPos, this._dx, this._dy,
       [this._speed = defaultBallSpeed, this.ratio = MyHomePage.ballSize]) {
     assert(_dx > 0 && _dy > 0);
     assert(_speed > 0);
@@ -61,7 +61,9 @@ class BallO extends GameObject with Backwardable {
   }
 
   /// _angle to Y-axis
-  BallO.withAngle(this.ballPos, double angl,
+  final void Function(Vector2) getBallPos;
+
+  BallO.withAngle(this.getBallPos, double angl,
       [this._speed = defaultBallSpeed, this.ratio = MyHomePage.ballSize]) {
     _angle = angl;
     _dy = cos(angl);
@@ -149,8 +151,7 @@ class BallO extends GameObject with Backwardable {
     if (delta.inMilliseconds - _lastUpdate > stepInterval) {
       _lastUpdate = delta.inMilliseconds;
       stepForward();
-      ballPos[0] = position[0];
-      ballPos[1] = position[1];
+      getBallPos(position);
     }
     /* if (delta.inMilliseconds % 200 == 0) {
       ++corePos;
