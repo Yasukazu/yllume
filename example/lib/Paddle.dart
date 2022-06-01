@@ -181,7 +181,7 @@ class RangeNum {
   }
 
   void dec(double step) {
-    if ((_d - step) >= 0) {
+    if ((_d - step) >= -halfRange) {
       _d -= step;
     } else {
       _d = -halfRange;
