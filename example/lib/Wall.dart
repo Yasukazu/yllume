@@ -34,8 +34,8 @@ class WallO extends WallBaseO {
     for (Collision col in collisions) {
       if (col.component is BallO) {
         final ball = col.component as BallO;
-        ball.reverseDx();
-        logger.fine("Ball dx reversed by Wall.");
+        bounce(ball);
+        logger.fine("Ball is reversed by Wall.");
         break;
       }
     }
