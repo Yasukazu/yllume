@@ -67,7 +67,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     // gameController.startGame();
-    MyHomePage.statusBar = MyHomePage.mainText + "Tap to start:";
+    MyHomePage.statusBar = MyHomePage.mainText + ": Tap to start:";
     gameController.gameObjects.addAll([
       topWall,
       bottomWall,
@@ -75,7 +75,7 @@ class _MyHomePageState extends State<MyHomePage> {
       rightWall,
       enemyPaddle,
       selfPaddle,
-      ball as BallO
+      ball
     ]);
   }
 
@@ -96,6 +96,9 @@ class _MyHomePageState extends State<MyHomePage> {
   void pause() {
     gameController.pause();
     gamePaused = true;
+    setState(() {
+      MyHomePage.statusBar = MyHomePage.mainText + ": Tap to restart:";
+    });
   }
 
   @override
@@ -151,7 +154,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void getBallPos(Vector2 ballPos) {}
 
   Vector2 peekBallPos() {
-      return ball.position;
+    return ball.position;
   }
 }
 
