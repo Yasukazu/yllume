@@ -3,6 +3,7 @@ import 'MyHomePage.dart';
 import 'WallBase.dart';
 import 'Ball.dart';
 import 'package:illume/illume.dart';
+import 'orgMain.dart'; // logger
 
 typedef DoWithBall = void Function(BallO ball);
 
@@ -12,15 +13,11 @@ class WallO extends WallBaseO {
   @override
   Color getColor() => Colors.brown;
 
-
   @override
   Vector2 getOffset() => _offset;
 
   @override
   Vector2 getRect() => _rect;
-
-  @override
-  void onCollision(List<Collision> collisions) {}
 
   late final DoWithBall bounce;
 
@@ -33,13 +30,18 @@ class WallO extends WallBaseO {
   }
 
   @override
+  void onCollision(List<Collision> collisions) {}
+
+  @override
   void init() {
     _rect = (pos == wallPos.top || pos == wallPos.bottom)
-        ? Vector2((1 - WallBaseO.b - MyHomePage.ballSize) * gameSize[0], WallBaseO.b * gameSize[1])
-        : Vector2(WallBaseO.b * gameSize[0], (1 - WallBaseO.b - MyHomePage.ballSize) * gameSize[1]);
+        ? Vector2((1 - WallBaseO.b - MyHomePage.ballSize) * gameSize[0],
+            WallBaseO.b * gameSize[1])
+        : Vector2(WallBaseO.b * gameSize[0],
+            (1 - WallBaseO.b - MyHomePage.ballSize) * gameSize[1]);
     size = rect;
     alignment = GameObjectAlignment.center;
-    switch(pos) {
+    switch (pos) {
       case wallPos.top:
         _offset = WallBaseO.topOffset(gameSize);
         break;
@@ -61,5 +63,21 @@ class WallO extends WallBaseO {
     return Container(
       color: color,
     );
+  }
+}
+
+class PlayerWallO extends WallO {
+  final void Function() pause;
+  PlayerWallO(super.pos, this.pause);
+  @override
+  void onCollision(List<Collision> collisions) {
+    logger.info("Wall colided with ${collisions.length} collisions.");
+    for (Collision col in collisions) {
+      if (col.component is BallO) {
+        logger.info("Ball hit top/bottom wall!");
+        pause();
+        break;
+      }
+    }
   }
 }
