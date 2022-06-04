@@ -30,7 +30,16 @@ class WallO extends WallBaseO {
   }
 
   @override
-  void onCollision(List<Collision> collisions) {}
+  void onCollision(List<Collision> collisions) {
+    for (Collision col in collisions) {
+      if (col.component is BallO) {
+        final ball = col.component as BallO;
+        ball.reverseDx();
+        logger.fine("Ball dx reversed by Wall.");
+        break;
+      }
+    }
+  }
 
   @override
   void init() {
