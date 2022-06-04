@@ -52,7 +52,8 @@ class BallO extends GameObject with Backwardable {
   late double iSize;
   static const iRatio = 0.5;
 
-  BallO(this.getBallPos, this._dx, this._dy,
+  final void Function() pause;
+  BallO(this.pause, this._dx, this._dy,
       [this._speed = defaultBallSpeed, this.ratio = MyHomePage.ballSize]) {
     assert(_dx > 0 && _dy > 0);
     assert(_speed > 0);
@@ -61,13 +62,32 @@ class BallO extends GameObject with Backwardable {
   }
 
   /// _angle to Y-axis
-  final void Function(Vector2) getBallPos;
+  // final void Function(Vector2) getBallPos;
 
-  BallO.withAngle(this.getBallPos, double angl,
+  late final RandAngleIterator? angleProvider;
+  BallO.withAngleProvider(this.pause, this.angleProvider,
       [this._speed = defaultBallSpeed, this.ratio = MyHomePage.ballSize]) {
-    _angle = angl;
-    _dy = cos(angl);
-    _dx = sin(angl);
+    _angle = angleProvider!.current;
+    _dy = cos(_angle);
+    _dx = sin(_angle);
+  }
+
+  double? getNextAngle() {
+    if (angleProvider != null) {
+      angleProvider!.moveNext();
+      return angleProvider!.current;
+    }
+    return null;
+  }
+
+  void reset() {
+    if (angleProvider != null) {
+      angleProvider!.moveNext();
+      _angle = angleProvider!.current;
+      _dy = cos(_angle);
+      _dx = sin(_angle);
+    }
+    init();
   }
 
   @override
@@ -89,6 +109,7 @@ class BallO extends GameObject with Backwardable {
     size = Vector2.all(oSize);
     alignment = GameObjectAlignment.center;
     position = Vector2(gx / 2, gy / 2);
+    initialised = true;
   }
 
   @override
@@ -119,21 +140,10 @@ class BallO extends GameObject with Backwardable {
       if (col.component is PaddleO) {
         final paddle = col.component as PaddleO;
         if (!bounceAtPaddle(paddle.pos, col.intersectionRect)) {
-          logger.info("Paddle hit fail.");
-          MyHomePage.gameController.pause();
-        }
-      } else if (col.component is WallO) {
-        final wall = col.component as WallO;
-        if (wall.pos == wallPos.left || wall.pos == wallPos.right) {
-          bounceAtWall(wall.pos);
-        } else {
-          logger.info("Ball hit top/bottom wall!");
-          MyHomePage.gameController.pause();
-          // throw GameEndException("Ball hit top/bottom wall!");
+          logger.info("Paddle hit fail. Pausing..");
+          pause();
         }
       }
-      // WallO colWall = col.component as WallO;
-      // final p = colWall.pos;
     }
   }
 
@@ -151,7 +161,7 @@ class BallO extends GameObject with Backwardable {
     if (delta.inMilliseconds - _lastUpdate > stepInterval) {
       _lastUpdate = delta.inMilliseconds;
       stepForward();
-      getBallPos(position);
+      // getBallPos(position);
     }
     /* if (delta.inMilliseconds % 200 == 0) {
       ++corePos;

@@ -49,15 +49,16 @@ class _MyHomePageState extends State<MyHomePage> {
   IllumeController get gameController => MyHomePage.gameController;
   bool gameStarted = false;
   final ballPos = Vector2(0, 0);
+  final ballAngleIterator = RandAngleIterator(14);
 
   _MyHomePageState() {
-    ball = BallO.withAngle(getBallPos, RandAngleIterator(14).current, speed);
-    topWall = WallO(wallPos.top);
-    bottomWall = WallO(wallPos.bottom);
+    ball = BallO.withAngleProvider(pause, ballAngleIterator, speed);
+    topWall = PlayerWallO(wallPos.top, pause);
+    bottomWall = PlayerWallO(wallPos.bottom, pause);
     rightWall = WallO(wallPos.right);
     leftWall = WallO(wallPos.left);
-    enemyPaddle = EnemyPaddleO(
-        wallPos.top, MyHomePage.paddleWidth, MyHomePage.paddleStep, peekBallPos);
+    enemyPaddle = EnemyPaddleO(wallPos.top, MyHomePage.paddleWidth,
+        MyHomePage.paddleStep, peekBallPos);
     selfPaddle =
         PaddleO(wallPos.bottom, MyHomePage.paddleWidth, MyHomePage.paddleStep);
   }
@@ -72,10 +73,29 @@ class _MyHomePageState extends State<MyHomePage> {
       bottomWall,
       leftWall,
       rightWall,
-      ball,
       enemyPaddle,
-      selfPaddle
+      selfPaddle,
+      ball as BallO
     ]);
+  }
+
+  void resume() {
+    if (!gamePaused) {
+      return;
+    }
+    // gameController.gameObjects.removeLast();
+    // ballAngleIterator.moveNext();
+    ball.reset();
+    // gameController.gameObjects.add(ball as BallO);
+    gameController.resume();
+    gamePaused = false;
+  }
+
+  bool gamePaused = false;
+
+  void pause() {
+    gameController.pause();
+    gamePaused = true;
   }
 
   @override
@@ -97,6 +117,8 @@ class _MyHomePageState extends State<MyHomePage> {
           if (!gameStarted) {
             gameController.startGame();
             gameStarted = true;
+          } else if (gamePaused) {
+            resume();
           }
         },
         child: Scaffold(
@@ -128,7 +150,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void getBallPos(Vector2 ballPos) {}
 
-  Vector2 peekBallPos() => ball.position;
+  Vector2 peekBallPos() {
+      return ball.position;
+  }
 }
 
 class GameEndException implements Exception {
