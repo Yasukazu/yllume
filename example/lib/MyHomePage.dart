@@ -50,6 +50,22 @@ class _MyHomePageState extends State<MyHomePage> {
   bool gameStarted = false;
   final ballPos = Vector2(0, 0);
   final ballAngleIterator = RandAngleIterator(14);
+  int enemyScore = 0;
+  int playerScore = 0;
+
+  void scoreEnemy() {
+    setState(() {
+      enemyScore += 1;
+    });
+    logger.info("Enemy gained 1 score.");
+  }
+
+  void scorePlayer() {
+    setState(() {
+      playerScore += 1;
+    });
+    logger.info("Player gained 1 score.");
+  }
 
   _MyHomePageState() {
     ball = BallO.withAngleProvider(pause, ballAngleIterator, speed);
@@ -93,12 +109,19 @@ class _MyHomePageState extends State<MyHomePage> {
 
   bool gamePaused = false;
 
-  void pause() {
+  void pause(wallPos pos) {
     gameController.pause();
     gamePaused = true;
     setState(() {
       MyHomePage.statusBar = MyHomePage.mainText + ": Tap to restart:";
     });
+    if (pos == wallPos.top) {
+      scorePlayer();
+      logger.info("Player +1 score.");
+    } else if (pos == wallPos.bottom) {
+      scoreEnemy();
+      logger.info("Enemy +1 score.");
+    }
   }
 
   @override
@@ -131,6 +154,7 @@ class _MyHomePageState extends State<MyHomePage> {
           body: Stack(
             children: [
               gradient,
+              Score(enemyScore, playerScore),
               Illume(
                 illumeController: gameController,
               ),
@@ -155,6 +179,43 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Vector2 peekBallPos() {
     return ball.position;
+  }
+}
+
+class Score extends StatelessWidget {
+  final int enemyScore;
+  final int playerScore;
+
+  Score(
+    this.enemyScore,
+    this.playerScore,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final opacity = 1.0;
+    return Stack(children: [
+      Container(
+          alignment: Alignment(0, 0),
+          child: Container(
+            height: 1,
+            width: MediaQuery.of(context).size.width / 3,
+            color: Colors.grey.withOpacity(opacity),
+          )),
+      Container(
+          alignment: Alignment(0, -0.3),
+          child: Text(
+            enemyScore.toString(),
+            style: TextStyle(
+                color: Colors.grey.withOpacity(opacity), fontSize: 100),
+          )),
+      Container(
+          alignment: Alignment(0, 0.3),
+          child: Text(
+            playerScore.toString(),
+            style: TextStyle(color: Colors.grey.withOpacity(opacity), fontSize: 100),
+          )),
+    ]);
   }
 }
 

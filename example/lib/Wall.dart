@@ -34,9 +34,9 @@ class WallO extends WallBaseO {
     for (Collision col in collisions) {
       if (col.component is BallO) {
         final ball = col.component as BallO;
-        bounce(ball);
-        logger.fine("Ball is reversed by Wall.");
-        break;
+          ball.bounceAtWall(pos);
+          logger.fine("Ball is reversed by Wall.");
+          break;
       }
     }
   }
@@ -76,7 +76,7 @@ class WallO extends WallBaseO {
 }
 
 class PlayerWallO extends WallO {
-  final void Function() pause;
+  final void Function(wallPos) pause;
   PlayerWallO(super.pos, this.pause);
   @override
   void onCollision(List<Collision> collisions) {
@@ -84,7 +84,7 @@ class PlayerWallO extends WallO {
     for (Collision col in collisions) {
       if (col.component is BallO) {
         logger.info("Ball hit top/bottom wall!");
-        pause();
+        pause(pos); // if (pos == wallPos.top) { scoreEnemy(); }
         break;
       }
     }

@@ -52,7 +52,7 @@ class BallO extends GameObject with Backwardable {
   late double iSize;
   static const iRatio = 0.5;
 
-  final void Function() pause;
+  final void Function(wallPos) pause;
   BallO(this.pause, this._dx, this._dy,
       [this._speed = defaultBallSpeed, this.ratio = MyHomePage.ballSize]) {
     assert(_dx > 0 && _dy > 0);
@@ -143,7 +143,7 @@ class BallO extends GameObject with Backwardable {
         final paddle = col.component as PaddleO;
         if (!bounceAtPaddle(paddle.pos, col.intersectionRect)) {
           logger.info("Paddle hit fail. Pausing..");
-          pause();
+          pause(paddle.pos);
         }
       }
     }
