@@ -17,16 +17,16 @@ class BallO extends GameObject with Backwardable {
   static final initialXY = Vector2(initialX, initialY);
   final int _speed; // millisecond per diagonal
   int get speed => _speed;
-  late final double _angle;
+  late double _angle;
   double get angle => _angle;
-  late final double stepInterval;
-  late final double _stepX;
-  late final double _stepY;
+  late double stepInterval;
+  late double _stepX;
+  late double _stepY;
   double get stepX => dxReverse ? -_stepX : _stepX;
   double get stepY => dyReverse ? -_stepY : _stepY;
   Vector2 get stepVector => Vector2(stepX, stepY);
-  late final double _dx;
-  late final double _dy;
+  late double _dx;
+  late double _dy;
 
   bool _dxReverse = false;
   bool _dyReverse = false;
@@ -87,6 +87,8 @@ class BallO extends GameObject with Backwardable {
       _dy = cos(_angle);
       _dx = sin(_angle);
     }
+    _dxReverse = false;
+    _dyReverse = false;
     init();
   }
 
