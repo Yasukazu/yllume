@@ -157,6 +157,7 @@ class BallO extends GameObject with Backwardable {
 
   // final stepRatio = 0.015;
   // bool update1st = true;
+  final pickupDeltaPosition = DeltaPosition(Duration.zero, Vector2.zero());
   static const pickupCycle = 16;
   int _lastUpdate = 0;
   @override
@@ -168,7 +169,8 @@ class BallO extends GameObject with Backwardable {
       // getBallPos(position);
     }
     if (_stepCount % pickupCycle == 0) {
-      // TODO: assign {delta: position}
+      pickupDeltaPosition.delta = delta;
+      pickupDeltaPosition.position = position;
     }
     /* if (delta.inMilliseconds % 200 == 0) {
       ++corePos;
@@ -263,4 +265,10 @@ class RandAngleIterator extends Iterable with Iterator {
 
   @override
   Iterator get iterator => this;
+}
+
+class DeltaPosition {
+  Duration delta;
+  Vector2 position;
+  DeltaPosition(this.delta, this.position);
 }
