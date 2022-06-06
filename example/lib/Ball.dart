@@ -155,15 +155,20 @@ class BallO extends GameObject with Backwardable {
     // real world app or at least lock orientation.
   }
 
-  final stepRatio = 0.015;
-  bool update1st = true;
+  // final stepRatio = 0.015;
+  // bool update1st = true;
+  static const pickupCycle = 16;
   int _lastUpdate = 0;
   @override
   void update(Duration delta) {
     if (delta.inMilliseconds - _lastUpdate > stepInterval) {
       _lastUpdate = delta.inMilliseconds;
-      stepForward();
+      position = stepForward();
+      ++_stepCount;
       // getBallPos(position);
+    }
+    if (_stepCount % pickupCycle == 0) {
+      // TODO: assign {delta: position}
     }
     /* if (delta.inMilliseconds % 200 == 0) {
       ++corePos;
@@ -171,18 +176,18 @@ class BallO extends GameObject with Backwardable {
     } */
   }
 
-  void _step() {
+  Vector2 _step() {
     final x = position[0];
     final y = position[1];
     final np = Vector2(x + stepX, y + stepY);
-
-    position = np;
+    return np;
+    // position[0] += stepX;
+    // position[1] += stepY;
   }
 
-  void stepForward() {
+  Vector2 stepForward() {
     lastPosForBackward = position;
-    ++_stepCount;
-    _step();
+    return _step();
   }
 
   void stepBackward() {
