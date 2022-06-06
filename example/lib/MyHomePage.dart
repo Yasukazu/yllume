@@ -177,8 +177,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void getBallPos(Vector2 ballPos) {}
 
-  Vector2 peekBallPos() {
-    return ball.position;
+  DeltaPosition peekBallPos() {
+    return ball.pickupDeltaPosition;
   }
 }
 

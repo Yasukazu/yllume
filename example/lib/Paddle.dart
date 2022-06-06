@@ -1,3 +1,4 @@
+import 'package:example/Ball.dart';
 import 'package:example/MyHomePage.dart';
 import 'package:example/orgMain.dart';
 import 'package:flutter/material.dart';
@@ -136,26 +137,26 @@ class PaddleO extends GameObject with Backwardable {
 class EnemyPaddleO extends PaddleO {
   // Vector2 ballPos = Vector2.zero();
   Vector2 lastBallPos = Vector2.zero();
-  final Vector2 Function() peekBallPos;
+  final DeltaPosition Function() peekBallPos;
   EnemyPaddleO(super.pos, super.width, super.step, this.peekBallPos) {}
 
   @override
   void update(Duration delta) {
-    if (peekBallPos() == Vector2.zero()) {
+    if (peekBallPos().position == Vector2.zero()) {
       return;
     }
     if (lastBallPos == Vector2.zero()) {
-      lastBallPos = peekBallPos();
+      lastBallPos = peekBallPos().position;
       return;
     }
     final ballPos = peekBallPos();
-    if (lastBallPos[0] != ballPos[0]) {
-      final dx = ballPos[0] - lastBallPos[0];
+    if (lastBallPos[0] != ballPos.position[0]) {
+      final dx = ballPos.position[0] - lastBallPos[0];
       offset.moveBy(dx);
       position = Vector2(x, y);
       logger.finer("Paddle.x = $x; position[0]= ${position[0]}");
-      lastBallPos[0] = ballPos[0];
-      lastBallPos[1] = ballPos[1];
+      lastBallPos[0] = ballPos.position[0];
+      lastBallPos[1] = ballPos.position[1];
     }
   }
 }
