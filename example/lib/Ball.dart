@@ -158,7 +158,7 @@ class BallO extends GameObject with Backwardable {
   // final stepRatio = 0.015;
   // bool update1st = true;
   final pickupDeltaPosition = DeltaPosition(Duration.zero, Vector2.zero());
-  static const pickupCycle = 16;
+  static const pickupCycle = 32;
   int _lastUpdate = 0;
   @override
   void update(Duration delta) {
