@@ -1,6 +1,8 @@
 # example
 
-An example project for the Illume game engine
+An example project for the Illume game engine.
+Programs are in "lib" folder.
+The main program is "orgMain.dart".
 
 ## Getting Started
 
