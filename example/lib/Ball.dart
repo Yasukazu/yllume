@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'dart:collection';
 import 'orgMain.dart'; // logger
 import 'package:illume/illume.dart';
 import 'WallBase.dart';
@@ -155,8 +156,11 @@ class BallO extends GameObject with Backwardable {
 
   // final stepRatio = 0.015;
   // bool update1st = true;
-  final pickupDeltaPosition = DeltaPosition(Duration.zero, Vector2.zero());
-  static const pickupCycle = 32;
+  static const pickupDelay = 22;
+  final pickupDeltaPositions = DelayBuffer(pickupDelay);
+  // final pickupDeltaPosition = DeltaPosition(Duration.zero, Vector2.zero());
+  DeltaPosition? get pickupDeltaPosition => pickupDeltaPositions.putOut();
+  static const pickupCycle = 4;
   int _lastUpdate = 0;
   @override
   void update(Duration delta) {
@@ -167,8 +171,9 @@ class BallO extends GameObject with Backwardable {
       // getBallPos(position);
     }
     if (_stepCount % pickupCycle == 0) {
-      pickupDeltaPosition.delta = delta;
-      pickupDeltaPosition.position = position;
+      pickupDeltaPositions.putIn(DeltaPosition(delta, position));
+      // pickupDeltaPosition.delta = delta;
+      // pickupDeltaPosition.position = position;
     }
     /* if (delta.inMilliseconds % 200 == 0) {
       ++corePos;
@@ -269,4 +274,26 @@ class DeltaPosition {
   Duration delta;
   Vector2 position;
   DeltaPosition(this.delta, this.position);
+  static zero() => DeltaPosition(Duration.zero, Vector2.zero());
+}
+
+class DelayBuffer {
+  final _queue = Queue<DeltaPosition>();
+  final int size;
+  DelayBuffer(this.size);
+
+  DeltaPosition putOut() {
+    if (_queue.length >= size) {
+      return _queue.removeFirst();
+    } else {
+      return DeltaPosition.zero();
+    }
+  }
+
+  void putIn(DeltaPosition dp) {
+    _queue.add(dp);
+    if (_queue.length > size) {
+      _queue.removeFirst();
+    }
+  }
 }

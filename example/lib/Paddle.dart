@@ -47,7 +47,8 @@ class PaddleO extends GameObject with Backwardable {
             gameSize[0]);
     xCenter = gameSize[0] / 2;
     position = Vector2(x, y);
-    size = Vector2(widthRatio * gameSize[0], PongGamePage.paddleT * gameSize[1]);
+    size =
+        Vector2(widthRatio * gameSize[0], PongGamePage.paddleT * gameSize[1]);
     wallGap = PongGamePage.wpGap * gameSize[0];
   }
 
@@ -142,14 +143,14 @@ class EnemyPaddleO extends PaddleO {
 
   @override
   void update(Duration delta) {
-    if (peekBallPos().position == Vector2.zero()) {
+    final ballPos = peekBallPos();
+    if (ballPos.position == Vector2.zero()) {
       return;
     }
     if (lastBallPos == Vector2.zero()) {
-      lastBallPos = peekBallPos().position;
+      lastBallPos = ballPos.position;
       return;
     }
-    final ballPos = peekBallPos();
     if (lastBallPos[0] != ballPos.position[0]) {
       final dx = ballPos.position[0] - lastBallPos[0];
       offset.moveBy(dx);

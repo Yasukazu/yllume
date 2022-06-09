@@ -75,8 +75,8 @@ class _PongGamePageState extends State<PongGamePage> {
     leftWall = WallO(wallPos.left);
     enemyPaddle = EnemyPaddleO(wallPos.top, PongGamePage.paddleWidth,
         PongGamePage.paddleStep, peekBallPos);
-    selfPaddle =
-        PaddleO(wallPos.bottom, PongGamePage.paddleWidth, PongGamePage.paddleStep);
+    selfPaddle = PaddleO(
+        wallPos.bottom, PongGamePage.paddleWidth, PongGamePage.paddleStep);
   }
 
   @override
@@ -178,7 +178,7 @@ class _PongGamePageState extends State<PongGamePage> {
   void getBallPos(Vector2 ballPos) {}
 
   DeltaPosition peekBallPos() {
-    return ball.pickupDeltaPosition;
+    return ball.pickupDeltaPositions.putOut();
   }
 }
 
@@ -186,10 +186,7 @@ class Score extends StatelessWidget {
   final int enemyScore;
   final int playerScore;
 
-  const Score(
-    this.enemyScore,
-    this.playerScore,
-    {Key? key}) : super(key: key);
+  const Score(this.enemyScore, this.playerScore, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -213,7 +210,8 @@ class Score extends StatelessWidget {
           alignment: const Alignment(0, 0.3),
           child: Text(
             playerScore.toString(),
-            style: TextStyle(color: Colors.grey.withOpacity(opacity), fontSize: 100),
+            style: TextStyle(
+                color: Colors.grey.withOpacity(opacity), fontSize: 100),
           )),
     ]);
   }
