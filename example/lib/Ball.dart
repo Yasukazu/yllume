@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
-import 'MyHomePage.dart'; // WallO
 import 'orgMain.dart'; // logger
 import 'package:illume/illume.dart';
-import 'package:intl/intl.dart';
 import 'WallBase.dart';
-import 'Wall.dart';
 import 'Paddle.dart';
-import 'Backwardable.dart';
+import 'pongPage.dart';
+import 'BackWardable.dart';
 
 class BallO extends GameObject with Backwardable {
   static const defaultBallSpeed = 1000; // ms / diagonal
@@ -54,7 +52,7 @@ class BallO extends GameObject with Backwardable {
 
   final void Function(wallPos) pause;
   BallO(this.pause, this._dx, this._dy,
-      [this._speed = defaultBallSpeed, this.ratio = MyHomePage.ballSize]) {
+      [this._speed = defaultBallSpeed, this.ratio = PongGamePage.ballSize]) {
     assert(_dx > 0 && _dy > 0);
     assert(_speed > 0);
     assert(ratio > 0);
@@ -66,7 +64,7 @@ class BallO extends GameObject with Backwardable {
 
   late final RandAngleIterator? angleProvider;
   BallO.withAngleProvider(this.pause, this.angleProvider,
-      [this._speed = defaultBallSpeed, this.ratio = MyHomePage.ballSize]) {
+      [this._speed = defaultBallSpeed, this.ratio = PongGamePage.ballSize]) {
     _angle = angleProvider!.current;
     _dy = cos(_angle);
     _dx = sin(_angle);

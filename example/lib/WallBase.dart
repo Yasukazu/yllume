@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:illume/illume.dart';
-import 'MyHomePage.dart';
+import 'pongPage.dart';
 enum wallPos { top, bottom, left, right }
 
 abstract class WallBaseO extends GameObject {
   static const shape = BoxShape.rectangle;
-  static const b = MyHomePage.wallT;
+  static const b = PongGamePage.wallT;
   static topOffset(Vector2 gameSize) =>
       Vector2(gameSize[0] / 2, b / 2 * gameSize[1]);
   static leftOffset(Vector2 gameSize) =>

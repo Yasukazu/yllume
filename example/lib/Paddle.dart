@@ -1,9 +1,9 @@
 import 'package:example/Ball.dart';
-import 'package:example/MyHomePage.dart';
 import 'package:example/orgMain.dart';
 import 'package:flutter/material.dart';
 import 'Wall.dart';
 import 'WallBase.dart';
+import 'pongPage.dart';
 import 'Backwardable.dart';
 import 'package:illume/illume.dart';
 
@@ -14,7 +14,7 @@ class PaddleO extends GameObject with Backwardable {
   late final double widthRatio;
   late final RangeNum offset;
   late final double xCenter;
-  static const wallGapRatio = MyHomePage.ballSize / 2;
+  static const wallGapRatio = PongGamePage.ballSize / 2;
   late final double wallGap;
   double get x => xCenter + offset.d;
   set x(double v) => offset.assign(v - xCenter);
@@ -31,24 +31,24 @@ class PaddleO extends GameObject with Backwardable {
     assert(stepRatio > 0 && stepRatio <= 1);
   }
 
-  static const b = MyHomePage.paddleT;
+  static const b = PongGamePage.paddleT;
 
   @override
   void init() {
     // _offset[0] = super.offset[0];
     final diff =
-        (MyHomePage.wpGap + MyHomePage.wallT / 2 + b / 2) * gameSize[1];
+        (PongGamePage.wpGap + PongGamePage.wallT / 2 + b / 2) * gameSize[1];
     _y = pos == wallPos.top
         ? WallBaseO.topOffset(gameSize)[1] + diff
         : WallBaseO.bottomOffset(gameSize)[1] - diff;
     _step = stepRatio * gameSize[0];
     offset = RangeNum(
-        (1 - widthRatio - 2 * MyHomePage.wallT - 2 * MyHomePage.wpGap) *
+        (1 - widthRatio - 2 * PongGamePage.wallT - 2 * PongGamePage.wpGap) *
             gameSize[0]);
     xCenter = gameSize[0] / 2;
     position = Vector2(x, y);
-    size = Vector2(widthRatio * gameSize[0], MyHomePage.paddleT * gameSize[1]);
-    wallGap = MyHomePage.wpGap * gameSize[0];
+    size = Vector2(widthRatio * gameSize[0], PongGamePage.paddleT * gameSize[1]);
+    wallGap = PongGamePage.wpGap * gameSize[0];
   }
 
   @override

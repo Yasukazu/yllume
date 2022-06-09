@@ -13,7 +13,7 @@ class Screen {
   static const centerToPlayer = 1.0;
 }
 
-class MyHomePage extends StatefulWidget {
+class PongGamePage extends StatefulWidget {
   static const ballFPS = 30;
   static const ballSize = 0.06;
   static const wpGap = 0.01; // wall and paddle
@@ -21,18 +21,18 @@ class MyHomePage extends StatefulWidget {
   static const paddleStep = 0.1;
   static const paddleWidth = 0.25;
   static const paddleT = 0.06;
-  const MyHomePage({Key? key}) : super(key: key);
+  const PongGamePage({Key? key}) : super(key: key);
   static const mainText = 'Pong game';
   static String statusBar = '$mainText';
   static String wallMsg = '';
   static IllumeController gameController = IllumeController();
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _PongGamePageState createState() => _PongGamePageState();
 }
 
 /// Pong game
-class _MyHomePageState extends State<MyHomePage> {
+class _PongGamePageState extends State<PongGamePage> {
   // FlappyWidget flappyWidget = FlappyWidget();
   // Wall wall = Wall(200, false);
   // Wall wall2 = Wall(400, true);
@@ -46,7 +46,7 @@ class _MyHomePageState extends State<MyHomePage> {
   late final PaddleO enemyPaddle;
   late final PaddleO selfPaddle;
   List<WallO> get walls => [topWall, bottomWall, leftWall, rightWall];
-  IllumeController get gameController => MyHomePage.gameController;
+  IllumeController get gameController => PongGamePage.gameController;
   bool gameStarted = false;
   final ballPos = Vector2(0, 0);
   final ballAngleIterator = RandAngleIterator(14);
@@ -67,23 +67,23 @@ class _MyHomePageState extends State<MyHomePage> {
     logger.info("Player gained 1 score.");
   }
 
-  _MyHomePageState() {
+  _PongGamePageState() {
     ball = BallO.withAngleProvider(pause, ballAngleIterator, speed);
     topWall = PlayerWallO(wallPos.top, pause);
     bottomWall = PlayerWallO(wallPos.bottom, pause);
     rightWall = WallO(wallPos.right);
     leftWall = WallO(wallPos.left);
-    enemyPaddle = EnemyPaddleO(wallPos.top, MyHomePage.paddleWidth,
-        MyHomePage.paddleStep, peekBallPos);
+    enemyPaddle = EnemyPaddleO(wallPos.top, PongGamePage.paddleWidth,
+        PongGamePage.paddleStep, peekBallPos);
     selfPaddle =
-        PaddleO(wallPos.bottom, MyHomePage.paddleWidth, MyHomePage.paddleStep);
+        PaddleO(wallPos.bottom, PongGamePage.paddleWidth, PongGamePage.paddleStep);
   }
 
   @override
   void initState() {
     super.initState();
     // gameController.startGame();
-    MyHomePage.statusBar = MyHomePage.mainText + ": Tap to start:";
+    PongGamePage.statusBar = PongGamePage.mainText + ": Tap to start:";
     gameController.gameObjects.addAll([
       topWall,
       bottomWall,
@@ -113,7 +113,7 @@ class _MyHomePageState extends State<MyHomePage> {
     gameController.pause();
     gamePaused = true;
     setState(() {
-      MyHomePage.statusBar = MyHomePage.mainText + ": Tap to restart:";
+      PongGamePage.statusBar = PongGamePage.mainText + ": Tap to restart:";
     });
     if (pos == wallPos.top) {
       scorePlayer();
@@ -149,7 +149,7 @@ class _MyHomePageState extends State<MyHomePage> {
         },
         child: Scaffold(
           appBar: AppBar(
-            title: Text(MyHomePage.statusBar),
+            title: Text(PongGamePage.statusBar),
           ),
           body: Stack(
             children: [
@@ -186,31 +186,31 @@ class Score extends StatelessWidget {
   final int enemyScore;
   final int playerScore;
 
-  Score(
+  const Score(
     this.enemyScore,
     this.playerScore,
-  );
+    {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final opacity = 1.0;
+    const opacity = 1.0;
     return Stack(children: [
       Container(
-          alignment: Alignment(0, 0),
+          alignment: const Alignment(0, 0),
           child: Container(
             height: 1,
             width: MediaQuery.of(context).size.width / 3,
             color: Colors.grey.withOpacity(opacity),
           )),
       Container(
-          alignment: Alignment(0, -0.3),
+          alignment: const Alignment(0, -0.3),
           child: Text(
             enemyScore.toString(),
             style: TextStyle(
                 color: Colors.grey.withOpacity(opacity), fontSize: 100),
           )),
       Container(
-          alignment: Alignment(0, 0.3),
+          alignment: const Alignment(0, 0.3),
           child: Text(
             playerScore.toString(),
             style: TextStyle(color: Colors.grey.withOpacity(opacity), fontSize: 100),

@@ -1,25 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
-import 'MyHomePage.dart';
+import 'pongPage.dart';
 
 final logger = Logger('TrainLogger');
 
-// logger.level = Loglev
-late final MyApp myApp;
+late final PongGame pongGame;
 
 void main() {
   Logger.root.level = Level.ALL; // defaults to Level.INFO
   Logger.root.onRecord.listen((record) {
     print('${record.level.name}: ${record.message}'); // ${record.time}:
   });
-  myApp = MyApp();
-  runApp(myApp);
+  pongGame = PongGame();
+  runApp(pongGame);
 }
 
-class MyApp extends StatelessWidget {
-  late final Widget homePage;
-  MyApp({Key? key}) : super(key: key) {
-    homePage = const MyHomePage();
+class PongGame extends StatelessWidget {
+  late final Widget pongPage;
+  PongGame({Key? key}) : super(key: key) {
+    pongPage = const PongGamePage();
   }
 
   @override
@@ -29,6 +28,6 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
-        home: homePage);
+        home: pongPage);
   }
 }
