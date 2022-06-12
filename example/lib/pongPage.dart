@@ -177,8 +177,8 @@ class _PongGamePageState extends State<PongGamePage> {
 
   void getBallPos(Vector2 ballPos) {}
 
-  DeltaPosition peekBallPos() {
-    return ball.pickupDeltaPositions.putOut();
+  List<DeltaPosition> peekBallPos() {
+    return ball.yieldBallPoss();
   }
 }
 

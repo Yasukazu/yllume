@@ -111,6 +111,8 @@ class BallO extends GameObject with Backwardable {
     alignment = GameObjectAlignment.center;
     position = Vector2(gx / 2, gy / 2);
     initialised = true;
+    _pickupDeltaPositionQueue.clear();
+    _pickupCount = 0;
   }
 
   @override
@@ -154,12 +156,20 @@ class BallO extends GameObject with Backwardable {
     // real world app or at least lock orientation.
   }
 
-  // final stepRatio = 0.015;
-  // bool update1st = true;
-  static const pickupDelay = 22;
-  final pickupDeltaPositions = DelayBuffer(pickupDelay);
-  // final pickupDeltaPosition = DeltaPosition(Duration.zero, Vector2.zero());
-  DeltaPosition? get pickupDeltaPosition => pickupDeltaPositions.putOut();
+  /// returns [] if not enough data
+  List<DeltaPosition> yieldBallPoss() {
+    if (_pickupDeltaPositionQueue.length >= (2 + pickupDelay)) {
+      final dp = _pickupDeltaPositionQueue.removeFirst();
+      return [dp, _pickupDeltaPositionQueue.removeFirst()];
+    }
+    return [];
+  }
+
+  int _pickupCount = 0;
+  static const pickupDelay = 4;
+  final _pickupDeltaPositionQueue =
+      Queue<DeltaPosition>(); // DelayBuffer(pickupDelay);
+  // DeltaPosition? get pickupDeltaPosition => _pickupDeltaPositionQueue.putOut();
   static const pickupCycle = 4;
   int _lastUpdate = 0;
   @override
@@ -168,18 +178,18 @@ class BallO extends GameObject with Backwardable {
       _lastUpdate = delta.inMilliseconds;
       position = stepForward();
       ++_stepCount;
-      // getBallPos(position);
     }
     if (_stepCount % pickupCycle == 0) {
-      pickupDeltaPositions.putIn(DeltaPosition(delta, position));
-      // pickupDeltaPosition.delta = delta;
-      // pickupDeltaPosition.position = position;
+      _pickupDeltaPositionQueue.add(DeltaPosition(delta, position));
     }
-    /* if (delta.inMilliseconds % 200 == 0) {
+    if (_pickupDeltaPositionQueue.length > (3 + pickupDelay)) {
+      _pickupDeltaPositionQueue.removeFirst();
+    }
+  }
+  /* if (delta.inMilliseconds % 200 == 0) {
       ++corePos;
       logger.fine("corePos:$corePos");
     } */
-  }
 
   Vector2 _step() {
     final x = position[0];

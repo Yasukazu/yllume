@@ -138,27 +138,41 @@ class PaddleO extends GameObject with Backwardable {
 class EnemyPaddleO extends PaddleO {
   // Vector2 ballPos = Vector2.zero();
   Vector2 lastBallPos = Vector2.zero();
-  final DeltaPosition Function() peekBallPos;
+  final List<DeltaPosition> Function() peekBallPos;
   EnemyPaddleO(super.pos, super.width, super.step, this.peekBallPos) {}
+
+  List<DeltaPosition> ballDPs = [];
 
   @override
   void update(Duration delta) {
-    final ballPos = peekBallPos();
-    if (ballPos.position == Vector2.zero()) {
+    if (ballDPs.length < 2) {
+      ballDPs = peekBallPos();
+    }
+    if (ballDPs.length < 2) {
       return;
     }
-    if (lastBallPos == Vector2.zero()) {
-      lastBallPos = ballPos.position;
-      return;
+    // TODO: set proper dx
+    final lastBallX = ballDPs[1].position[0];
+    final ballDx = ballDPs[1].position[0] - ballDPs[0].position[0];
+    final ballDy = ballDPs[1].position[1] - ballDPs[0].position[1];
+    final ballDt = ballDPs[1].delta - ballDPs[0].delta;
+    // final ballXspeed = ballDx / ballDt.inMilliseconds;
+    final past = delta - ballDPs[1].delta;
+    final landingDy = gameSize[1] - ballDPs[1].position[1];
+    final landingCycle = landingDy / ballDy;
+    final landingTime = ballDt * landingCycle - past;
+    final landingDx =
+        ballDx * landingCycle * landingTime.inMilliseconds / ballDy;
+    var cdx = 0.0;
+    if (landingDx.abs() > gameSize[1]) {
+      final fold = landingDx.abs() - gameSize[1];
+      cdx = landingDx + ((landingDx >= 0) ? -fold : fold) - lastBallX;
+    } else {
+      cdx = landingDx - lastBallX;
     }
-    if (lastBallPos[0] != ballPos.position[0]) {
-      final dx = ballPos.position[0] - lastBallPos[0];
-      offset.moveBy(dx);
-      position = Vector2(x, y);
-      logger.finer("Paddle.x = $x; position[0]= ${position[0]}");
-      lastBallPos[0] = ballPos.position[0];
-      lastBallPos[1] = ballPos.position[1];
-    }
+    offset.moveBy(cdx);
+    position = Vector2(x, y);
+    logger.finer("Paddle.x = $x; position[0]= ${position[0]}");
   }
 }
 
