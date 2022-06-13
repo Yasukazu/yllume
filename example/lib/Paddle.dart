@@ -52,12 +52,16 @@ class PaddleO extends GameObject with Backwardable {
     wallGap = PongGamePage.wpGap * gameSize[0];
   }
 
+  void center() {
+    offset.center();
+  }
+
   @override
   void update(Duration delta) {
     // x = offset.d + offset[0];
     // position[0] = x; position[1] = y;
     position = Vector2(x, y);
-    logger.finer("Paddle.x = $x; position[0]= ${position[0]}");
+    logger.finest("Paddle.x = $x; position[0]= ${position[0]}");
   }
 
   @override
@@ -151,28 +155,37 @@ class EnemyPaddleO extends PaddleO {
     if (ballDPs.length < 2) {
       return;
     }
+    final ballDy = ballDPs[1].position[1] - ballDPs[0].position[1];
+    if (ballDy >= 0) {
+      return;
+    }
     // TODO: set proper dx
     final lastBallX = ballDPs[1].position[0];
     final ballDx = ballDPs[1].position[0] - ballDPs[0].position[0];
-    final ballDy = ballDPs[1].position[1] - ballDPs[0].position[1];
-    final ballDt = ballDPs[1].delta - ballDPs[0].delta;
+    // final ballDt = ballDPs[1].delta - ballDPs[0].delta;
     // final ballXspeed = ballDx / ballDt.inMilliseconds;
-    final past = delta - ballDPs[1].delta;
+    // final past = delta - ballDPs[1].delta;
     final landingDy = gameSize[1] - ballDPs[1].position[1];
     final landingCycle = landingDy / ballDy;
-    final landingTime = ballDt * landingCycle - past;
-    final landingDx =
-        ballDx * landingCycle * landingTime.inMilliseconds / ballDy;
+    // final landingTime = ballDt * landingCycle - past;
+    final landingDx = lastBallX + ballDx * landingCycle;
     var cdx = 0.0;
     if (landingDx.abs() > gameSize[1]) {
       final fold = landingDx.abs() - gameSize[1];
-      cdx = landingDx + ((landingDx >= 0) ? -fold : fold) - lastBallX;
+      cdx = landingDx + ((landingDx >= 0) ? -fold : fold) - x;
     } else {
-      cdx = landingDx - lastBallX;
+      cdx = landingDx - x;
     }
-    offset.moveBy(cdx);
-    position = Vector2(x, y);
-    logger.finer("Paddle.x = $x; position[0]= ${position[0]}");
+    if (cdx != 0.0) {
+      offset.moveBy(cdx);
+      position = Vector2(x, y);
+      logger.finer("Paddle.x = $x; position[0]= ${position[0]}");
+    }
+  }
+
+  double calcLandingPos(List<DeltaPosition> ballDPs, Duration delta) {
+    // TODO: real calc.
+    return 0.0;
   }
 }
 
@@ -186,6 +199,10 @@ class RangeNum {
 
   RangeNum(this.range) {
     halfRange = range.abs() / 2;
+  }
+
+  void center() {
+    _d = 0;
   }
 
   void inc(double step) {

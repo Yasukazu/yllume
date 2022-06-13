@@ -102,6 +102,8 @@ class _PongGamePageState extends State<PongGamePage> {
     // gameController.gameObjects.removeLast();
     // ballAngleIterator.moveNext();
     ball.reset();
+    enemyPaddle.center();
+    selfPaddle.center();
     // gameController.gameObjects.add(ball as BallO);
     gameController.resume();
     gamePaused = false;

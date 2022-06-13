@@ -112,7 +112,7 @@ class BallO extends GameObject with Backwardable {
     position = Vector2(gx / 2, gy / 2);
     initialised = true;
     _pickupDeltaPositionQueue.clear();
-    _pickupCount = 0;
+    _stepCount = 0;
   }
 
   @override
@@ -165,8 +165,7 @@ class BallO extends GameObject with Backwardable {
     return [];
   }
 
-  int _pickupCount = 0;
-  static const pickupDelay = 4;
+  static const pickupDelay = 1;
   final _pickupDeltaPositionQueue =
       Queue<DeltaPosition>(); // DelayBuffer(pickupDelay);
   // DeltaPosition? get pickupDeltaPosition => _pickupDeltaPositionQueue.putOut();
@@ -179,7 +178,9 @@ class BallO extends GameObject with Backwardable {
       position = stepForward();
       ++_stepCount;
     }
-    if (_stepCount % pickupCycle == 0) {
+    if (delta != Duration.zero &&
+        position != Vector2.zero() &&
+        _stepCount % pickupCycle == 0) {
       _pickupDeltaPositionQueue.add(DeltaPosition(delta, position));
     }
     if (_pickupDeltaPositionQueue.length > (3 + pickupDelay)) {
@@ -246,6 +247,7 @@ class BallO extends GameObject with Backwardable {
     if (rx >= rect.left && rx <= rect.right) {
       logger.finer("Paddle top/bottom hit Ball.");
       reverseDy();
+      _pickupDeltaPositionQueue.clear();
       return true;
     }
     logger.fine("Paddle side hit Ball.");
