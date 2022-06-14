@@ -182,6 +182,31 @@ class _PongGamePageState extends State<PongGamePage> {
   List<DeltaPosition> peekBallPos() {
     return ball.yieldBallPoss();
   }
+
+  List<DeltaPosition> ballDPs = [];
+
+  void Function() enemyPaddleAction() {
+
+  }
+  
+  double calcLandingPos(List<DeltaPosition> ballDPs, Duration delta) {
+    /// vector dXY
+    final double dY = ballDPs[1].position[1] - ballDPs[0].position[1];
+    final double dX = ballDPs[1].position[0] - ballDPs[0].position[0];
+    final double dXY = sqrt(dX * dX + dY * dY);
+
+    /// time dT
+    final int dT = (ballDPs[1].delta - ballDPs[0].delta).inMilliseconds;
+
+    /// speed vXY
+    final double speed = dXY / dT;
+
+    /// current position = dXY + d2XY
+    final d2XY = speed * (delta - ballDPs[1].delta).inMilliseconds;
+    // final Vector2 curPos = (dXY + d2XY) / dXY * ballDPs[0];
+
+    return 0.0;
+  }
 }
 
 class Score extends StatelessWidget {

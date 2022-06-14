@@ -6,6 +6,7 @@ import 'WallBase.dart';
 import 'pongPage.dart';
 import 'Backwardable.dart';
 import 'package:illume/illume.dart';
+import 'dart:math';
 
 class PaddleO extends GameObject with Backwardable {
   static const color = Colors.yellow;
@@ -145,7 +146,6 @@ class EnemyPaddleO extends PaddleO {
   final List<DeltaPosition> Function() peekBallPos;
   EnemyPaddleO(super.pos, super.width, super.step, this.peekBallPos) {}
 
-  List<DeltaPosition> ballDPs = [];
 
   @override
   void update(Duration delta) {
@@ -159,6 +159,7 @@ class EnemyPaddleO extends PaddleO {
     if (ballDy >= 0) {
       return;
     }
+    final landingPos = calcLandingPos(ballDPs, delta);
     // TODO: set proper dx
     final lastBallX = ballDPs[1].position[0];
     final ballDx = ballDPs[1].position[0] - ballDPs[0].position[0];
@@ -183,10 +184,6 @@ class EnemyPaddleO extends PaddleO {
     }
   }
 
-  double calcLandingPos(List<DeltaPosition> ballDPs, Duration delta) {
-    // TODO: real calc.
-    return 0.0;
-  }
 }
 
 class RangeNum {
