@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:example/Ball.dart';
 import 'package:example/orgMain.dart';
 import 'package:flutter/material.dart';
@@ -65,6 +67,8 @@ class PaddleO extends GameObject with Backwardable {
     logger.finest("Paddle.x = $x; position[0]= ${position[0]}");
   }
 
+  RightLeft? _lastCollisionMove;
+
   @override
   void onCollision(List<Collision> collisions) {
     WallO? wall;
@@ -80,13 +84,14 @@ class PaddleO extends GameObject with Backwardable {
       final moveLen = lap.abs() + wallGap;
       if (wall.pos == wallPos.left) {
         offset.moveBy(moveLen);
-        position = Vector2(x, y);
         logger.finer("offset moveBy ${moveLen}");
+        _lastCollisionMove = RightLeft.right;
       } else {
         offset.moveBy(-moveLen);
-        position = Vector2(x, y);
         logger.finer("offset moveBy ${-moveLen}");
+        _lastCollisionMove = RightLeft.left;
       }
+      position = Vector2(x, y);
       /*
       backward(this);
       if (lastPosForBackward != null) {
@@ -142,48 +147,59 @@ class PaddleO extends GameObject with Backwardable {
 
 class EnemyPaddleO extends PaddleO {
   // Vector2 ballPos = Vector2.zero();
-  Vector2 lastBallPos = Vector2.zero();
-  final List<DeltaPosition> Function() peekBallPos;
-  EnemyPaddleO(super.pos, super.width, super.step, this.peekBallPos) {}
-
+  // Vector2 lastBallPos = Vector2.zero();
+  // final List<DeltaPosition> Function() peekBallPos;
+  EnemyPaddleO(super.pos, super.width, super.step);
 
   @override
   void update(Duration delta) {
-    if (ballDPs.length < 2) {
-      ballDPs = peekBallPos();
-    }
-    if (ballDPs.length < 2) {
-      return;
-    }
-    final ballDy = ballDPs[1].position[1] - ballDPs[0].position[1];
-    if (ballDy >= 0) {
-      return;
-    }
-    final landingPos = calcLandingPos(ballDPs, delta);
-    // TODO: set proper dx
-    final lastBallX = ballDPs[1].position[0];
-    final ballDx = ballDPs[1].position[0] - ballDPs[0].position[0];
-    // final ballDt = ballDPs[1].delta - ballDPs[0].delta;
-    // final ballXspeed = ballDx / ballDt.inMilliseconds;
-    // final past = delta - ballDPs[1].delta;
-    final landingDy = gameSize[1] - ballDPs[1].position[1];
-    final landingCycle = landingDy / ballDy;
-    // final landingTime = ballDt * landingCycle - past;
-    final landingDx = lastBallX + ballDx * landingCycle;
-    var cdx = 0.0;
-    if (landingDx.abs() > gameSize[1]) {
-      final fold = landingDx.abs() - gameSize[1];
-      cdx = landingDx + ((landingDx >= 0) ? -fold : fold) - x;
-    } else {
-      cdx = landingDx - x;
-    }
-    if (cdx != 0.0) {
-      offset.moveBy(cdx);
-      position = Vector2(x, y);
-      logger.finer("Paddle.x = $x; position[0]= ${position[0]}");
+    if (commandPacket != null) {
+      final command = commandPacket as CommandPacket;
+      if (command.count > 0) {
+        if (command.direction == RightLeft.right) {
+          moveRight();
+        } else if (command.direction == RightLeft.left) {
+          moveLeft();
+        }
+        command.count--;
+        logger.finest(
+            "EnemyPaddle ${command.direction} command made count: ${command.count}.");
+      }
     }
   }
 
+  CommandPacket? commandPacket;
+  late RightLeft _direction;
+
+  @override
+  void moveRight() {
+    super.moveRight();
+    _direction = RightLeft.right;
+  }
+
+  @override
+  void moveLeft() {
+    super.moveLeft();
+    _direction = RightLeft.left;
+  }
+
+  void move() {
+    if (_direction == RightLeft.right) {
+      moveRight();
+    } else if (_direction == RightLeft.left) {
+      moveLeft();
+    } else {
+      throw Exception("_direction is not set when move() is called!");
+    }
+  }
+}
+
+enum RightLeft { right, left }
+
+class CommandPacket {
+  final RightLeft direction;
+  int count;
+  CommandPacket(this.direction, this.count);
 }
 
 class RangeNum {

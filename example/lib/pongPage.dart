@@ -6,6 +6,7 @@ import 'Ball.dart';
 import 'WallBase.dart';
 import 'Wall.dart';
 import 'Paddle.dart';
+import 'dart:math';
 
 class Screen {
   static const centerToSide = 1.0;
@@ -73,8 +74,8 @@ class _PongGamePageState extends State<PongGamePage> {
     bottomWall = PlayerWallO(wallPos.bottom, pause);
     rightWall = WallO(wallPos.right);
     leftWall = WallO(wallPos.left);
-    enemyPaddle = EnemyPaddleO(wallPos.top, PongGamePage.paddleWidth,
-        PongGamePage.paddleStep, peekBallPos);
+    enemyPaddle = EnemyPaddleO(
+        wallPos.top, PongGamePage.paddleWidth, PongGamePage.paddleStep);
     selfPaddle = PaddleO(
         wallPos.bottom, PongGamePage.paddleWidth, PongGamePage.paddleStep);
   }
@@ -185,11 +186,10 @@ class _PongGamePageState extends State<PongGamePage> {
 
   List<DeltaPosition> ballDPs = [];
 
-  void Function() enemyPaddleAction() {
+  /// returns 0 if not available.
+  double calcLandingPos(List<DeltaPosition> ballDPs, Duration delta, Vector2 gameSize, double x) {
+    assert(ballDPs.length >= 2);
 
-  }
-  
-  double calcLandingPos(List<DeltaPosition> ballDPs, Duration delta) {
     /// vector dXY
     final double dY = ballDPs[1].position[1] - ballDPs[0].position[1];
     final double dX = ballDPs[1].position[0] - ballDPs[0].position[0];
@@ -204,6 +204,34 @@ class _PongGamePageState extends State<PongGamePage> {
     /// current position = dXY + d2XY
     final d2XY = speed * (delta - ballDPs[1].delta).inMilliseconds;
     // final Vector2 curPos = (dXY + d2XY) / dXY * ballDPs[0];
+    /* if (ballDPs.length < 2) {
+      ballDPs = peekBallPos();
+    }
+    if (ballDPs.length < 2) {
+      return 0;
+    } */
+    final ballDy = ballDPs[1].position[1] - ballDPs[0].position[1];
+    if (ballDy >= 0) {
+      return 0;
+    }
+    // final landingPos = calcLandingPos(ballDPs, delta);
+    // TODO: set proper dx
+    final lastBallX = ballDPs[1].position[0];
+    final ballDx = ballDPs[1].position[0] - ballDPs[0].position[0];
+    // final ballDt = ballDPs[1].delta - ballDPs[0].delta;
+    // final ballXspeed = ballDx / ballDt.inMilliseconds;
+    // final past = delta - ballDPs[1].delta;
+    final landingDy = gameSize[1] - ballDPs[1].position[1];
+    final landingCycle = landingDy / ballDy;
+    // final landingTime = ballDt * landingCycle - past;
+    final landingDx = lastBallX + ballDx * landingCycle;
+    var cdx = 0.0;
+    if (landingDx.abs() > gameSize[1]) {
+      final fold = landingDx.abs() - gameSize[1];
+      cdx = landingDx + ((landingDx >= 0) ? -fold : fold) - x;
+    } else {
+      cdx = landingDx - x;
+    }
 
     return 0.0;
   }
