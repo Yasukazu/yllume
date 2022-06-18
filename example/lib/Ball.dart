@@ -6,7 +6,7 @@ import 'package:illume/illume.dart';
 import 'WallBase.dart';
 import 'Paddle.dart';
 import 'pongPage.dart';
-import 'BackWardable.dart';
+import 'Backwardable.dart';
 
 class BallO extends GameObject with Backwardable {
   static const defaultBallSpeed = 1000; // ms / diagonal
@@ -52,7 +52,7 @@ class BallO extends GameObject with Backwardable {
   static const iRatio = 0.5;
 
   final void Function(wallPos) pause;
-  BallO(this.pause, this._dx, this._dy,
+  BallO(this.yieldBallPos, this.pause, this._dx, this._dy,
       [this._speed = defaultBallSpeed, this.ratio = PongGamePage.ballSize]) {
     assert(_dx > 0 && _dy > 0);
     assert(_speed > 0);
@@ -61,10 +61,10 @@ class BallO extends GameObject with Backwardable {
   }
 
   /// _angle to Y-axis
-  // final void Function(Vector2) getBallPos;
+  final void Function(DeltaPosition) yieldBallPos;
 
   late final RandAngleIterator? angleProvider;
-  BallO.withAngleProvider(this.pause, this.angleProvider,
+  BallO.withAngleProvider(this.yieldBallPos, this.pause, this.angleProvider,
       [this._speed = defaultBallSpeed, this.ratio = PongGamePage.ballSize]) {
     _angle = angleProvider!.current;
     _dy = cos(_angle);
@@ -138,7 +138,7 @@ class BallO extends GameObject with Backwardable {
 
   @override
   void onCollision(List<Collision> collisions) {
-    logger.info("Ball colided with ${collisions.length} collisions.");
+    logger.info("Ball collided with ${collisions.length} collisions.");
     for (Collision col in collisions) {
       if (col.component is PaddleO) {
         final paddle = col.component as PaddleO;
@@ -156,15 +156,6 @@ class BallO extends GameObject with Backwardable {
     // real world app or at least lock orientation.
   }
 
-  /// returns [] if not enough data
-  List<DeltaPosition> yieldBallPoss() {
-    if (_pickupDeltaPositionQueue.length >= (2 + pickupDelay)) {
-      final dp = _pickupDeltaPositionQueue.removeFirst();
-      return [dp, _pickupDeltaPositionQueue.removeFirst()];
-    }
-    else  {}
-    return [];
-  }
 
   static const pickupDelay = 1;
   final _pickupDeltaPositionQueue =
@@ -182,11 +173,9 @@ class BallO extends GameObject with Backwardable {
     if (delta != Duration.zero &&
         position != Vector2.zero() &&
         _stepCount % pickupCycle == 0) {
-      _pickupDeltaPositionQueue.add(DeltaPosition(delta, position));
+      yieldBallPos(DeltaPosition(delta, position));
     }
-    if (_pickupDeltaPositionQueue.length > (3 + pickupDelay)) {
-      _pickupDeltaPositionQueue.removeFirst();
-    }
+
   }
   /* if (delta.inMilliseconds % 200 == 0) {
       ++corePos;

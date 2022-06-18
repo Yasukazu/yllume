@@ -70,12 +70,13 @@ class _PongGamePageState extends State<PongGamePage> {
   }
 
   _PongGamePageState() {
-    ball = BallO.withAngleProvider(pause, ballAngleIterator, speed);
+    ball = BallO.withAngleProvider(
+        ballChaser.yieldBallPos, pause, ballAngleIterator, speed);
     topWall = PlayerWallO(wallPos.top, pause);
     bottomWall = PlayerWallO(wallPos.bottom, pause);
     rightWall = WallO(wallPos.right);
     leftWall = WallO(wallPos.left);
-    enemyPaddle = EnemyPaddleO(
+    enemyPaddle = EnemyPaddleO(ballChaser,
         wallPos.top, PongGamePage.paddleWidth, PongGamePage.paddleStep);
     selfPaddle = PaddleO(
         wallPos.bottom, PongGamePage.paddleWidth, PongGamePage.paddleStep);
@@ -180,14 +181,6 @@ class _PongGamePageState extends State<PongGamePage> {
     ),
   );
 
-  void getBallPos(Vector2 ballPos) {}
-
-  List<DeltaPosition> peekBallPos() {
-    return ball.yieldBallPoss();
-  }
-
-  List<DeltaPosition> ballDPs = [];
-
   /// returns 0 if not available.
   double calcLandingPos(
       List<DeltaPosition> ballDPs, Duration delta, Vector2 gameSize, double x) {
@@ -247,10 +240,37 @@ class BallChaser {
   // Vector2 gameSize;
   // BallChaser(this.ballDPs, this.delta, this.gameSize);
 
-  void yieldDeltaPos(DeltaPosition deltaPosition) => dPQueue.add(deltaPosition);
+  void yieldBallPos(DeltaPosition deltaPosition) {
+    dPQueue.add(deltaPosition);
+    if (dPQueue.length > (2 + pickupDelay)) {
+      dPQueue.removeFirst();
+    }
+  }
+
+  Vector2 getBallCurPos(Duration delta, List<DeltaPosition> ballDPs) {
+    assert(dPQueue.length >= 2);
+    /// vector dXY
+    final double dY = ballDPs[1].position[1] - ballDPs[0].position[1];
+    final double dX = ballDPs[1].position[0] - ballDPs[0].position[0];
+    final double dXY = sqrt(dX * dX + dY * dY);
+
+    /// time dT
+    final int dT = (ballDPs[1].delta - ballDPs[0].delta).inMilliseconds;
+
+    /// speed vXY
+    final double speed = dXY / dT;
+
+    /// current scalar = dXY + d2XY
+    final d2XY = speed * (delta - ballDPs[1].delta).inMilliseconds;
+    final x1 = ballDPs[1].position[0];
+    final y1 = ballDPs[1].position[1];
+    final v1 = sqrt(x1 * x1 + y1 * y1);
+    final k = (v1 + d2XY) / v1;
+    return Vector2(k * x1, k * y1);
+  }
 
   /// returns [] if not enough data
-  List<DeltaPosition> yieldBallPoss() {
+  List<DeltaPosition> getBallPoss() {
     if (dPQueue.length >= (2 + pickupDelay)) {
       final dp = dPQueue.removeFirst();
       return [dp, dPQueue.removeFirst()];
