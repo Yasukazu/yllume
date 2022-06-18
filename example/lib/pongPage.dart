@@ -7,6 +7,7 @@ import 'WallBase.dart';
 import 'Wall.dart';
 import 'Paddle.dart';
 import 'dart:math';
+import 'dart:collection';
 
 class Screen {
   static const centerToSide = 1.0;
@@ -38,7 +39,7 @@ class _PongGamePageState extends State<PongGamePage> {
   // Wall wall = Wall(200, false);
   // Wall wall2 = Wall(400, true);
   static const speed = 500;
-
+  late final BallChaser ballChaser;
   late final BallO ball;
   late final WallO topWall;
   late final WallO bottomWall;
@@ -94,6 +95,7 @@ class _PongGamePageState extends State<PongGamePage> {
       selfPaddle,
       ball
     ]);
+    ballChaser = BallChaser();
   }
 
   void resume() {
@@ -187,7 +189,8 @@ class _PongGamePageState extends State<PongGamePage> {
   List<DeltaPosition> ballDPs = [];
 
   /// returns 0 if not available.
-  double calcLandingPos(List<DeltaPosition> ballDPs, Duration delta, Vector2 gameSize, double x) {
+  double calcLandingPos(
+      List<DeltaPosition> ballDPs, Duration delta, Vector2 gameSize, double x) {
     assert(ballDPs.length >= 2);
 
     /// vector dXY
@@ -214,7 +217,6 @@ class _PongGamePageState extends State<PongGamePage> {
     if (ballDy >= 0) {
       return 0;
     }
-    // final landingPos = calcLandingPos(ballDPs, delta);
     // TODO: set proper dx
     final lastBallX = ballDPs[1].position[0];
     final ballDx = ballDPs[1].position[0] - ballDPs[0].position[0];
@@ -234,6 +236,27 @@ class _PongGamePageState extends State<PongGamePage> {
     }
 
     return 0.0;
+  }
+}
+
+class BallChaser {
+  static const pickupDelay = 3;
+  final dPQueue = Queue<DeltaPosition>();
+  // List<DeltaPosition> ballDPs;
+  // Duration delta;
+  // Vector2 gameSize;
+  // BallChaser(this.ballDPs, this.delta, this.gameSize);
+
+  void yieldDeltaPos(DeltaPosition deltaPosition) => dPQueue.add(deltaPosition);
+
+  /// returns [] if not enough data
+  List<DeltaPosition> yieldBallPoss() {
+    if (dPQueue.length >= (2 + pickupDelay)) {
+      final dp = dPQueue.removeFirst();
+      return [dp, dPQueue.removeFirst()];
+    } else {
+      return [];
+    }
   }
 }
 

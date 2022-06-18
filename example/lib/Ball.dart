@@ -162,6 +162,7 @@ class BallO extends GameObject with Backwardable {
       final dp = _pickupDeltaPositionQueue.removeFirst();
       return [dp, _pickupDeltaPositionQueue.removeFirst()];
     }
+    else  {}
     return [];
   }
 
