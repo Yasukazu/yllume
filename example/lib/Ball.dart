@@ -156,7 +156,6 @@ class BallO extends GameObject with Backwardable {
     // real world app or at least lock orientation.
   }
 
-
   static const pickupDelay = 1;
   final _pickupDeltaPositionQueue =
       Queue<DeltaPosition>(); // DelayBuffer(pickupDelay);
@@ -175,7 +174,7 @@ class BallO extends GameObject with Backwardable {
         _stepCount % pickupCycle == 0) {
       yieldBallPos(DeltaPosition(delta, position));
     }
-
+    logger.finest("ball pos: (${position[0]}, ${position[1]}).");
   }
   /* if (delta.inMilliseconds % 200 == 0) {
       ++corePos;
