@@ -55,6 +55,7 @@ class PaddleO extends GameObject with Backwardable {
     wallGap = PongGamePage.wpGap * gameSize[0];
   }
 
+
   void center() {
     offset.center();
   }
@@ -148,11 +149,19 @@ class PaddleO extends GameObject with Backwardable {
 class EnemyPaddleO extends PaddleO {
   // Vector2 ballPos = Vector2.zero();
   // Vector2 lastBallPos = Vector2.zero();
-  // final List<DeltaPosition> Function() peekBallPos;
-  EnemyPaddleO(super.pos, super.width, super.step);
+  final BallChaser ballChaser; // List<DeltaPosition> Function() getBallPoss;
+  EnemyPaddleO(this.ballChaser, super.pos, super.width, super.step);
 
   @override
   void update(Duration delta) {
+    if (estimatedBallPos == null) {
+      final ballDPs = ballChaser.getBallPoss();
+      if (ballDPs.isNotEmpty) {
+        estimatedBallPos = ballChaser.getBallCurPos(delta, ballDPs);
+        logger.finest(
+            "Estimated ball position: (${estimatedBallPos![0]}, ${estimatedBallPos![1]}).");
+      }
+    }
     if (commandPacket != null) {
       final command = commandPacket as CommandPacket;
       if (command.count > 0) {
@@ -192,6 +201,13 @@ class EnemyPaddleO extends PaddleO {
       throw Exception("_direction is not set when move() is called!");
     }
   }
+
+  @override
+  void center() {
+    super.center();
+    estimatedBallPos = null;
+  }
+  Vector2? estimatedBallPos;
 }
 
 enum RightLeft { right, left }

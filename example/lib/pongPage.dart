@@ -70,6 +70,7 @@ class _PongGamePageState extends State<PongGamePage> {
   }
 
   _PongGamePageState() {
+    ballChaser = BallChaser();
     ball = BallO.withAngleProvider(
         ballChaser.yieldBallPos, pause, ballAngleIterator, speed);
     topWall = PlayerWallO(wallPos.top, pause);
@@ -96,7 +97,6 @@ class _PongGamePageState extends State<PongGamePage> {
       selfPaddle,
       ball
     ]);
-    ballChaser = BallChaser();
   }
 
   void resume() {
