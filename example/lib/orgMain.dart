@@ -7,7 +7,7 @@ final logger = Logger('TrainLogger');
 late final PongGame pongGame;
 
 void main() {
-  Logger.root.level = Level.ALL; // defaults to Level.INFO
+  Logger.root.level = Level.FINER; // defaults to Level.INFO
   Logger.root.onRecord.listen((record) {
     print('${record.level.name}: ${record.message}'); // ${record.time}:
   });

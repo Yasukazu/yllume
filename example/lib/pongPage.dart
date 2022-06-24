@@ -241,6 +241,9 @@ class BallChaser {
   // BallChaser(this.ballDPs, this.delta, this.gameSize);
 
   void yieldBallPos(DeltaPosition deltaPosition) {
+    if (dPQueue.isNotEmpty) {
+      assert(dPQueue.last != deltaPosition);
+    }
     dPQueue.add(deltaPosition);
     if (dPQueue.length > (2 + pickupDelay)) {
       dPQueue.removeFirst();

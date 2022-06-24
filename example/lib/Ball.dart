@@ -111,7 +111,7 @@ class BallO extends GameObject with Backwardable {
     alignment = GameObjectAlignment.center;
     position = Vector2(gx / 2, gy / 2);
     initialised = true;
-    _pickupDeltaPositionQueue.clear();
+    // _pickupDeltaPositionQueue.clear();
     _stepCount = 0;
   }
 
@@ -156,10 +156,8 @@ class BallO extends GameObject with Backwardable {
     // real world app or at least lock orientation.
   }
 
-  static const pickupDelay = 1;
-  final _pickupDeltaPositionQueue =
-      Queue<DeltaPosition>(); // DelayBuffer(pickupDelay);
-  // DeltaPosition? get pickupDeltaPosition => _pickupDeltaPositionQueue.putOut();
+  static const pickupDelay = 5;
+  // final _pickupDeltaPositionQueue = Queue<DeltaPosition>(); // DelayBuffer(pickupDelay);
   static const pickupCycle = 4;
   int _lastUpdate = 0;
   @override
@@ -167,14 +165,15 @@ class BallO extends GameObject with Backwardable {
     if (delta.inMilliseconds - _lastUpdate > stepInterval) {
       _lastUpdate = delta.inMilliseconds;
       position = stepForward();
+      logger.finest("Update ball pos: (${position[0]}, ${position[1]}).");
+      if (delta != Duration.zero &&
+          position != Vector2.zero() &&
+          _stepCount % pickupCycle == 0) {
+        yieldBallPos(DeltaPosition(delta, position));
+        logger.finer("Yield ball pos: (${position[0]}, ${position[1]}) at $delta.");
+      }
       ++_stepCount;
     }
-    if (delta != Duration.zero &&
-        position != Vector2.zero() &&
-        _stepCount % pickupCycle == 0) {
-      yieldBallPos(DeltaPosition(delta, position));
-    }
-    logger.finest("ball pos: (${position[0]}, ${position[1]}).");
   }
   /* if (delta.inMilliseconds % 200 == 0) {
       ++corePos;
@@ -236,7 +235,7 @@ class BallO extends GameObject with Backwardable {
     if (rx >= rect.left && rx <= rect.right) {
       logger.finer("Paddle top/bottom hit Ball.");
       reverseDy();
-      _pickupDeltaPositionQueue.clear();
+      // _pickupDeltaPositionQueue.clear();
       return true;
     }
     logger.fine("Paddle side hit Ball.");
