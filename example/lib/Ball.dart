@@ -45,16 +45,15 @@ class BallO extends GameObject with Backwardable {
   final double ratio; // self size
   static const BoxShape shape = BoxShape.circle;
 
-
   int _stepCount = 0;
   int get stepCount => _stepCount;
 
   /// core size
   late double iSize;
   static const iRatio = 0.5;
-
+  late final PaddleO selfPaddle;
   final void Function(wallPos) pause;
-  BallO(this.yieldBallPos, this.pause, this._dx, this._dy, 
+  BallO(this.selfPaddle, this.yieldBallPos, this.pause, this._dx, this._dy,
       [this._speed = defaultBallSpeed, this.ratio = PongGamePage.ballSize]) {
     assert(_dx > 0 && _dy > 0);
     assert(_speed > 0);
@@ -66,7 +65,7 @@ class BallO extends GameObject with Backwardable {
   final void Function(DeltaPosition) yieldBallPos;
 
   late final RandAngleIterator? angleProvider;
-  BallO.withAngleProvider(this.yieldBallPos, this.pause, this.angleProvider, 
+  BallO.withAngleProvider(this.selfPaddle, this.yieldBallPos, this.pause, this.angleProvider,
       [this._speed = defaultBallSpeed, this.ratio = PongGamePage.ballSize]) {
     assert(angleProvider != null);
     _angle = angleProvider!.current;
@@ -78,8 +77,7 @@ class BallO extends GameObject with Backwardable {
     if (angleProvider != null) {
       angleProvider!.moveNext();
       return angleProvider!.current;
-    }
-    else {
+    } else {
       return null;
     }
   }
@@ -114,7 +112,11 @@ class BallO extends GameObject with Backwardable {
     logger.finer("Ball outer size = $oSize");
     size = Vector2.all(oSize);
     alignment = GameObjectAlignment.center;
-    position = Vector2(gx / 2, WallBaseO.bottomOffset(gameSize)- oSize / 2 - gap); // , gy / 2);
+    // final double offset = WallBaseO.bottomOffset(gameSize)[1];
+    final double selfPaddleYPos = selfPaddle.position[1];
+    final double selfPaddleHSize = selfPaddle.size[1];
+    final double selfPaddleTopSurface = selfPaddleYPos + selfPaddleHSize / 2;
+    position = Vector2(gx / 2, selfPaddleTopSurface - oSize / 2 - gap); // , gy / 2);
     initialised = true;
     // _pickupDeltaPositionQueue.clear();
     _stepCount = 0;
@@ -171,7 +173,8 @@ class BallO extends GameObject with Backwardable {
       _lastUpdate = delta.inMilliseconds;
       position = stepForward();
       logger.finest("Update ball pos: (${position[0]}, ${position[1]}).");
-      if (_stepCount % pickupCycle == 0) { // delta != Duration.zero && position != Vector2.zero() &&
+      if (_stepCount % pickupCycle == 0) {
+        // delta != Duration.zero && position != Vector2.zero() &&
         _pickupDeltaPositionQueue.add(DeltaPosition(delta, position));
         if (_pickupDeltaPositionQueue.length > pickupDelay) {
           yieldBallPos(_pickupDeltaPositionQueue.removeFirst());
