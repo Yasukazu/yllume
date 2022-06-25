@@ -16,7 +16,6 @@ class BallO extends GameObject with Backwardable {
   static const initialY = 0.5;
   static final initialXY = Vector2(initialX, initialY);
   final int _speed; // millisecond per diagonal
-  final WallO yOffset;
   int get speed => _speed;
   late double _angle;
   double get angle => _angle;
@@ -55,7 +54,7 @@ class BallO extends GameObject with Backwardable {
   static const iRatio = 0.5;
 
   final void Function(wallPos) pause;
-  BallO(this.yieldBallPos, this.pause, this._dx, this._dy, this.yOffset,
+  BallO(this.yieldBallPos, this.pause, this._dx, this._dy, 
       [this._speed = defaultBallSpeed, this.ratio = PongGamePage.ballSize]) {
     assert(_dx > 0 && _dy > 0);
     assert(_speed > 0);
@@ -67,7 +66,7 @@ class BallO extends GameObject with Backwardable {
   final void Function(DeltaPosition) yieldBallPos;
 
   late final RandAngleIterator? angleProvider;
-  BallO.withAngleProvider(this.yieldBallPos, this.pause, this.angleProvider, this.yOffset,
+  BallO.withAngleProvider(this.yieldBallPos, this.pause, this.angleProvider, 
       [this._speed = defaultBallSpeed, this.ratio = PongGamePage.ballSize]) {
     assert(angleProvider != null);
     _angle = angleProvider!.current;
@@ -115,7 +114,7 @@ class BallO extends GameObject with Backwardable {
     logger.finer("Ball outer size = $oSize");
     size = Vector2.all(oSize);
     alignment = GameObjectAlignment.center;
-    position = Vector2(gx / 2, yOffset.position[1] - oSize / 2 - gap); // , gy / 2);
+    position = Vector2(gx / 2, WallBaseO.bottomOffset(gameSize)- oSize / 2 - gap); // , gy / 2);
     initialised = true;
     // _pickupDeltaPositionQueue.clear();
     _stepCount = 0;
