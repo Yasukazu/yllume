@@ -160,8 +160,8 @@ class BallO extends GameObject with Backwardable {
     // real world app or at least lock orientation.
   }
 
-  static const pickupDelay = 5;
-  // final _pickupDeltaPositionQueue = Queue<DeltaPosition>(); // DelayBuffer(pickupDelay);
+  static const pickupDelay = 3 // final Vector2 ballPos;;
+  final _pickupDeltaPositionQueue = Queue<DeltaPosition>();
   static const pickupCycle = 4;
   int _lastUpdate = 0;
   @override
@@ -170,19 +170,15 @@ class BallO extends GameObject with Backwardable {
       _lastUpdate = delta.inMilliseconds;
       position = stepForward();
       logger.finest("Update ball pos: (${position[0]}, ${position[1]}).");
-      if (delta != Duration.zero &&
-          position != Vector2.zero() &&
-          _stepCount % pickupCycle == 0) {
-        yieldBallPos(DeltaPosition(delta, position));
-        logger.finer("Yield ball pos: (${position[0]}, ${position[1]}) at $delta.");
+      if (_stepCount % pickupCycle == 0) { // delta != Duration.zero && position != Vector2.zero() &&
+        _pickupDeltaPositionQueue.add(DeltaPosition(delta, position));
+        if (_pickupDeltaPositionQueue.length > pickupDelay) {
+          yieldBallPos(_pickupDeltaPositionQueue.removeFirst());
+        }
       }
       ++_stepCount;
     }
   }
-  /* if (delta.inMilliseconds % 200 == 0) {
-      ++corePos;
-      logger.fine("corePos:$corePos");
-    } */
 
   Vector2 _step() {
     final x = position[0];
