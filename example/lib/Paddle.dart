@@ -147,8 +147,6 @@ class PaddleO extends GameObject with Backwardable {
 }
 
 class EnemyPaddleO extends PaddleO {
-  // Vector2 ballPos = Vector2.zero();
-  // Vector2 lastBallPos = Vector2.zero();
   final BallChaser ballChaser; // List<DeltaPosition> Function() getBallPoss;
   EnemyPaddleO(this.ballChaser, super.pos, super.width, super.step);
 

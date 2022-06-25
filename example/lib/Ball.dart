@@ -43,11 +43,12 @@ class BallO extends GameObject with Backwardable {
   static const Color color = Color.fromRGBO(255, 255, 255, 1);
   final double ratio; // self size
   static const BoxShape shape = BoxShape.circle;
-  // final Vector2 ballPos;
+
 
   int _stepCount = 0;
   int get stepCount => _stepCount;
 
+  /// core size
   late double iSize;
   static const iRatio = 0.5;
 
@@ -66,6 +67,7 @@ class BallO extends GameObject with Backwardable {
   late final RandAngleIterator? angleProvider;
   BallO.withAngleProvider(this.yieldBallPos, this.pause, this.angleProvider,
       [this._speed = defaultBallSpeed, this.ratio = PongGamePage.ballSize]) {
+    assert(angleProvider != null);
     _angle = angleProvider!.current;
     _dy = cos(_angle);
     _dx = sin(_angle);
@@ -76,13 +78,15 @@ class BallO extends GameObject with Backwardable {
       angleProvider!.moveNext();
       return angleProvider!.current;
     }
-    return null;
+    else {
+      return null;
+    }
   }
 
   void reset() {
-    if (angleProvider != null) {
-      angleProvider!.moveNext();
-      _angle = angleProvider!.current;
+    final ang = getNextAngle();
+    if (ang != null) {
+      _angle = ang;
       _dy = cos(_angle);
       _dx = sin(_angle);
     }
@@ -104,9 +108,9 @@ class BallO extends GameObject with Backwardable {
     // final virtualLandingPoint = y * dx / dy;
     final x_ = ratio * gameSize[0];
     final y_ = ratio * gameSize[1];
-    final oSize = sqrt(x_ * x_ + y_ * y_);
+    final oSize = sqrt(x_ * x_ + y_ * y_); // outer size
     iSize = oSize * iRatio;
-    logger.finer("oSize = $oSize");
+    logger.finer("Ball outer size = $oSize");
     size = Vector2.all(oSize);
     alignment = GameObjectAlignment.center;
     position = Vector2(gx / 2, gy / 2);
@@ -245,13 +249,14 @@ class BallO extends GameObject with Backwardable {
 }
 
 class RandAngleIterator extends Iterable with Iterator {
+  final int start;
   final int range;
   final rand = Random(DateTime.now().millisecondsSinceEpoch);
   var _e = 0;
   var _s = false;
-  int get v => (30 + _e) * (_s ? 1 : -1);
+  int get v => (start + _e) * (_s ? 1 : -1);
 
-  RandAngleIterator(this.range) {
+  RandAngleIterator(this.start, this.range) {
     _e = rand.nextInt(range);
     _s = rand.nextBool();
   }

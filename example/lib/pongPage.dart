@@ -50,8 +50,7 @@ class _PongGamePageState extends State<PongGamePage> {
   List<WallO> get walls => [topWall, bottomWall, leftWall, rightWall];
   IllumeController get gameController => PongGamePage.gameController;
   bool gameStarted = false;
-  final ballPos = Vector2(0, 0);
-  final ballAngleIterator = RandAngleIterator(14);
+  final ballAngleIterator = RandAngleIterator(30, 14); // 30 to 44 degree
   int enemyScore = 0;
   int playerScore = 0;
 
@@ -133,6 +132,7 @@ class _PongGamePageState extends State<PongGamePage> {
   @override
   Widget build(BuildContext context) {
     return RawKeyboardListener(
+      // TODO: clear/flush buffer
       focusNode: FocusNode(),
       autofocus: true,
       onKey: (event) {
