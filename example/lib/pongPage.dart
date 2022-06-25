@@ -50,7 +50,7 @@ class _PongGamePageState extends State<PongGamePage> {
   List<WallO> get walls => [topWall, bottomWall, leftWall, rightWall];
   IllumeController get gameController => PongGamePage.gameController;
   bool gameStarted = false;
-  final ballAngleIterator = RandAngleIterator(30, 14); // 30 to 44 degree
+  final ballAngleIterator = RandAngleIterator(30, 14, true); // 30 to 44 degree, reverse
   int enemyScore = 0;
   int playerScore = 0;
 
@@ -70,8 +70,6 @@ class _PongGamePageState extends State<PongGamePage> {
 
   _PongGamePageState() {
     ballChaser = BallChaser();
-    ball = BallO.withAngleProvider(
-        ballChaser.yieldBallPos, pause, ballAngleIterator, speed);
     topWall = PlayerWallO(wallPos.top, pause);
     bottomWall = PlayerWallO(wallPos.bottom, pause);
     rightWall = WallO(wallPos.right);
@@ -80,6 +78,8 @@ class _PongGamePageState extends State<PongGamePage> {
         wallPos.top, PongGamePage.paddleWidth, PongGamePage.paddleStep);
     selfPaddle = PaddleO(
         wallPos.bottom, PongGamePage.paddleWidth, PongGamePage.paddleStep);
+    ball = BallO.withAngleProvider(ballChaser.yieldBallPos, pause,
+        ballAngleIterator, bottomWall, speed);
   }
 
   @override

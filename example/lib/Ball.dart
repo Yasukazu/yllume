@@ -4,6 +4,7 @@ import 'dart:collection';
 import 'orgMain.dart'; // logger
 import 'package:illume/illume.dart';
 import 'WallBase.dart';
+import 'Wall.dart';
 import 'Paddle.dart';
 import 'pongPage.dart';
 import 'Backwardable.dart';
@@ -15,6 +16,7 @@ class BallO extends GameObject with Backwardable {
   static const initialY = 0.5;
   static final initialXY = Vector2(initialX, initialY);
   final int _speed; // millisecond per diagonal
+  final WallO yOffset;
   int get speed => _speed;
   late double _angle;
   double get angle => _angle;
@@ -26,7 +28,7 @@ class BallO extends GameObject with Backwardable {
   Vector2 get stepVector => Vector2(stepX, stepY);
   late double _dx;
   late double _dy;
-
+  static const gap = 3;
   bool _dxReverse = false;
   bool _dyReverse = false;
   bool get dxReverse => _dxReverse;
@@ -53,7 +55,7 @@ class BallO extends GameObject with Backwardable {
   static const iRatio = 0.5;
 
   final void Function(wallPos) pause;
-  BallO(this.yieldBallPos, this.pause, this._dx, this._dy,
+  BallO(this.yieldBallPos, this.pause, this._dx, this._dy, this.yOffset,
       [this._speed = defaultBallSpeed, this.ratio = PongGamePage.ballSize]) {
     assert(_dx > 0 && _dy > 0);
     assert(_speed > 0);
@@ -65,7 +67,7 @@ class BallO extends GameObject with Backwardable {
   final void Function(DeltaPosition) yieldBallPos;
 
   late final RandAngleIterator? angleProvider;
-  BallO.withAngleProvider(this.yieldBallPos, this.pause, this.angleProvider,
+  BallO.withAngleProvider(this.yieldBallPos, this.pause, this.angleProvider, this.yOffset,
       [this._speed = defaultBallSpeed, this.ratio = PongGamePage.ballSize]) {
     assert(angleProvider != null);
     _angle = angleProvider!.current;
@@ -113,7 +115,7 @@ class BallO extends GameObject with Backwardable {
     logger.finer("Ball outer size = $oSize");
     size = Vector2.all(oSize);
     alignment = GameObjectAlignment.center;
-    position = Vector2(gx / 2, gy / 2);
+    position = Vector2(gx / 2, yOffset.position[1] - oSize / 2 - gap); // , gy / 2);
     initialised = true;
     // _pickupDeltaPositionQueue.clear();
     _stepCount = 0;
@@ -160,7 +162,7 @@ class BallO extends GameObject with Backwardable {
     // real world app or at least lock orientation.
   }
 
-  static const pickupDelay = 3 // final Vector2 ballPos;;
+  static const pickupDelay = 3; // final Vector2 ballPos;;
   final _pickupDeltaPositionQueue = Queue<DeltaPosition>();
   static const pickupCycle = 4;
   int _lastUpdate = 0;
@@ -247,14 +249,15 @@ class BallO extends GameObject with Backwardable {
 class RandAngleIterator extends Iterable with Iterator {
   final int start;
   final int range;
+  final bool reverse;
   final rand = Random(DateTime.now().millisecondsSinceEpoch);
   var _e = 0;
-  var _s = false;
-  int get v => (start + _e) * (_s ? 1 : -1);
+  // var _s = false;
+  int get v => reverse ? -(start + _e) : (start + _e); //  * (_s ? 1 : -1);
 
-  RandAngleIterator(this.start, this.range) {
+  RandAngleIterator(this.start, this.range, this.reverse) {
     _e = rand.nextInt(range);
-    _s = rand.nextBool();
+    // _s = rand.nextBool();
   }
 
   @override
@@ -263,7 +266,7 @@ class RandAngleIterator extends Iterable with Iterator {
   @override
   bool moveNext() {
     _e = rand.nextInt(range);
-    _s = rand.nextBool();
+    // _s = rand.nextBool();
     return true;
   }
 
