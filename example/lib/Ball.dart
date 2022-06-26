@@ -4,7 +4,6 @@ import 'dart:collection';
 import 'orgMain.dart'; // logger
 import 'package:illume/illume.dart';
 import 'WallBase.dart';
-import 'Wall.dart';
 import 'Paddle.dart';
 import 'pongPage.dart';
 import 'Backwardable.dart';
@@ -115,7 +114,7 @@ class BallO extends GameObject with Backwardable {
     // final double offset = WallBaseO.bottomOffset(gameSize)[1];
     final double selfPaddleYPos = selfPaddle.position[1];
     final double selfPaddleHSize = selfPaddle.size[1];
-    final double selfPaddleTopSurface = selfPaddleYPos + selfPaddleHSize / 2;
+    final double selfPaddleTopSurface = selfPaddleYPos - selfPaddleHSize / 2;
     position = Vector2(gx / 2, selfPaddleTopSurface - oSize / 2 - gap); // , gy / 2);
     initialised = true;
     // _pickupDeltaPositionQueue.clear();
