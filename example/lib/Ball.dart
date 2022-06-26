@@ -53,7 +53,7 @@ class BallO extends GameObject with Backwardable {
   late final PaddleO selfPaddle;
   final void Function(wallPos) pause;
   BallO(this.selfPaddle, this.yieldBallPos, this.pause, this._dx, this._dy,
-      [this.pickupCycle = 2, this.pickupDelay = 1, this._speed = defaultBallSpeed, this.ratio = PongGamePage.ballSize]) {
+      [this._speed = defaultBallSpeed, this.ratio = PongGamePage.ballSize, this.pickupCycle = 2, this.pickupDelay = 2]) {
     assert(_dx > 0 && _dy > 0);
     assert(_speed > 0);
     assert(ratio > 0);
@@ -66,7 +66,7 @@ class BallO extends GameObject with Backwardable {
   late final RandAngleIterator? angleProvider;
   BallO.withAngleProvider(
       this.selfPaddle, this.yieldBallPos, this.pause, this.angleProvider,
-      [this.pickupCycle = 2, this.pickupDelay = 1, this._speed = defaultBallSpeed, this.ratio = PongGamePage.ballSize]) {
+      [this._speed = defaultBallSpeed, this.ratio = PongGamePage.ballSize, this.pickupCycle = 2, this.pickupDelay = 2]) {
     assert(angleProvider != null);
     _angle = angleProvider!.current;
     _dy = cos(_angle);
@@ -177,7 +177,7 @@ class BallO extends GameObject with Backwardable {
       if (_stepCount % pickupCycle == 0) {
         // delta != Duration.zero && position != Vector2.zero() &&
         _pickupDeltaPositionQueue.add(DeltaPosition(delta, position));
-        if (_pickupDeltaPositionQueue.length > pickupDelay) {
+        if (_pickupDeltaPositionQueue.length >= pickupDelay) {
           yieldBallPos(_pickupDeltaPositionQueue.removeFirst());
         }
       }
