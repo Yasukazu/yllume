@@ -160,6 +160,17 @@ class EnemyPaddleO extends PaddleO {
             "Estimated ball position: (${estimatedBallPos![0]}, ${estimatedBallPos![1]}).");
       }
     }
+    if (estimatedBallPos != null) {
+      final posDiff = x - estimatedBallPos![1];
+      if (posDiff > 0) {
+        moveLeft();
+        logger.finer("Enemy paddle moveLeft by $posDiff");
+      }
+      else {
+        moveRight();
+        logger.finer("Enemy paddle moveRight by $posDiff");
+      }
+    }
     if (commandPacket != null) {
       final command = commandPacket as CommandPacket;
       if (command.count > 0) {

@@ -53,7 +53,7 @@ class BallO extends GameObject with Backwardable {
   late final PaddleO selfPaddle;
   final void Function(wallPos) pause;
   BallO(this.selfPaddle, this.yieldBallPos, this.pause, this._dx, this._dy,
-      [this._speed = defaultBallSpeed, this.ratio = PongGamePage.ballSize]) {
+      [this.pickupCycle = 2, this.pickupDelay = 1, this._speed = defaultBallSpeed, this.ratio = PongGamePage.ballSize]) {
     assert(_dx > 0 && _dy > 0);
     assert(_speed > 0);
     assert(ratio > 0);
@@ -64,8 +64,9 @@ class BallO extends GameObject with Backwardable {
   final void Function(DeltaPosition) yieldBallPos;
 
   late final RandAngleIterator? angleProvider;
-  BallO.withAngleProvider(this.selfPaddle, this.yieldBallPos, this.pause, this.angleProvider,
-      [this._speed = defaultBallSpeed, this.ratio = PongGamePage.ballSize]) {
+  BallO.withAngleProvider(
+      this.selfPaddle, this.yieldBallPos, this.pause, this.angleProvider,
+      [this.pickupCycle = 2, this.pickupDelay = 1, this._speed = defaultBallSpeed, this.ratio = PongGamePage.ballSize]) {
     assert(angleProvider != null);
     _angle = angleProvider!.current;
     _dy = cos(_angle);
@@ -115,7 +116,8 @@ class BallO extends GameObject with Backwardable {
     final double selfPaddleYPos = selfPaddle.position[1];
     final double selfPaddleHSize = selfPaddle.size[1];
     final double selfPaddleTopSurface = selfPaddleYPos - selfPaddleHSize / 2;
-    position = Vector2(gx / 2, selfPaddleTopSurface - oSize / 2 - gap); // , gy / 2);
+    position =
+        Vector2(gx / 2, selfPaddleTopSurface - oSize / 2 - gap); // , gy / 2);
     initialised = true;
     // _pickupDeltaPositionQueue.clear();
     _stepCount = 0;
@@ -162,9 +164,9 @@ class BallO extends GameObject with Backwardable {
     // real world app or at least lock orientation.
   }
 
-  static const pickupDelay = 3; // final Vector2 ballPos;;
+  final int pickupDelay; // final Vector2 ballPos;;
   final _pickupDeltaPositionQueue = Queue<DeltaPosition>();
-  static const pickupCycle = 4;
+  final int pickupCycle;
   int _lastUpdate = 0;
   @override
   void update(Duration delta) {

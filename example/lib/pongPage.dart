@@ -233,7 +233,7 @@ class _PongGamePageState extends State<PongGamePage> {
 }
 
 class BallChaser {
-  static const pickupDelay = 3;
+  static const sampleCount = 2;
   final dPQueue = Queue<DeltaPosition>();
   // List<DeltaPosition> ballDPs;
   // Duration delta;
@@ -245,7 +245,7 @@ class BallChaser {
       assert(dPQueue.last != deltaPosition);
     }
     dPQueue.add(deltaPosition);
-    if (dPQueue.length > (2 + pickupDelay)) {
+    if (dPQueue.length > sampleCount) {
       dPQueue.removeFirst();
     }
   }
@@ -274,7 +274,7 @@ class BallChaser {
 
   /// returns [] if not enough data
   List<DeltaPosition> getBallPoss() {
-    if (dPQueue.length >= (2 + pickupDelay)) {
+    if (dPQueue.length >= sampleCount) {
       final dp = dPQueue.removeFirst();
       return [dp, dPQueue.removeFirst()];
     } else {
