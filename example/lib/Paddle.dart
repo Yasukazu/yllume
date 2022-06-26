@@ -1,7 +1,7 @@
 import 'dart:collection';
 
 import 'package:example/Ball.dart';
-import 'package:example/orgMain.dart';
+import 'package:example/main.dart';
 import 'package:flutter/material.dart';
 import 'Wall.dart';
 import 'WallBase.dart';

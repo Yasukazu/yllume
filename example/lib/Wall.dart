@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'WallBase.dart';
 import 'Ball.dart';
 import 'package:illume/illume.dart';
-import 'orgMain.dart'; // logger
+import 'main.dart'; // logger
 import 'pongPage.dart';
 
 typedef DoWithBall = void Function(BallO ball);

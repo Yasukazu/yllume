@@ -1,4 +1,4 @@
-import 'package:example/orgMain.dart';
+import 'package:example/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:illume/illume.dart';
@@ -199,7 +199,7 @@ class _PongGamePageState extends State<PongGamePage> {
     final double speed = dXY / dT;
 
     /// current position = dXY + d2XY
-    final d2XY = speed * (delta - ballDPs[1].delta).inMilliseconds;
+    // final d2XY = speed * (delta - ballDPs[1].delta).inMilliseconds;
     // final Vector2 curPos = (dXY + d2XY) / dXY * ballDPs[0];
     /* if (ballDPs.length < 2) {
       ballDPs = peekBallPos();
