@@ -50,7 +50,8 @@ class _PongGamePageState extends State<PongGamePage> {
   List<WallO> get walls => [topWall, bottomWall, leftWall, rightWall];
   IllumeController get gameController => PongGamePage.gameController;
   bool gameStarted = false;
-  final ballAngleIterator = RandAngleIterator(30, 14, true); // 30 to 44 degree, reverse
+  final ballAngleIterator =
+      RandAngleIterator(30, 14, true); // 30 to 44 degree, reverse
   int enemyScore = 0;
   int playerScore = 0;
 
@@ -74,12 +75,12 @@ class _PongGamePageState extends State<PongGamePage> {
     bottomWall = PlayerWallO(wallPos.bottom, pause);
     rightWall = WallO(wallPos.right);
     leftWall = WallO(wallPos.left);
-    enemyPaddle = EnemyPaddleO(ballChaser,
-        wallPos.top, PongGamePage.paddleWidth, PongGamePage.paddleStep);
+    enemyPaddle = EnemyPaddleO(ballChaser, wallPos.top,
+        PongGamePage.paddleWidth, PongGamePage.paddleStep);
     selfPaddle = PaddleO(
         wallPos.bottom, PongGamePage.paddleWidth, PongGamePage.paddleStep);
-    ball = BallO.withAngleProvider(selfPaddle, ballChaser.yieldBallPos, pause,
-        ballAngleIterator, speed);
+    ball = BallO.withAngleProvider(
+        selfPaddle, ballChaser.yieldBallPos, pause, ballAngleIterator, speed);
   }
 
   @override
@@ -251,20 +252,21 @@ class BallChaser {
   }
 
   Vector2 getBallCurPos(Duration delta, List<DeltaPosition> ballDPs) {
-    assert(dPQueue.length >= 2);
+    assert(ballDPs.length >= 2);
+
     /// vector dXY
     final double dY = ballDPs[1].position[1] - ballDPs[0].position[1];
     final double dX = ballDPs[1].position[0] - ballDPs[0].position[0];
     final double dXY = sqrt(dX * dX + dY * dY);
 
     /// time dT
-    final int dT = (ballDPs[1].delta - ballDPs[0].delta).inMilliseconds;
+    final int dT = ballDPs[1].delta.inMilliseconds - ballDPs[0].delta.inMilliseconds;
 
     /// speed vXY
     final double speed = dXY / dT;
 
     /// current scalar = dXY + d2XY
-    final d2XY = speed * (delta - ballDPs[1].delta).inMilliseconds;
+    final d2XY = speed * (delta.inMilliseconds - ballDPs[1].delta.inMilliseconds);
     final x1 = ballDPs[1].position[0];
     final y1 = ballDPs[1].position[1];
     final v1 = sqrt(x1 * x1 + y1 * y1);
@@ -275,8 +277,7 @@ class BallChaser {
   /// returns [] if not enough data
   List<DeltaPosition> getBallPoss() {
     if (dPQueue.length >= sampleCount) {
-      final dp = dPQueue.removeFirst();
-      return [dp, dPQueue.removeFirst()];
+      return dPQueue.take(sampleCount).toList();
     } else {
       return [];
     }
