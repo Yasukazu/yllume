@@ -55,7 +55,6 @@ class PaddleO extends GameObject with Backwardable {
     wallGap = PongGamePage.wpGap * gameSize[0];
   }
 
-
   void center() {
     offset.center();
   }
@@ -131,7 +130,7 @@ class PaddleO extends GameObject with Backwardable {
     // if (lastPosForBackward != null) { return; }
     lastPosForBackward = position;
     offset.inc(step);
-    // offset.inc(step);
+    position = Vector2(x, y);
     logger.finer("move Right. x = $x");
   }
 
@@ -142,6 +141,7 @@ class PaddleO extends GameObject with Backwardable {
     // if (lastPosForBackward != null) { return; }
     lastPosForBackward = position;
     offset.dec(step);
+    position = Vector2(x, y);
     logger.finer("move Left. x = $x");
   }
 }
@@ -152,21 +152,22 @@ class EnemyPaddleO extends PaddleO {
 
   @override
   void update(Duration delta) {
+    List<DeltaPosition> ballDPs = [];
     if (estimatedBallPos == null) {
-      final ballDPs = ballChaser.getBallPoss();
+      ballDPs = ballChaser.getBallPoss();
       if (ballDPs.isNotEmpty) {
-        estimatedBallPos = ballChaser.getBallCurPos(delta, ballDPs);
+        estimatedBallPos = ballDPs[1].position;
+        // ballChaser.getBallCurPos(delta, ballDPs);
         logger.finest(
             "Estimated ball position: (${estimatedBallPos![0]}, ${estimatedBallPos![1]}).");
       }
     }
     if (estimatedBallPos != null) {
-      final posDiff = x - estimatedBallPos![1];
+      final posDiff = x - estimatedBallPos![0];
       if (posDiff > 0) {
         moveLeft();
         logger.finer("Enemy paddle moveLeft by $posDiff");
-      }
-      else {
+      } else {
         moveRight();
         logger.finer("Enemy paddle moveRight by $posDiff");
       }
@@ -216,6 +217,7 @@ class EnemyPaddleO extends PaddleO {
     super.center();
     estimatedBallPos = null;
   }
+
   Vector2? estimatedBallPos;
 }
 
