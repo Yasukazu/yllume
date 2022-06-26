@@ -254,24 +254,26 @@ class BallChaser {
   Vector2 getBallCurPos(Duration delta, List<DeltaPosition> ballDPs) {
     assert(ballDPs.length >= 2);
 
-    /// vector dXY
+    /// vectors
     final double dY = ballDPs[1].position[1] - ballDPs[0].position[1];
     final double dX = ballDPs[1].position[0] - ballDPs[0].position[0];
-    final double dXY = sqrt(dX * dX + dY * dY);
 
     /// time dT
     final int dT = ballDPs[1].delta.inMilliseconds - ballDPs[0].delta.inMilliseconds;
 
-    /// speed vXY
-    final double speed = dXY / dT;
+    /// speeds
+    final double xSpeed = dX / dT;
+    final double ySpeed = dY / dT;
 
-    /// current scalar = dXY + d2XY
-    final d2XY = speed * (delta.inMilliseconds - ballDPs[1].delta.inMilliseconds);
+    /// current scalars
+    final dT2 = delta.inMilliseconds - ballDPs[1].delta.inMilliseconds;
+    final d2X = xSpeed * dT2;
+    final d2Y = ySpeed * dT2;
+
     final x1 = ballDPs[1].position[0];
     final y1 = ballDPs[1].position[1];
-    final v1 = sqrt(x1 * x1 + y1 * y1);
-    final k = (v1 + d2XY) / v1;
-    return Vector2(k * x1, k * y1);
+
+    return Vector2(x1 + d2X, y1 + d2Y);
   }
 
   /// returns [] if not enough data

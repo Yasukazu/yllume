@@ -156,8 +156,7 @@ class EnemyPaddleO extends PaddleO {
     if (estimatedBallPos == null) {
       ballDPs = ballChaser.getBallPoss();
       if (ballDPs.isNotEmpty) {
-        estimatedBallPos = ballDPs[1].position;
-        // ballChaser.getBallCurPos(delta, ballDPs);
+        estimatedBallPos = ballChaser.getBallCurPos(delta, ballDPs);
         logger.finest(
             "Estimated ball position: (${estimatedBallPos![0]}, ${estimatedBallPos![1]}).");
       }
