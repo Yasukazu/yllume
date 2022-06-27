@@ -70,15 +70,15 @@ class _PongGamePageState extends State<PongGamePage> {
   }
 
   _PongGamePageState() {
-    ballChaser = BallChaser();
     topWall = PlayerWallO(wallPos.top, pause);
     bottomWall = PlayerWallO(wallPos.bottom, pause);
     rightWall = WallO(wallPos.right);
     leftWall = WallO(wallPos.left);
+    selfPaddle = PaddleO(wallPos.bottom, PongGamePage.paddleWidth,
+        PongGamePage.paddleStep);
+    ballChaser = BallChaser();
     enemyPaddle = EnemyPaddleO(ballChaser, wallPos.top,
         PongGamePage.paddleWidth, PongGamePage.paddleStep);
-    selfPaddle = PaddleO(
-        wallPos.bottom, PongGamePage.paddleWidth, PongGamePage.paddleStep);
     ball = BallO.withAngleProvider(
         selfPaddle, ballChaser.yieldBallPos, pause, ballAngleIterator, speed);
   }
@@ -241,13 +241,19 @@ class BallChaser {
   // Vector2 gameSize;
   // BallChaser(this.ballDPs, this.delta, this.gameSize);
 
-  void yieldBallPos(DeltaPosition deltaPosition) {
-    if (dPQueue.isNotEmpty) {
-      assert(dPQueue.last != deltaPosition);
+  void yieldBallPos(DeltaPosition? deltaPosition) {
+    if (deltaPosition == null) {
+      dPQueue.clear();
+      logger.finer("dPQueue clear.");
     }
-    dPQueue.add(deltaPosition);
-    if (dPQueue.length > sampleCount) {
-      dPQueue.removeFirst();
+    else {
+      if (dPQueue.isNotEmpty) {
+        assert(dPQueue.last != deltaPosition);
+      }
+      dPQueue.add(deltaPosition);
+      if (dPQueue.length > sampleCount) {
+        dPQueue.removeFirst();
+      }
     }
   }
 

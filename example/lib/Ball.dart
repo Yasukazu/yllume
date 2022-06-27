@@ -60,8 +60,8 @@ class BallO extends GameObject with Backwardable {
     _angle = atan2(_dx, _dy);
   }
 
-  /// _angle to Y-axis
-  final void Function(DeltaPosition) yieldBallPos;
+  /// send null to clear dp queue
+  final void Function(DeltaPosition?) yieldBallPos;
 
   late final RandAngleIterator? angleProvider;
   BallO.withAngleProvider(
@@ -149,9 +149,11 @@ class BallO extends GameObject with Backwardable {
     logger.info("Ball collided with ${collisions.length} collisions.");
     for (Collision col in collisions) {
       if (col.component is PaddleO) {
+        yieldBallPos(null);
+        logger.finer("yieldBallPos(null) to clear DPQueue.");
         final paddle = col.component as PaddleO;
         if (!bounceAtPaddle(paddle.pos, col.intersectionRect)) {
-          logger.info("Paddle hit fail. Pausing..");
+          logger.finer("Paddle hit fail. Pausing..");
           pause(paddle.pos);
         }
       }

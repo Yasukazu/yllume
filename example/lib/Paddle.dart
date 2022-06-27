@@ -217,6 +217,12 @@ class EnemyPaddleO extends PaddleO {
   }
 
   Vector2? estimatedBallPos;
+
+  @override
+  void onCollision(List<Collision> collisions) {
+    super.onCollision(collisions);
+    estimatedBallPos = null;
+  }
 }
 
 enum RightLeft { right, left }
