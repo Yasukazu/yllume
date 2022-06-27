@@ -27,8 +27,8 @@ class PaddleO extends GameObject with Backwardable {
   late final double _y;
   double get y => _y;
   final wallPos pos;
-
-  PaddleO(this.pos, this.widthRatio, this.stepRatio) {
+  final Map<wallPos, WallO> pos2wall;
+  PaddleO(this.pos, this.widthRatio, this.stepRatio, this.pos2wall) {
     assert(pos == wallPos.top || pos == wallPos.bottom);
     assert(widthRatio > 0 && widthRatio <= 1);
     assert(stepRatio > 0 && stepRatio <= 1);
@@ -148,7 +148,7 @@ class PaddleO extends GameObject with Backwardable {
 
 class EnemyPaddleO extends PaddleO {
   final BallChaser ballChaser; // List<DeltaPosition> Function() getBallPoss;
-  EnemyPaddleO(this.ballChaser, super.pos, super.width, super.step);
+  EnemyPaddleO(this.ballChaser, super.pos, super.width, super.step, super.pos2wall);
 
   @override
   void update(Duration delta) {
