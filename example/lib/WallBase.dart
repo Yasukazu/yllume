@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:illume/illume.dart';
 import 'pongPage.dart';
-enum wallPos { top, bottom, left, right }
+enum wallPos { top(0), bottom(2), left(3), right(1);
+  final int value;
+  const wallPos(this.value); }
 
 abstract class WallBaseO extends GameObject {
   static const shape = BoxShape.rectangle;
