@@ -10,13 +10,15 @@ class BallChaser extends GameObject {
   static const sampleCount = 2;
   final dPQueue = Queue<DeltaPosition>();
   List<DeltaPosition> ballDPs = [];
+  Vector2? _calculatedPos;
+  Vector2? get calculatedPos => _calculatedPos;
 
   bool? ballIsApproaching() {
     if (dPQueue.length < 2) {
       return null;
     }
     else {
-      final dY = dPQueue.elementAt(0).position[1] - dPQueue.elementAt(1).position[1];
+      final dY = dPQueue.elementAt(1).position[1] - dPQueue.elementAt(0).position[1];
       return dY < 0;
     }
   }
@@ -101,15 +103,16 @@ class BallChaser extends GameObject {
     size = Vector2(sizeRatio * gameSize[0], sizeRatio * gameSize[1]);
     // position = Vector2(x, y);
     initialised = true;
-    visible = false;
+    visible = true;
   }
   @override
   void update(Duration delta) {
-    if (ballDPs.length >= 2) {
-      final calculatedPos = getBallCurPos(delta, ballDPs);
-      logger.finer("calculatedPos = $calculatedPos");
-      position = calculatedPos;
-      visible = true;
+    if (dPQueue.length >= 2) {
+      ballDPs = dPQueue.take(2).toList();
+      _calculatedPos = getBallCurPos(delta, ballDPs);
+      logger.finer("calculatedPos = $_calculatedPos");
+      position = _calculatedPos as Vector2;
+      // visible = true;
     }
     // position = Vector2(x, y);
   }
