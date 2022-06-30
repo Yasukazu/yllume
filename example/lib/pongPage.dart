@@ -6,8 +6,8 @@ import 'Ball.dart';
 import 'WallBase.dart';
 import 'Wall.dart';
 import 'Paddle.dart';
+import 'ballchaser.dart';
 import 'dart:math';
-import 'dart:collection';
 
 class Screen {
   static const centerToSide = 1.0;
@@ -79,7 +79,7 @@ class _PongGamePageState extends State<PongGamePage> {
         PongGamePage.paddleStep, pos2wall);
     ballChaser = BallChaser();
     enemyPaddle = EnemyPaddleO(ballChaser, wallPos.top,
-        PongGamePage.paddleWidth, PongGamePage.paddleStep);
+        PongGamePage.paddleWidth, PongGamePage.paddleStep, pos2wall);
     ball = BallO.withAngleProvider(
         selfPaddle, ballChaser.yieldBallPos, pause, ballAngleIterator, speed);
   }
@@ -96,7 +96,8 @@ class _PongGamePageState extends State<PongGamePage> {
       rightWall,
       enemyPaddle,
       selfPaddle,
-      ball
+      ball,
+      ballChaser
     ]);
   }
 
@@ -161,7 +162,7 @@ class _PongGamePageState extends State<PongGamePage> {
           ),
           body: Stack(
             children: [
-              gradient,
+              background,
               Score(enemyScore, playerScore),
               Illume(
                 illumeController: gameController,
@@ -173,7 +174,7 @@ class _PongGamePageState extends State<PongGamePage> {
     );
   }
 
-  var gradient = Container(
+  var background = Container(
     decoration: const BoxDecoration(
       gradient: LinearGradient(
           colors: [Colors.teal, Colors.deepPurple],
@@ -197,7 +198,7 @@ class _PongGamePageState extends State<PongGamePage> {
     final int dT = (ballDPs[1].delta - ballDPs[0].delta).inMilliseconds;
 
     /// speed vXY
-    final double speed = dXY / dT;
+    // final double speed = dXY / dT;
 
     /// current position = dXY + d2XY
     // final d2XY = speed * (delta - ballDPs[1].delta).inMilliseconds;
@@ -234,62 +235,14 @@ class _PongGamePageState extends State<PongGamePage> {
   }
 }
 
-class BallChaser {
-  static const sampleCount = 2;
-  final dPQueue = Queue<DeltaPosition>();
-  // List<DeltaPosition> ballDPs;
-  // Duration delta;
-  // Vector2 gameSize;
-  // BallChaser(this.ballDPs, this.delta, this.gameSize);
-
-  void yieldBallPos(DeltaPosition? deltaPosition) {
-    if (deltaPosition == null) {
-      dPQueue.clear();
-      logger.finer("dPQueue clear.");
-    }
-    else {
-      if (dPQueue.isNotEmpty) {
-        assert(dPQueue.last != deltaPosition);
-      }
-      dPQueue.add(deltaPosition);
-      if (dPQueue.length > sampleCount) {
-        dPQueue.removeFirst();
-      }
-    }
+abstract class NoCollidableGameObject implements GameObject {
+  @override
+  void onCollision(List<Collision> cols) {
   }
 
-  Vector2 getBallCurPos(Duration delta, List<DeltaPosition> ballDPs) {
-    assert(ballDPs.length >= 2);
-
-    /// vectors
-    final double dY = ballDPs[1].position[1] - ballDPs[0].position[1];
-    final double dX = ballDPs[1].position[0] - ballDPs[0].position[0];
-
-    /// time dT
-    final int dT = ballDPs[1].delta.inMilliseconds - ballDPs[0].delta.inMilliseconds;
-
-    /// speeds
-    final double xSpeed = dX / dT;
-    final double ySpeed = dY / dT;
-
-    /// current scalars
-    final dT2 = delta.inMilliseconds - ballDPs[1].delta.inMilliseconds;
-    final d2X = xSpeed * dT2;
-    final d2Y = ySpeed * dT2;
-
-    final x1 = ballDPs[1].position[0];
-    final y1 = ballDPs[1].position[1];
-
-    return Vector2(x1 + d2X, y1 + d2Y);
-  }
-
-  /// returns [] if not enough data
-  List<DeltaPosition> getBallPoss() {
-    if (dPQueue.length >= sampleCount) {
-      return dPQueue.take(sampleCount).toList();
-    } else {
-      return [];
-    }
+  @override
+  init() {
+    collidable = false;
   }
 }
 
