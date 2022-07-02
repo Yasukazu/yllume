@@ -7,7 +7,7 @@ import 'WallBase.dart';
 import 'dart:collection';
 
 class BallChaser extends GameObject {
-  static const color = Colors.purple;
+  static const color = Colors.red;
   static const sizeRatio = 0.2;
   static const sampleCount = 2;
   final dPQueue = Queue<DeltaPosition>();
@@ -22,8 +22,13 @@ class BallChaser extends GameObject {
     return wallSurfaceXPos! + _ballSize!;
   }
   double? get xMax {
-    final wallSurfaceXPos = pos2wall[wallPos.left]?.surfacePosition()[0];
-    return wallSurfaceXPos! - _ballSize!;
+    final wall = pos2wall[wallPos.right];
+    if (wall == null) {
+      return null;
+    }
+    final surfaceOffset = wall.surfaceOffset;
+    final wallXPos = wall.position[0] + surfaceOffset;
+    return wallXPos - _ballSize!;
   }
 
   BallChaser(this.pos2wall, this._ballRatio){}
@@ -53,6 +58,7 @@ class BallChaser extends GameObject {
     }
   }
 
+  static const dTForward = 500;
   Vector2 getBallCurPos(Duration delta) {
     assert(ballDPs.length >= 2);
 
@@ -68,24 +74,23 @@ class BallChaser extends GameObject {
     final double ySpeed = dY / dT;
 
     /// current scalars
-    final dT2 = delta.inMilliseconds - ballDPs[1].delta.inMilliseconds;
+    final dT2 = delta.inMilliseconds - ballDPs[1].delta.inMilliseconds + dTForward;
     final d2X = xSpeed * dT2;
     final d2Y = ySpeed * dT2;
 
-    double x1 = ballDPs[1].position[0];
+    double x2 = ballDPs[1].position[0] + d2X;
     double? max = xMax;
-    if (max != null && x1 > max) {
-      final diff = x1 - max;
-      x1 -= diff;
+    if (max != null && x2 > max) {
+      final diff = x2 - max;
+      x2 -= 2 * diff;
     }
     double? min = xMin;
-    if (min != null && x1 < min) {
-      final diff = min - x1;
-      x1 += diff;
+    if (min != null && x2 < min) {
+      final diff = min - x2;
+      x2 += 2 * diff;
     }
     final y1 = ballDPs[1].position[1];
-
-    return Vector2(x1 + d2X, y1 + d2Y);
+    return Vector2(x2, y1 + d2Y);
   }
 
   /// returns [] if not enough data
