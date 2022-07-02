@@ -45,16 +45,16 @@ abstract class WallBaseO extends GameObject {
 
   WallBaseO(this.pos);
 
-  Vector2 get surfaceOffset  {
+  double get surfaceOffset  {
     switch(pos) {
       case wallPos.top:
-        return Vector2(0, -size[1] / 2);
+        return -size[1] / 2;
       case wallPos.bottom:
-        return Vector2(0, size[1] / 2);
+        return size[1] / 2;
       case wallPos.left:
-        return Vector2(-size[0] / 2, 0);
+        return -size[0] / 2;
       case wallPos.right:
-        return Vector2(size[0] / 2, 0);
+        return size[0] / 2;
     }
   }
 
