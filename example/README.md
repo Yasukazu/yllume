@@ -2,7 +2,7 @@
 
 An example project for the Illume game engine.
 Programs are in "lib" folder.
-The main program is "orgMain.dart".
+The main program is "main.dart".
 
 ## References
  - [Pong game on Flutter without framework](https://github.com/Yasukazu/Pyong)
