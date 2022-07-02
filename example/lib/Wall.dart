@@ -29,6 +29,17 @@ class WallO extends WallBaseO {
     }
   }
 
+  Vector2 surfacePosition() {
+    switch(pos) {
+      case wallPos.top:
+      case wallPos.bottom:
+        return Vector2(position[0], position[1] + surfaceOffset);
+      case wallPos.left:
+      case wallPos.right:
+        return Vector2(position[0] + surfaceOffset, position[1]);
+    }
+  }
+
   @override
   void onCollision(List<Collision> collisions) {
     for (Collision col in collisions) {
