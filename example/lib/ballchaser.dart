@@ -16,9 +16,17 @@ class BallChaser extends GameObject {
   Vector2? get calculatedPos => _calculatedPos;
   final Map<wallPos, WallO> pos2wall;
   final double _ballRatio;
-  late final double _ballSize;
+  double? _ballSize;
+  double? get xMin {
+    final wallSurfaceXPos = pos2wall[wallPos.left]?.surfacePosition()[0];
+    return wallSurfaceXPos! + _ballSize!;
+  }
+  double? get xMax {
+    final wallSurfaceXPos = pos2wall[wallPos.left]?.surfacePosition()[0];
+    return wallSurfaceXPos! - _ballSize!;
+  }
 
-        BallChaser(this.pos2wall, this._ballRatio);
+  BallChaser(this.pos2wall, this._ballRatio){}
 
   bool? ballIsApproaching() {
     if (dPQueue.length < 2) {
@@ -45,7 +53,7 @@ class BallChaser extends GameObject {
     }
   }
 
-  Vector2 getBallCurPos(Duration delta, List<DeltaPosition> ballDPs) {
+  Vector2 getBallCurPos(Duration delta) {
     assert(ballDPs.length >= 2);
 
     /// vectors
@@ -64,7 +72,17 @@ class BallChaser extends GameObject {
     final d2X = xSpeed * dT2;
     final d2Y = ySpeed * dT2;
 
-    final x1 = ballDPs[1].position[0];
+    double x1 = ballDPs[1].position[0];
+    double? max = xMax;
+    if (max != null && x1 > max) {
+      final diff = x1 - max;
+      x1 -= diff;
+    }
+    double? min = xMin;
+    if (min != null && x1 < min) {
+      final diff = min - x1;
+      x1 += diff;
+    }
     final y1 = ballDPs[1].position[1];
 
     return Vector2(x1 + d2X, y1 + d2Y);
@@ -111,14 +129,14 @@ class BallChaser extends GameObject {
     // position = Vector2(x, y);
     initialised = true;
     visible = true;
-    _ballSize = BallO.calcSize(gameSize, _ballRatio);
+    _ballSize = BallO.calcSize(gameSize, _ballRatio) / 2;
   }
 
   @override
   void update(Duration delta) {
     if (dPQueue.length >= 2) {
       ballDPs = dPQueue.take(2).toList();
-      _calculatedPos = getBallCurPos(delta, ballDPs);
+      _calculatedPos = getBallCurPos(delta);
       logger.finer("calculatedPos = $_calculatedPos");
       position = _calculatedPos as Vector2;
       // visible = true;
