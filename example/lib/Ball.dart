@@ -66,7 +66,7 @@ class BallO extends GameObject with Backwardable {
   late final RandAngleIterator? angleProvider;
   BallO.withAngleProvider(
       this.selfPaddle, this.yieldBallPos, this.pause, this.angleProvider,
-      [this._speed = defaultBallSpeed, this.ratio = PongGamePage.ballSize, this.pickupCycle = 2, this.pickupDelay = 2]) {
+      this._speed, this.ratio, [this.pickupCycle = 2, this.pickupDelay = 2]) {
     assert(angleProvider != null);
     _angle = angleProvider!.current;
     _dy = cos(_angle);
@@ -94,6 +94,12 @@ class BallO extends GameObject with Backwardable {
     init();
   }
 
+  static double calcSize(Vector2 gameSize, double ratio) {
+    final x_ = ratio * gameSize[0];
+    final y_ = ratio * gameSize[1];
+    return sqrt(x_ * x_ + y_ * y_); // outer size
+  }
+
   @override
   void init() {
     final gx = gameSize[0];
@@ -105,9 +111,7 @@ class BallO extends GameObject with Backwardable {
     _stepY = stepLength * dy;
     logger.finer("stepInterval = $stepInterval");
     // final virtualLandingPoint = y * dx / dy;
-    final x_ = ratio * gameSize[0];
-    final y_ = ratio * gameSize[1];
-    final oSize = sqrt(x_ * x_ + y_ * y_); // outer size
+    final oSize = calcSize(gameSize, ratio);
     iSize = oSize * iRatio;
     logger.finer("Ball outer size = $oSize");
     size = Vector2.all(oSize);
@@ -149,8 +153,7 @@ class BallO extends GameObject with Backwardable {
     logger.info("Ball collided with ${collisions.length} collisions.");
     for (Collision col in collisions) {
       if (col.component is PaddleO) {
-        yieldBallPos(null);
-        logger.finer("yieldBallPos(null) to clear DPQueue.");
+        resetYield();
         final paddle = col.component as PaddleO;
         if (!bounceAtPaddle(paddle.pos, col.intersectionRect)) {
           logger.finer("Paddle hit fail. Pausing..");
@@ -158,6 +161,13 @@ class BallO extends GameObject with Backwardable {
         }
       }
     }
+  }
+
+  void resetYield() {
+    _yieldCount = 0;
+    yieldBallPos(null);
+    _pickupDeltaPositionQueue.clear();
+    logger.finer("yieldBallPos(null) to clear DPQueue.");
   }
 
   @override
@@ -170,6 +180,9 @@ class BallO extends GameObject with Backwardable {
   final _pickupDeltaPositionQueue = Queue<DeltaPosition>();
   final int pickupCycle;
   int _lastUpdate = 0;
+  int _yieldCount = 0;
+  static const yieldMax = 2;
+
   @override
   void update(Duration delta) {
     if (delta.inMilliseconds - _lastUpdate > stepInterval) {
@@ -179,8 +192,9 @@ class BallO extends GameObject with Backwardable {
       if (_stepCount % pickupCycle == 0) {
         // delta != Duration.zero && position != Vector2.zero() &&
         _pickupDeltaPositionQueue.add(DeltaPosition(delta, position));
-        if (_pickupDeltaPositionQueue.length >= pickupDelay) {
+        if (_yieldCount < yieldMax && _pickupDeltaPositionQueue.length >= pickupDelay) {
           yieldBallPos(_pickupDeltaPositionQueue.removeFirst());
+          ++_yieldCount;
         }
       }
       ++_stepCount;
