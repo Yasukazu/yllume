@@ -1,9 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:illume/illume.dart';
 import 'pongPage.dart';
-enum wallPos { top(0), bottom(2), left(3), right(1);
+enum wallPos { top(0), bottom(1), right(2), left(3);
   final int value;
-  const wallPos(this.value); }
+  const wallPos(this.value);
+  wallPos get opposite {
+        switch(this) {
+          case top:
+            return wallPos.bottom;
+          case bottom:
+            return wallPos.top;
+          case right:
+            return wallPos.left;
+          case left:
+            return wallPos.right;
+        }
+  } // => value & 1 != 0 ? value & 0 : value + 1;
+}
 
 abstract class WallBaseO extends GameObject {
   static const shape = BoxShape.rectangle;
@@ -31,6 +44,19 @@ abstract class WallBaseO extends GameObject {
   static const sRatio = 0.2;
 
   WallBaseO(this.pos);
+
+  Vector2 get surfaceOffset  {
+    switch(pos) {
+      case wallPos.top:
+        return Vector2(0, -size[1] / 2);
+      case wallPos.bottom:
+        return Vector2(0, size[1] / 2);
+      case wallPos.left:
+        return Vector2(-size[0] / 2, 0);
+      case wallPos.right:
+        return Vector2(size[0] / 2, 0);
+    }
+  }
 
   @override
   void init() {
