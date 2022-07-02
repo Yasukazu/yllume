@@ -2,6 +2,8 @@ import 'package:example/main.dart';
 import 'package:flutter/material.dart';
 import 'package:illume/illume.dart';
 import 'Ball.dart';
+import 'Wall.dart';
+import 'WallBase.dart';
 import 'dart:collection';
 
 class BallChaser extends GameObject {
@@ -12,6 +14,11 @@ class BallChaser extends GameObject {
   List<DeltaPosition> ballDPs = [];
   Vector2? _calculatedPos;
   Vector2? get calculatedPos => _calculatedPos;
+  final Map<wallPos, WallO> pos2wall;
+  final double _ballRatio;
+  late final double _ballSize;
+
+        BallChaser(this.pos2wall, this._ballRatio);
 
   bool? ballIsApproaching() {
     if (dPQueue.length < 2) {
@@ -79,7 +86,7 @@ class BallChaser extends GameObject {
           alignment: Alignment.center,
           child: Container(
             color: color,
-            height: 1,
+            height: 2,
           )
       ),
       Align(
@@ -104,7 +111,9 @@ class BallChaser extends GameObject {
     // position = Vector2(x, y);
     initialised = true;
     visible = true;
+    _ballSize = BallO.calcSize(gameSize, _ballRatio);
   }
+
   @override
   void update(Duration delta) {
     if (dPQueue.length >= 2) {
@@ -117,6 +126,6 @@ class BallChaser extends GameObject {
     // position = Vector2(x, y);
   }
   @override
-  void onCollision(List<Collision> cols) {
+  void onCollision(List<Collision> collisions) {
   }
 }
