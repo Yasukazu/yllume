@@ -16,7 +16,7 @@ class BallChaser extends GameObject {
   Vector2? get calculatedPos => _calculatedPos;
   final Map<wallPos, WallO> pos2wall;
   final double _ballRatio;
-  double? _ballSize;
+  double? _ballSize; // really half size..
   double? get xMin {
     final wallSurfaceXPos = pos2wall[wallPos.left]?.surfacePosition()[0];
     return wallSurfaceXPos! + _ballSize!;
@@ -30,10 +30,23 @@ class BallChaser extends GameObject {
     final wallXPos = wall.position[0] + surfaceOffset;
     return wallXPos - _ballSize!;
   }
+  double? get yMin {
+    final wallSurfaceYPos = pos2wall[wallPos.top]?.surfacePosition()[1];
+    return wallSurfaceYPos! + _ballSize!;
+  }
+  double? get yMax {
+    final wall = pos2wall[wallPos.bottom];
+    if (wall == null) {
+      return null;
+    }
+    final surfaceOffset = wall.surfaceOffset;
+    final wallYPos = wall.position[1] + surfaceOffset;
+    return wallYPos - _ballSize!;
+  }
 
   BallChaser(this.pos2wall, this._ballRatio){}
 
-  bool? ballIsApproaching() {
+  bool? ballIsApproachingToEnemy() {
     if (dPQueue.length < 2) {
       return null;
     }
@@ -58,7 +71,7 @@ class BallChaser extends GameObject {
     }
   }
 
-  static const dTForward = 500;
+  static const dTForward = 900;
   Vector2 getBallCurPos(Duration delta) {
     assert(ballDPs.length >= 2);
 
@@ -141,12 +154,19 @@ class BallChaser extends GameObject {
   void update(Duration delta) {
     if (dPQueue.length >= 2) {
       ballDPs = dPQueue.take(2).toList();
-      _calculatedPos = getBallCurPos(delta);
-      logger.finer("calculatedPos = $_calculatedPos");
-      position = _calculatedPos as Vector2;
-      // visible = true;
+      final calculatedPos = getBallCurPos(delta);
+      final calcYPos = calculatedPos[1];
+      if (yMin == null && yMax == null) {
+        return;
+      }
+      else {
+        if (calcYPos > yMin! && calcYPos < yMax!) {
+          _calculatedPos = calculatedPos;
+          logger.finer("calculatedPos = $_calculatedPos");
+          position = _calculatedPos as Vector2;
+        }
+      }
     }
-    // position = Vector2(x, y);
   }
   @override
   void onCollision(List<Collision> collisions) {
