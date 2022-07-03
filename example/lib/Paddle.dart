@@ -153,8 +153,8 @@ class EnemyPaddleO extends PaddleO {
 
   @override
   void update(Duration delta) {
-    final ballIsApproaching = ballChaser.ballIsApproaching();
-    if (ballIsApproaching != null && ballIsApproaching) {
+    final ballIsApproaching = ballChaser.ballIsApproachingToEnemy();
+    if (ballIsApproaching != null) { // && ballIsApproaching) {
       Vector2? calculatedPos = ballChaser.calculatedPos;
       if (calculatedPos != null) {
         logger.finest(
