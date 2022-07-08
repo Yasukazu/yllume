@@ -48,7 +48,6 @@ class _PongGamePageState extends State<PongGamePage> {
   late final EnemyPaddleO enemyPaddle;
   late final PaddleO selfPaddle;
   List<WallO> get walls => [topWall, bottomWall, leftWall, rightWall];
-  Map<wallPos, WallO> get pos2wall => {wallPos.top: topWall, wallPos.bottom: bottomWall, wallPos.right: rightWall, wallPos.left: leftWall};
   IllumeController get gameController => PongGamePage.gameController;
   bool gameStarted = false;
   final ballAngleIterator =
@@ -75,6 +74,7 @@ class _PongGamePageState extends State<PongGamePage> {
     bottomWall = PlayerWallO(wallPos.bottom, pause);
     rightWall = WallO(wallPos.right);
     leftWall = WallO(wallPos.left);
+    final pos2wall = {wallPos.top: topWall, wallPos.bottom: bottomWall, wallPos.right: rightWall, wallPos.left: leftWall};
     selfPaddle = PaddleO(wallPos.bottom, PongGamePage.paddleWidth,
         PongGamePage.paddleStep, pos2wall);
     ballChaser = BallChaser(pos2wall, PongGamePage.ballSize);
