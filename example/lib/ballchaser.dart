@@ -16,10 +16,15 @@ class BallChaser extends GameObject {
   Vector2? get calculatedPos => _calculatedPos;
   final Map<wallPos, WallO> pos2wall;
   final double _ballRatio;
-  double? _ballSize;
+  late double _ballR;
   double? get xMin {
     final wallSurfaceXPos = pos2wall[wallPos.left]?.surfacePosition()[0];
-    return wallSurfaceXPos! + _ballSize!;
+    if (wallSurfaceXPos != null && _ballR != null) {
+      return wallSurfaceXPos + _ballR!;
+    }
+    else {
+      return null;
+    }
   }
   double? get xMax {
     final wall = pos2wall[wallPos.right];
@@ -28,7 +33,7 @@ class BallChaser extends GameObject {
     }
     final surfaceOffset = wall.surfaceOffset;
     final wallXPos = wall.position[0] + surfaceOffset;
-    return wallXPos - _ballSize!;
+    return wallXPos - _ballR!;
   }
 
   BallChaser(this.pos2wall, this._ballRatio){}
@@ -134,7 +139,7 @@ class BallChaser extends GameObject {
     // position = Vector2(x, y);
     initialised = true;
     visible = true;
-    _ballSize = BallO.calcSize(gameSize, _ballRatio) / 2;
+    _ballR = BallO.calcSize(gameSize, _ballRatio) / 2;
   }
 
   @override
