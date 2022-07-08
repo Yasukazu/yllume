@@ -155,15 +155,15 @@ class EnemyPaddleO extends PaddleO {
   void update(Duration delta) {
     final ballIsApproaching = ballChaser.ballIsApproaching();
     if (ballIsApproaching != null && ballIsApproaching) {
-      Vector2? calculatedPos = ballChaser.calculatedPos;
-      if (calculatedPos != null) {
+      Vector2 calculatedPos = ballChaser.calculatedPos;
+      if (calculatedPos != Vector2.zero()) {
         logger.finest(
             "Estimated ball position: (${calculatedPos[0]}, ${calculatedPos[1]}).");
         final posDiff = x - calculatedPos[0];
-        if (posDiff > 0) {
+        if (posDiff > size[0] / 2) {
           moveLeft();
           logger.finer("Enemy paddle moveLeft by $posDiff");
-        } else {
+        } else if (posDiff < -size[0] / 2){
           moveRight();
           logger.finer("Enemy paddle moveRight by $posDiff");
         }
