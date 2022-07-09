@@ -1,6 +1,11 @@
 # example
 
-An example project for the Illume game engine
+An example project for the Illume game engine.
+Programs are in "lib" folder.
+The main program is "main.dart".
+
+## References
+ - [Pong game on Flutter without framework](https://github.com/Yasukazu/Pyong)
 
 ## Getting Started
 

@@ -1,132 +1,173 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
-import 'MyHomePage.dart'; // WallO
-import 'orgMain.dart'; // logger
+import 'dart:collection';
+import 'main.dart'; // logger
 import 'package:illume/illume.dart';
-import 'package:intl/intl.dart';
 import 'WallBase.dart';
-import 'Wall.dart';
 import 'Paddle.dart';
+import 'pongPage.dart';
 import 'Backwardable.dart';
 
 class BallO extends GameObject with Backwardable {
-  static const defaultBallSpeed = 1;
+  static const defaultBallSpeed = 1000; // ms / diagonal
+  static const defaultBallFPS = 30;
   static const initialX = 0.5;
   static const initialY = 0.5;
-  final int _speed; // millisecond
+  static final initialXY = Vector2(initialX, initialY);
+  final int _speed; // millisecond per diagonal
   int get speed => _speed;
-  late final double _dx;
-  bool dxReverse = false;
-  bool dyReverse = false;
+  late double _angle;
+  double get angle => _angle;
+  late double stepInterval;
+  late double _stepX;
+  late double _stepY;
+  double get stepX => dxReverse ? -_stepX : _stepX;
+  double get stepY => dyReverse ? -_stepY : _stepY;
+  Vector2 get stepVector => Vector2(stepX, stepY);
+  late double _dx;
+  late double _dy;
+  static const gap = 3;
+  bool _dxReverse = false;
+  bool _dyReverse = false;
+  bool get dxReverse => _dxReverse;
+  bool get dyReverse => _dyReverse;
   double get dx => dxReverse ? -_dx : _dx;
   double get dy => dyReverse ? -_dy : _dy;
   double get orgAngle => atan2(_dx, _dy);
-
-  /// current position is x + dx * _stepCount
-  double get x => curXY[0];
-  double get y => curXY[1];
-  late final double _dy;
+  static const coreAlignments = [
+    Alignment.topCenter,
+    Alignment.centerRight,
+    Alignment.bottomCenter,
+    Alignment.centerLeft,
+  ];
   static const Color color = Color.fromRGBO(255, 255, 255, 1);
   final double ratio; // self size
   static const BoxShape shape = BoxShape.circle;
-  Vector2 get lastPos =>
-      Vector2(gameSize[0] * lastXY[0], gameSize[1] * lastXY[1]);
-  set lastPos(Vector2 nxy) {
-    final x_ = nxy[0] / gameSize[0];
-    final y_ = nxy[1] / gameSize[1];
-    lastXY = Vector2(x_, y_);
-  }
-
-  final _lastXY = Vector2(initialX, initialY);
-  Vector2 get lastXY => _lastXY;
-  set lastXY(Vector2 nxy) {
-    final x_ = nxy[0];
-    final y_ = nxy[1];
-    assert(x_ >= 0 && x_ <= 1.0);
-    assert(y_ >= 0 && y_ <= 1.0);
-    _lastXY[0] = x_;
-    _lastXY[1] = y_;
-  }
 
   int _stepCount = 0;
   int get stepCount => _stepCount;
-  Vector2 get curXY {
-    final x_ = lastXY[0];
-    final y_ = lastXY[1];
-    final ndx = stepCount * dx;
-    final ndy = stepCount * dy;
-    return Vector2(x_ + ndx, y_ + ndy);
-  }
 
-  Vector2 get curPos {
-    final x_ = curXY[0];
-    final y_ = curXY[1];
-    return Vector2(x_ * gameSize[0], y_ * gameSize[1]);
-  }
-
-  // late final BallPos ballPos;
-  /// args: x, y, ratio, color, shape,
-  BallO(this._dx, this._dy,
-      [this._speed = defaultBallSpeed, this.ratio = MyHomePage.ballSize]) {
+  /// core size
+  late double iSize;
+  static const iRatio = 0.5;
+  late final PaddleO selfPaddle;
+  final void Function(wallPos) pause;
+  BallO(this.selfPaddle, this.yieldBallPos, this.pause, this._dx, this._dy,
+      [this._speed = defaultBallSpeed, this.ratio = PongGamePage.ballSize, this.pickupCycle = 2, this.pickupDelay = 2]) {
     assert(_dx > 0 && _dy > 0);
     assert(_speed > 0);
     assert(ratio > 0);
+    _angle = atan2(_dx, _dy);
   }
 
-  /// angle to Y-axis
-  BallO.withAngle(this._speed, double rad, [this.ratio = MyHomePage.ballSize]) {
-    _dx = cos(rad);
-    _dy = sin(rad);
+  /// send null to clear dp queue
+  final void Function(DeltaPosition?) yieldBallPos;
+
+  late final RandAngleIterator? angleProvider;
+  BallO.withAngleProvider(
+      this.selfPaddle, this.yieldBallPos, this.pause, this.angleProvider,
+      this._speed, this.ratio, [this.pickupCycle = 2, this.pickupDelay = 2]) {
+    assert(angleProvider != null);
+    _angle = angleProvider!.current;
+    _dy = cos(_angle);
+    _dx = sin(_angle);
+  }
+
+  double? getNextAngle() {
+    if (angleProvider != null) {
+      angleProvider!.moveNext();
+      return angleProvider!.current;
+    } else {
+      return null;
+    }
+  }
+
+  void reset() {
+    final ang = getNextAngle();
+    if (ang != null) {
+      _angle = ang;
+      _dy = cos(_angle);
+      _dx = sin(_angle);
+    }
+    _dxReverse = false;
+    _dyReverse = false;
+    init();
+  }
+
+  static double calcSize(Vector2 gameSize, double ratio) {
+    final x_ = ratio * gameSize[0];
+    final y_ = ratio * gameSize[1];
+    return sqrt(x_ * x_ + y_ * y_); // outer size
   }
 
   @override
   void init() {
-    size = Vector2.all(ratio * gameSize[0]);
+    final gx = gameSize[0];
+    final gy = gameSize[1];
+    final diagonal = sqrt(gx * gx + gy * gy);
+    final stepLength = diagonal / defaultBallFPS * speed / 1000;
+    stepInterval = diagonal / stepLength;
+    _stepX = stepLength * dx;
+    _stepY = stepLength * dy;
+    logger.finer("stepInterval = $stepInterval");
+    // final virtualLandingPoint = y * dx / dy;
+    final oSize = calcSize(gameSize, ratio);
+    iSize = oSize * iRatio;
+    logger.finer("Ball outer size = $oSize");
+    size = Vector2.all(oSize);
     alignment = GameObjectAlignment.center;
-    position = curPos;
+    // final double offset = WallBaseO.bottomOffset(gameSize)[1];
+    final double selfPaddleYPos = selfPaddle.position[1];
+    final double selfPaddleHSize = selfPaddle.size[1];
+    final double selfPaddleTopSurface = selfPaddleYPos - selfPaddleHSize / 2;
+    position =
+        Vector2(gx / 2, selfPaddleTopSurface - oSize / 2 - gap); // , gy / 2);
+    initialised = true;
+    // _pickupDeltaPositionQueue.clear();
+    _stepCount = 0;
   }
 
   @override
   Widget build(BuildContext context) {
-    final size = gameSize; // MediaQuery.of(context).size.height;
-    assert(ratio > 0);
-    // assert(x >= 0 && x <= 1.0);
-    // assert(y >= 0 && y <= 1.0);
-    return Container(
-        alignment: Alignment(x, y),
-        child: Stack(alignment: AlignmentDirectional.center, children: [
-          Container(
-            decoration: const BoxDecoration(shape: shape, color: color),
-            width: ratio * size[0],
-            height: ratio * size[0],
-          ),
-          Container(
-            decoration: const BoxDecoration(shape: shape, color: Colors.black),
-            width: ratio * size[0] * 0.5,
-            height: ratio * size[0] * 0.5,
-          ),
-        ]));
+    return // Container( // alignment: Alignment(x, y), child:
+        Stack(children: [
+      Align(
+        alignment: Alignment.center,
+        child: Container(
+          decoration: const BoxDecoration(shape: shape, color: color),
+        ),
+      ),
+      Align(
+        alignment: Alignment.center, // coreAlignments[corePos % 4],
+        child: Container(
+          decoration: const BoxDecoration(shape: shape, color: Colors.black),
+          width: iSize,
+          height: iSize,
+        ),
+      ),
+    ]);
   }
 
-  // bool on1stCollision = true;
   @override
   void onCollision(List<Collision> collisions) {
-    logger.info("Ball colided with ${collisions.length} collisions.");
+    logger.info("Ball collided with ${collisions.length} collisions.");
     for (Collision col in collisions) {
       if (col.component is PaddleO) {
+        resetYield();
         final paddle = col.component as PaddleO;
-        bounceAtWall(paddle.pos);
-      } else if (col.component is WallO) {
-        final wall = col.component as WallO;
-        if (wall.pos == wallPos.left || wall.pos == wallPos.right) {
-          bounceAtWall(wall.pos);
-        } else {
-          throw GameEndException("Ball hit top/bottom wall!");
+        if (!bounceAtPaddle(paddle.pos, col.intersectionRect)) {
+          logger.finer("Paddle hit fail. Pausing..");
+          pause(paddle.pos);
         }
       }
-      // WallO colWall = col.component as WallO;
-      // final p = colWall.pos;
     }
+  }
+
+  void resetYield() {
+    _yieldCount = 0;
+    yieldBallPos(null);
+    _pickupDeltaPositionQueue.clear();
+    logger.finer("yieldBallPos(null) to clear DPQueue.");
   }
 
   @override
@@ -135,56 +176,63 @@ class BallO extends GameObject with Backwardable {
     // real world app or at least lock orientation.
   }
 
-  final stepRatio = 0.015;
-  bool update1st = true;
+  final int pickupDelay; // final Vector2 ballPos;;
+  final _pickupDeltaPositionQueue = Queue<DeltaPosition>();
+  final int pickupCycle;
+  int _lastUpdate = 0;
+  int _yieldCount = 0;
+  static const yieldMax = 2;
+
   @override
   void update(Duration delta) {
-    forward();
+    if (delta.inMilliseconds - _lastUpdate > stepInterval) {
+      _lastUpdate = delta.inMilliseconds;
+      position = stepForward();
+      logger.finest("Update ball pos: (${position[0]}, ${position[1]}).");
+      if (_stepCount % pickupCycle == 0) {
+        // delta != Duration.zero && position != Vector2.zero() &&
+        _pickupDeltaPositionQueue.add(DeltaPosition(delta, position));
+        if (_yieldCount < yieldMax && _pickupDeltaPositionQueue.length >= pickupDelay) {
+          yieldBallPos(_pickupDeltaPositionQueue.removeFirst());
+          ++_yieldCount;
+        }
+      }
+      ++_stepCount;
+    }
   }
 
-  void _step() {
-    final nx = stepCount * dx * stepRatio;
-    final rnx = lastPos[0] + (nx * gameSize[0]).round();
-    final ny = stepCount * dy * stepRatio;
-    final rny = lastPos[1] + (ny * gameSize[1]).round();
-    final np = Vector2(rnx, rny);
-    final fmt = NumberFormat('##.0#', 'en_US');
-    final ifmt = NumberFormat('###', 'en_US');
-    logger.finest(
-        "lastPos:${ifmt.format(lastPos[0])},${ifmt.format(lastPos[0])}");
-    logger.finest("stepCount:$stepCount, dx: $dx, dy: $dy, stepRatio: $stepRatio" +
-        "position:${fmt.format(position[0])}, ${fmt.format(position[1])}. np:${ifmt.format(np[0])},${ifmt.format(np[1])}.");
-    position = np;
+  Vector2 _step() {
+    final x = position[0];
+    final y = position[1];
+    final np = Vector2(x + stepX, y + stepY);
+    return np;
+    // position[0] += stepX;
+    // position[1] += stepY;
   }
 
-  void forward() {
+  Vector2 stepForward() {
     lastPosForBackward = position;
-    ++_stepCount;
-    logger.finer(
-        "position=${position[0]},${position[1]}. stepCount=$_stepCount;Calling step().");
-    _step();
+    return _step();
   }
 
-  /* void backward() {
-    --_stepCount;
-    _step();
-  } */
-
-  void clearStepCount() {
-    _stepCount = 0;
+  void stepBackward() {
+    if (lastPosForBackward != null) {
+      position = lastPosForBackward as Vector2;
+    }
   }
 
-  void updateLastPosWithPosition() {
-    lastPos = position;
-  }
+  // void clearStepCount() { _stepCount = 0; }
 
-  void reverseDx() => dxReverse = !dxReverse;
-  void reverseDy() => dyReverse = !dyReverse;
+  // void updateLastPosWithPosition() { lastPos = position; }
+
+  void reverseDx() => _dxReverse = !_dxReverse;
+  void reverseDy() => _dyReverse = !_dyReverse;
 
   void bounceAtWall(wallPos pos) {
     // wallPos wp) {
-    clearStepCount();
-    updateLastPosWithPosition();
+    // clearStepCount();
+    // updateLastPosWithPosition();
+    stepBackward();
     switch (pos) {
       case wallPos.right:
       case wallPos.left:
@@ -198,18 +246,37 @@ class BallO extends GameObject with Backwardable {
         return;
     }
   }
+
+  bool bounceAtPaddle(wallPos pos, Rect rect) {
+    // wallPos wp) {
+    // clearStepCount();
+    // updateLastPosWithPosition();
+    stepBackward();
+    final rx = position[0];
+    if (rx >= rect.left && rx <= rect.right) {
+      logger.finer("Paddle top/bottom hit Ball.");
+      reverseDy();
+      // _pickupDeltaPositionQueue.clear();
+      return true;
+    }
+    logger.fine("Paddle side hit Ball.");
+    // reverseDx();
+    return false;
+  }
 }
 
 class RandAngleIterator extends Iterable with Iterator {
+  final int start;
   final int range;
-  final rand = new Random(new DateTime.now().millisecondsSinceEpoch);
+  final bool reverse;
+  final rand = Random(DateTime.now().millisecondsSinceEpoch);
   var _e = 0;
-  var _s = false;
-  int get v => (30 + _e) * (_s ? 1 : -1);
+  // var _s = false;
+  int get v => reverse ? -(start + _e) : (start + _e); //  * (_s ? 1 : -1);
 
-  RandAngleIterator(this.range) {
+  RandAngleIterator(this.start, this.range, this.reverse) {
     _e = rand.nextInt(range);
-    _s = rand.nextBool();
+    // _s = rand.nextBool();
   }
 
   @override
@@ -218,10 +285,38 @@ class RandAngleIterator extends Iterable with Iterator {
   @override
   bool moveNext() {
     _e = rand.nextInt(range);
-    _s = rand.nextBool();
+    // _s = rand.nextBool();
     return true;
   }
 
   @override
   Iterator get iterator => this;
+}
+
+class DeltaPosition {
+  Duration delta;
+  Vector2 position;
+  DeltaPosition(this.delta, this.position);
+  static zero() => DeltaPosition(Duration.zero, Vector2.zero());
+}
+
+class DelayBuffer {
+  final _queue = Queue<DeltaPosition>();
+  final int size;
+  DelayBuffer(this.size);
+
+  DeltaPosition putOut() {
+    if (_queue.length >= size) {
+      return _queue.removeFirst();
+    } else {
+      return DeltaPosition.zero();
+    }
+  }
+
+  void putIn(DeltaPosition dp) {
+    _queue.add(dp);
+    if (_queue.length > size) {
+      _queue.removeFirst();
+    }
+  }
 }

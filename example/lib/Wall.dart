@@ -1,56 +1,23 @@
 import 'package:flutter/material.dart';
-import 'MyHomePage.dart';
 import 'WallBase.dart';
 import 'Ball.dart';
 import 'package:illume/illume.dart';
+import 'main.dart'; // logger
+import 'pongPage.dart';
 
 typedef DoWithBall = void Function(BallO ball);
 
 class WallO extends WallBaseO {
+  late final Vector2 _rect;
+  late final Vector2 _offset;
   @override
   Color getColor() => Colors.brown;
-  static const shape = BoxShape.rectangle;
-  static const b = MyHomePage.wallT;
-  static topOffset(Vector2 gameSize) =>
-      Vector2(gameSize[0] / 2, b / 2 * gameSize[1]);
-  static leftOffset(Vector2 gameSize) =>
-      Vector2(b / 2 * gameSize[0], gameSize[1] / 2);
-  static bottomOffset(Vector2 gameSize) =>
-      Vector2(gameSize[0] / 2, gameSize[1] * (1 - b / 2));
-  static rightOffset(Vector2 gameSize) =>
-      Vector2(gameSize[0] * (1 - b / 2), gameSize[1] / 2);
-  static const offsets = [topOffset, leftOffset, bottomOffset, rightOffset];
-  double get x => offset[0];
-  double get y => offset[1];
 
   @override
-  Vector2 getOffset() {
-    switch (pos) {
-      case wallPos.top:
-        return topOffset(gameSize);
-      case wallPos.left:
-        return leftOffset(gameSize);
-      case wallPos.bottom:
-        return bottomOffset(gameSize);
-      case wallPos.right:
-        return rightOffset(gameSize);
-    }
-  }
+  Vector2 getOffset() => _offset;
 
-  
   @override
-  Vector2 getRect() {
-    switch (pos) {
-      case wallPos.top:
-      case wallPos.bottom:
-        return Vector2(
-            (1 - b - MyHomePage.ballSize) * gameSize[0], b * gameSize[1]);
-      case wallPos.left:
-      case wallPos.right:
-        return Vector2(
-            b * gameSize[0], (1 - b - MyHomePage.ballSize) * gameSize[1]);
-    }
-  }
+  Vector2 getRect() => _rect;
 
   late final DoWithBall bounce;
 
@@ -62,29 +29,75 @@ class WallO extends WallBaseO {
     }
   }
 
+  Vector2 surfacePosition() {
+    switch(pos) {
+      case wallPos.top:
+      case wallPos.bottom:
+        return Vector2(position[0], position[1] + surfaceOffset);
+      case wallPos.left:
+      case wallPos.right:
+        return Vector2(position[0] + surfaceOffset, position[1]);
+    }
+  }
+
+  @override
+  void onCollision(List<Collision> collisions) {
+    for (Collision col in collisions) {
+      if (col.component is BallO) {
+        final ball = col.component as BallO;
+          ball.bounceAtWall(pos);
+          logger.fine("Ball is reversed by Wall.");
+          break;
+      }
+    }
+  }
+
   @override
   void init() {
+    _rect = (pos == wallPos.top || pos == wallPos.bottom)
+        ? Vector2((1 - WallBaseO.b - PongGamePage.ballSize) * gameSize[0],
+            WallBaseO.b * gameSize[1])
+        : Vector2(WallBaseO.b * gameSize[0],
+            (1 - WallBaseO.b - PongGamePage.ballSize) * gameSize[1]);
     size = rect;
     alignment = GameObjectAlignment.center;
+    switch (pos) {
+      case wallPos.top:
+        _offset = WallBaseO.topOffset(gameSize);
+        break;
+      case wallPos.left:
+        _offset = WallBaseO.leftOffset(gameSize);
+        break;
+      case wallPos.bottom:
+        _offset = WallBaseO.bottomOffset(gameSize);
+        break;
+      case wallPos.right:
+        _offset = WallBaseO.rightOffset(gameSize);
+        break;
+    }
     position = offset;
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-        alignment: Alignment(x, y),
-        child: Stack(alignment: AlignmentDirectional.center, children: [
-          Container(
-            decoration: BoxDecoration(shape: shape, color: color),
-            width: size[0],
-            height: size[1],
-          ),
-          Container(
-            decoration: const BoxDecoration(shape: shape, color: Colors.black),
-            width: 0.2 * size[0],
-            height: 0.2 * size[1],
-          ),
-        ]));
+      color: color,
+    );
   }
+}
 
+class PlayerWallO extends WallO {
+  final void Function(wallPos) pause;
+  PlayerWallO(super.pos, this.pause);
+  @override
+  void onCollision(List<Collision> collisions) {
+    logger.info("Wall collided with ${collisions.length} collisions.");
+    for (Collision col in collisions) {
+      if (col.component is BallO) {
+        logger.info("Ball hit top/bottom wall!");
+        pause(pos); // if (pos == wallPos.top) { scoreEnemy(); }
+        break;
+      }
+    }
+  }
 }
