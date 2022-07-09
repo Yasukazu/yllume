@@ -170,6 +170,9 @@ class _PongGamePageState extends State<PongGamePage> {
             resume();
           }
         },
+        onTapDown: (TapDownDetails details) => {
+          // logger.fine("Relative tapped pos.dx: ${position.relative.dx}, pos.dy: ${position.relative.dy}"),
+        },
         child: Scaffold(
           appBar: AppBar(
             title: Text(PongGamePage.statusBar),
