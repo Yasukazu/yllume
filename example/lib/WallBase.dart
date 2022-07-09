@@ -84,8 +84,6 @@ abstract class WallBaseO extends GameObject {
     ]);
   }
 
-  @override
-  void onScreenSizeChange(Vector2 size) {}
 
   @override
   void update(Duration delta) {}
