@@ -150,8 +150,10 @@ class _PongGamePageState extends State<PongGamePage> {
     Offset position = details.localPosition;
     logger.fine("Relative tapped pos.dx: ${position.dx}, pos.dy: ${position.dy}");
     if (gameController.gameInProgress && gameController.gameObjects.isNotEmpty) {
-      final gameObject = gameController.gameObjects[0];
-      if (position.dx < gameObject.gameSize[0] / 2) {
+      final GameObject gameObject =  gameController.gameObjects.firstWhere((element) =>
+        element is PaddleO && element is! EnemyPaddleO
+      );
+      if (position.dx < gameObject.position[0]) { // gameSize[0] / 2) {
         selfPaddle.moveLeft();
         logger.finer("selfPaddle moveLeft by tap left area.");
       }
