@@ -146,6 +146,22 @@ class _PongGamePageState extends State<PongGamePage> {
     }
   }
 
+  _doOnTapDown(TapDownDetails details) {
+    Offset position = details.localPosition;
+    logger.fine("Relative tapped pos.dx: ${position.dx}, pos.dy: ${position.dy}");
+    if (gameController.gameInProgress && gameController.gameObjects.isNotEmpty) {
+      final gameObject = gameController.gameObjects[0];
+      if (position.dx < gameObject.gameSize[0] / 2) {
+        selfPaddle.moveLeft();
+        logger.finer("selfPaddle moveLeft by tap left area.");
+      }
+      else {
+        selfPaddle.moveRight();
+        logger.finer("selfPaddle moveRight by tap right area.");
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return RawKeyboardListener(
@@ -155,10 +171,10 @@ class _PongGamePageState extends State<PongGamePage> {
       onKey: (event) {
         if (event.isKeyPressed(LogicalKeyboardKey.arrowLeft)) {
           selfPaddle.moveLeft();
-          logger.info("arrowLeft key");
+          logger.finer("selfPaddle moveLeft by arrowLeft key");
         } else if (event.isKeyPressed(LogicalKeyboardKey.arrowRight)) {
           selfPaddle.moveRight();
-          logger.info("arrowRight key");
+          logger.finer("selfPaddle moveRight by arrowRight key");
         }
       },
       child: GestureDetector(
@@ -170,8 +186,10 @@ class _PongGamePageState extends State<PongGamePage> {
             resume();
           }
         },
-        onTapDown: (TapDownDetails details) => {
-          // logger.fine("Relative tapped pos.dx: ${position.relative.dx}, pos.dy: ${position.relative.dy}"),
+        onTapDown: (TapDownDetails details) {
+          if (gameStarted && !gamePaused) {
+            _doOnTapDown(details);
+          }
         },
         child: Scaffold(
           appBar: AppBar(
