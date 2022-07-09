@@ -153,8 +153,8 @@ class EnemyPaddleO extends PaddleO {
 
   @override
   void update(Duration delta) {
-    final ballIsApproaching = ballChaser.ballIsApproaching();
-    if (ballIsApproaching != null && ballIsApproaching) {
+    // final ballIsApproaching = ballChaser.ballIsApproaching();
+    // if (ballIsApproaching != null && ballIsApproaching) {
       Vector2 calculatedPos = ballChaser.calculatedPos;
       if (calculatedPos != Vector2.zero()) {
         logger.finest(
@@ -168,7 +168,6 @@ class EnemyPaddleO extends PaddleO {
           logger.finer("Enemy paddle moveRight by $posDiff");
         }
       }
-    }
     if (commandPacket != null) {
       final command = commandPacket as CommandPacket;
       if (command.count > 0) {
