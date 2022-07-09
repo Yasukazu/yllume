@@ -8,43 +8,51 @@ import 'dart:collection';
 
 class BallChaser extends GameObject {
   static const color = Colors.red;
-  static const sizeRatio = 0.2;
+  final double sizeRatio;
   static const sampleCount = 2;
   final dPQueue = Queue<DeltaPosition>();
   List<DeltaPosition> ballDPs = [];
-  Vector2? _calculatedPos;
-  Vector2? get calculatedPos => _calculatedPos;
-  final Map<wallPos, WallO> pos2wall;
+  Vector2 _calculatedPos = Vector2.zero();
+  Vector2 get calculatedPos => _calculatedPos;
+  // final Map<wallPos, WallO> pos2wall;
+  final WallO Function(wallPos) posToWall;
   final double _ballRatio;
-  double? _ballSize; // really half size..
-  double? get xMin {
-    final wallSurfaceXPos = pos2wall[wallPos.left]?.surfacePosition()[0];
-    return wallSurfaceXPos! + _ballSize!;
-  }
-  double? get xMax {
-    final wall = pos2wall[wallPos.right];
-    if (wall == null) {
-      return null;
-    }
-    final surfaceOffset = wall.surfaceOffset;
-    final wallXPos = wall.position[0] + surfaceOffset;
-    return wallXPos - _ballSize!;
-  }
-  double? get yMin {
-    final wallSurfaceYPos = pos2wall[wallPos.top]?.surfacePosition()[1];
-    return wallSurfaceYPos! + _ballSize!;
-  }
-  double? get yMax {
-    final wall = pos2wall[wallPos.bottom];
-    if (wall == null) {
-      return null;
-    }
-    final surfaceOffset = wall.surfaceOffset;
-    final wallYPos = wall.position[1] + surfaceOffset;
-    return wallYPos - _ballSize!;
+
+  double _ballRad = 0.0;
+
+  double _xMin = 0;
+  double _xMax = 0;
+
+  BallChaser(this.posToWall, this._ballRatio, {this.sizeRatio = 0.2});
+
+  @override
+  void init() {
+    collidable = false;
+    alignment = GameObjectAlignment.center;
+    visible = true;
+    initialised = true;
+
+    _ballRad = BallO.calcSize(gameSize, _ballRatio) / 2;
+    final wallSurfaceXPos = posToWall(wallPos.left).surfacePosition()[0];
+    _xMin = wallSurfaceXPos + _ballRad;
+    final WallO rightWall = posToWall(wallPos.right);
+    final wallXPos = rightWall.position[0] + rightWall.surfaceOffset;
+    _xMax = wallXPos - _ballRad;
+
+    size = Vector2(sizeRatio * gameSize[0], sizeRatio * gameSize[1]);
+    position = Vector2.zero();
   }
 
-  BallChaser(this.pos2wall, this._ballRatio){}
+  @override
+  void onScreenSizeChange(Vector2 size) {
+    _ballRad = BallO.calcSize(gameSize, _ballRatio) / 2;
+    final wallSurfaceXPos = posToWall(wallPos.left).surfacePosition()[0];
+    _xMin = wallSurfaceXPos + _ballRad;
+    final WallO rightWall = posToWall(wallPos.right);
+    final wallXPos = rightWall.position[0] + rightWall.surfaceOffset;
+    _xMax = wallXPos - _ballRad;
+    size = Vector2(sizeRatio * gameSize[0], sizeRatio * gameSize[1]);
+  }
 
   bool? ballIsApproachingToEnemy() {
     if (dPQueue.length < 2) {
@@ -71,9 +79,15 @@ class BallChaser extends GameObject {
     }
   }
 
+
+  /// forward calculated ball position.
   static const dTForward = 900;
+
+  /// returns Vector2.zero() if ballDPs.length is not enough to calculate.
   Vector2 getBallCurPos(Duration delta) {
-    assert(ballDPs.length >= 2);
+    if (ballDPs.length < 2) {
+      return Vector2.zero();
+    }
 
     /// vectors
     final double dY = ballDPs[1].position[1] - ballDPs[0].position[1];
@@ -92,13 +106,13 @@ class BallChaser extends GameObject {
     final d2Y = ySpeed * dT2;
 
     double x2 = ballDPs[1].position[0] + d2X;
-    double? max = xMax;
-    if (max != null && x2 > max) {
+    final double max = _xMax;
+    if (x2 > max) {
       final diff = x2 - max;
       x2 -= 2 * diff;
     }
-    double? min = xMin;
-    if (min != null && x2 < min) {
+    final min = _xMin;
+    if (x2 < min) {
       final diff = min - x2;
       x2 += 2 * diff;
     }
@@ -134,38 +148,16 @@ class BallChaser extends GameObject {
       ),
     ]);
   }
-  @override
-  void onScreenSizeChange(Vector2 size) {
-    /// TODO: implement onScreenSizeChange
-  }
-  @override
-  void init() {
-    // super.init();
-    collidable = false;
-    alignment = GameObjectAlignment.center;
-    size = Vector2(sizeRatio * gameSize[0], sizeRatio * gameSize[1]);
-    // position = Vector2(x, y);
-    initialised = true;
-    visible = true;
-    _ballSize = BallO.calcSize(gameSize, _ballRatio) / 2;
-  }
+
 
   @override
   void update(Duration delta) {
     if (dPQueue.length >= 2) {
       ballDPs = dPQueue.take(2).toList();
-      final calculatedPos = getBallCurPos(delta);
-      final calcYPos = calculatedPos[1];
-      if (yMin == null && yMax == null) {
-        return;
-      }
-      else {
-        if (calcYPos > yMin! && calcYPos < yMax!) {
-          _calculatedPos = calculatedPos;
-          logger.finer("calculatedPos = $_calculatedPos");
-          position = _calculatedPos as Vector2;
-        }
-      }
+
+      _calculatedPos = getBallCurPos(delta);
+      logger.finer("calculatedPos = $_calculatedPos");
+      position = _calculatedPos;
     }
   }
   @override

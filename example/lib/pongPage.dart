@@ -48,7 +48,6 @@ class _PongGamePageState extends State<PongGamePage> {
   late final EnemyPaddleO enemyPaddle;
   late final PaddleO selfPaddle;
   List<WallO> get walls => [topWall, bottomWall, leftWall, rightWall];
-  Map<wallPos, WallO> get pos2wall => {wallPos.top: topWall, wallPos.bottom: bottomWall, wallPos.right: rightWall, wallPos.left: leftWall};
   IllumeController get gameController => PongGamePage.gameController;
   bool gameStarted = false;
   final ballAngleIterator =
@@ -70,14 +69,29 @@ class _PongGamePageState extends State<PongGamePage> {
     logger.info("Player gained 1 score.");
   }
 
+  late WallO Function(wallPos) posToWall;
+
   _PongGamePageState() {
     topWall = PlayerWallO(wallPos.top, pause);
     bottomWall = PlayerWallO(wallPos.bottom, pause);
     rightWall = WallO(wallPos.right);
     leftWall = WallO(wallPos.left);
+    final pos2wall = {wallPos.top: topWall, wallPos.bottom: bottomWall, wallPos.right: rightWall, wallPos.left: leftWall};
+    posToWall = (wp) {
+      switch(wp) {
+        case wallPos.top:
+          return topWall;
+        case wallPos.bottom:
+          return bottomWall;
+        case wallPos.left:
+          return leftWall;
+        case wallPos.right:
+          return rightWall;
+      }
+    };
     selfPaddle = PaddleO(wallPos.bottom, PongGamePage.paddleWidth,
         PongGamePage.paddleStep, pos2wall);
-    ballChaser = BallChaser(pos2wall, PongGamePage.ballSize);
+    ballChaser = BallChaser(posToWall, PongGamePage.ballSize);
     enemyPaddle = EnemyPaddleO(ballChaser, wallPos.top,
         PongGamePage.paddleWidth, PongGamePage.paddleStep, pos2wall);
     ball = BallO.withAngleProvider(
