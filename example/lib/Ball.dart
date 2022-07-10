@@ -123,7 +123,31 @@ class BallO extends GameObject with Backwardable {
     position =
         Vector2(gx / 2, selfPaddleTopSurface - oSize / 2 - gap); // , gy / 2);
     initialised = true;
-    // _pickupDeltaPositionQueue.clear();
+    _stepCount = 0;
+  }
+
+  @override
+  void onScreenSizeChange(Vector2 size) {
+    final gameSize = size;
+    final gx = gameSize[0];
+    final gy = gameSize[1];
+    final diagonal = sqrt(gx * gx + gy * gy);
+    final stepLength = diagonal / defaultBallFPS * speed / 1000;
+    stepInterval = diagonal / stepLength;
+    _stepX = stepLength * dx;
+    _stepY = stepLength * dy;
+    logger.finer("stepInterval = $stepInterval");
+    final oSize = calcSize(gameSize, ratio);
+    iSize = oSize * iRatio;
+    logger.finer("Ball outer size = $oSize");
+    this.size = Vector2.all(oSize);
+    alignment = GameObjectAlignment.center;
+    final double selfPaddleYPos = selfPaddle.position[1];
+    final double selfPaddleHSize = selfPaddle.size[1];
+    final double selfPaddleTopSurface = selfPaddleYPos - selfPaddleHSize / 2;
+    position =
+        Vector2(gx / 2, selfPaddleTopSurface - oSize / 2 - gap); // , gy / 2);
+    initialised = true;
     _stepCount = 0;
   }
 
@@ -170,11 +194,6 @@ class BallO extends GameObject with Backwardable {
     logger.finer("yieldBallPos(null) to clear DPQueue.");
   }
 
-  @override
-  void onScreenSizeChange(Vector2 size) {
-    // This is a quick demo but you really should shift your positions in a
-    // real world app or at least lock orientation.
-  }
 
   final int pickupDelay; // final Vector2 ballPos;;
   final _pickupDeltaPositionQueue = Queue<DeltaPosition>();

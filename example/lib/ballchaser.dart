@@ -51,7 +51,7 @@ class BallChaser extends GameObject {
     final WallO rightWall = posToWall(wallPos.right);
     final wallXPos = rightWall.position[0] + rightWall.surfaceOffset;
     _xMax = wallXPos - _ballRad;
-    size = Vector2(sizeRatio * gameSize[0], sizeRatio * gameSize[1]);
+    size = gameSize * sizeRatio; // Vector2(sizeRatio * gameSize[0], sizeRatio * gameSize[1]);
   }
 
   bool? ballIsApproachingToEnemy() {
