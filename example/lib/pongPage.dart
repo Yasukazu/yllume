@@ -76,7 +76,7 @@ class _PongGamePageState extends State<PongGamePage> {
     bottomWall = PlayerWallO(wallPos.bottom, pause);
     rightWall = WallO(wallPos.right);
     leftWall = WallO(wallPos.left);
-    final pos2wall = {wallPos.top: topWall, wallPos.bottom: bottomWall, wallPos.right: rightWall, wallPos.left: leftWall};
+    // final pos2wall = {wallPos.top: topWall, wallPos.bottom: bottomWall, wallPos.right: rightWall, wallPos.left: leftWall};
     posToWall = (wp) {
       switch(wp) {
         case wallPos.top:
@@ -89,11 +89,11 @@ class _PongGamePageState extends State<PongGamePage> {
           return rightWall;
       }
     };
-    selfPaddle = PaddleO(wallPos.bottom, PongGamePage.paddleWidth,
-        PongGamePage.paddleStep, pos2wall);
+    selfPaddle = PaddleO(posToWall, wallPos.bottom, PongGamePage.paddleWidth,
+        PongGamePage.paddleStep);
     ballChaser = BallChaser(posToWall, PongGamePage.ballSize);
-    enemyPaddle = EnemyPaddleO(ballChaser, wallPos.top,
-        PongGamePage.paddleWidth, PongGamePage.paddleStep, pos2wall);
+    enemyPaddle = EnemyPaddleO(ballChaser, posToWall, wallPos.top,
+        PongGamePage.paddleWidth, PongGamePage.paddleStep);
     ball = BallO.withAngleProvider(
         selfPaddle, ballChaser.yieldBallPos, pause, ballAngleIterator, speed, PongGamePage.ballSize);
   }
