@@ -39,6 +39,7 @@ dependencies:
   tuple: ^2.0.0
   logging: ^1.0.2
   intl: ^0.17.0
+  positioned_tap_detector: ^1.0.1
 
 dev_dependencies:
   flutter_test:
