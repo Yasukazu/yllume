@@ -1,35 +1,31 @@
-import 'dart:collection';
-
-import 'package:example/Ball.dart';
 import 'package:example/main.dart';
 import 'package:flutter/material.dart';
 import 'Wall.dart';
 import 'WallBase.dart';
 import 'pongPage.dart';
 import 'ballchaser.dart';
-import 'Backwardable.dart';
+import 'backwardable.dart';
 import 'package:illume/illume.dart';
-import 'dart:math';
 
 class PaddleO extends GameObject with Backwardable {
   static const color = Colors.yellow;
   static const shape = BoxShape.rectangle;
   final double stepRatio;
-  late final double widthRatio;
-  late final RangeNum offset;
-  late final double xCenter;
+  double widthRatio = 1;
+  RangeNum offset = RangeNum(0);
+  double xCenter = 0;
   static const wallGapRatio = PongGamePage.ballSize / 2;
-  late final double wallGap;
+  double wallGap = 0;
   double get x => xCenter + offset.d;
   set x(double v) => offset.assign(v - xCenter);
 
-  late final double _step;
+  double _step = 0;
   double get step => _step;
-  late final double _y;
+  double _y = 0;
   double get y => _y;
   final wallPos pos;
-  final Map<wallPos, WallO> pos2wall;
-  PaddleO(this.pos, this.widthRatio, this.stepRatio, this.pos2wall) {
+  final WallO Function(wallPos) posToWall;
+  PaddleO(this.posToWall, this.pos, this.widthRatio, this.stepRatio) {
     assert(pos == wallPos.top || pos == wallPos.bottom);
     assert(widthRatio > 0 && widthRatio <= 1);
     assert(stepRatio > 0 && stepRatio <= 1);
@@ -39,7 +35,6 @@ class PaddleO extends GameObject with Backwardable {
 
   @override
   void init() {
-    // _offset[0] = super.offset[0];
     final diff =
         (PongGamePage.wpGap + PongGamePage.wallT / 2 + b / 2) * gameSize[1];
     _y = pos == wallPos.top
@@ -56,14 +51,31 @@ class PaddleO extends GameObject with Backwardable {
     wallGap = PongGamePage.wpGap * gameSize[0];
   }
 
+  @override
+  void onScreenSizeChange(Vector2 size) {
+    final gameSize = size;
+    final diff =
+        (PongGamePage.wpGap + PongGamePage.wallT / 2 + b / 2) * gameSize[1];
+    _y = pos == wallPos.top
+        ? WallBaseO.topOffset(gameSize)[1] + diff
+        : WallBaseO.bottomOffset(gameSize)[1] - diff;
+    _step = stepRatio * gameSize[0];
+    offset = RangeNum(
+        (1 - widthRatio - 2 * PongGamePage.wallT - 2 * PongGamePage.wpGap) *
+            gameSize[0]);
+    xCenter = gameSize[0] / 2;
+    position = Vector2(x, y);
+    this.size =
+        Vector2(widthRatio * gameSize[0], PongGamePage.paddleT * gameSize[1]);
+    wallGap = PongGamePage.wpGap * gameSize[0];
+  }
+
   void center() {
     offset.center();
   }
 
   @override
   void update(Duration delta) {
-    // x = offset.d + offset[0];
-    // position[0] = x; position[1] = y;
     position = Vector2(x, y);
     logger.finest("Paddle.x = $x; position[0]= ${position[0]}");
   }
@@ -121,8 +133,6 @@ class PaddleO extends GameObject with Backwardable {
     ]);
   }
 
-  @override
-  void onScreenSizeChange(Vector2 size) {}
 
   void moveRight() {
     if (offset.isRightLimit) {
@@ -149,12 +159,12 @@ class PaddleO extends GameObject with Backwardable {
 
 class EnemyPaddleO extends PaddleO {
   final BallChaser ballChaser; // List<DeltaPosition> Function() getBallPoss;
-  EnemyPaddleO(this.ballChaser, super.pos, super.width, super.step, super.pos2wall);
+  EnemyPaddleO(this.ballChaser, super.posToWall, super.pos, super.width, super.step);
 
   @override
   void update(Duration delta) {
-    final ballIsApproaching = ballChaser.ballIsApproaching();
-    if (ballIsApproaching != null && ballIsApproaching) {
+    // final ballIsApproaching = ballChaser.ballIsApproaching();
+    // if (ballIsApproaching != null && ballIsApproaching) {
       Vector2 calculatedPos = ballChaser.calculatedPos;
       if (calculatedPos != Vector2.zero()) {
         logger.finest(
@@ -168,7 +178,6 @@ class EnemyPaddleO extends PaddleO {
           logger.finer("Enemy paddle moveRight by $posDiff");
         }
       }
-    }
     if (commandPacket != null) {
       final command = commandPacket as CommandPacket;
       if (command.count > 0) {

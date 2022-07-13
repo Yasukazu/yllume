@@ -8,8 +8,9 @@ import 'pongPage.dart';
 typedef DoWithBall = void Function(BallO ball);
 
 class WallO extends WallBaseO {
-  late final Vector2 _rect;
-  late final Vector2 _offset;
+  Vector2 _rect = Vector2.zero();
+  Vector2 _offset = Vector2.zero();
+
   @override
   Color getColor() => Colors.brown;
 
@@ -59,7 +60,7 @@ class WallO extends WallBaseO {
             WallBaseO.b * gameSize[1])
         : Vector2(WallBaseO.b * gameSize[0],
             (1 - WallBaseO.b - PongGamePage.ballSize) * gameSize[1]);
-    size = rect;
+    size = _rect;
     alignment = GameObjectAlignment.center;
     switch (pos) {
       case wallPos.top:
@@ -75,7 +76,34 @@ class WallO extends WallBaseO {
         _offset = WallBaseO.rightOffset(gameSize);
         break;
     }
-    position = offset;
+    position = _offset;
+  }
+
+  @override
+  void onScreenSizeChange(Vector2 size) {
+    final gameSize = size;
+    _rect = (pos == wallPos.top || pos == wallPos.bottom)
+        ? Vector2((1 - WallBaseO.b - PongGamePage.ballSize) * gameSize[0],
+        WallBaseO.b * gameSize[1])
+        : Vector2(WallBaseO.b * gameSize[0],
+        (1 - WallBaseO.b - PongGamePage.ballSize) * gameSize[1]);
+    this.size = _rect;
+    alignment = GameObjectAlignment.center;
+    switch (pos) {
+      case wallPos.top:
+        _offset = WallBaseO.topOffset(gameSize);
+        break;
+      case wallPos.left:
+        _offset = WallBaseO.leftOffset(gameSize);
+        break;
+      case wallPos.bottom:
+        _offset = WallBaseO.bottomOffset(gameSize);
+        break;
+      case wallPos.right:
+        _offset = WallBaseO.rightOffset(gameSize);
+        break;
+    }
+    position = _offset;
   }
 
   @override
@@ -84,6 +112,7 @@ class WallO extends WallBaseO {
       color: color,
     );
   }
+
 }
 
 class PlayerWallO extends WallO {
