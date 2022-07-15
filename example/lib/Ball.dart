@@ -246,24 +246,23 @@ class BallO extends GameObject with Backwardable {
 
   void reverseDx() => _dxReverse = !_dxReverse;
   void reverseDy() => _dyReverse = !_dyReverse;
-
-  void bounceAtWall(wallPos pos) {
-    // wallPos wp) {
-    // clearStepCount();
-    // updateLastPosWithPosition();
-    stepBackward();
-    switch (pos) {
-      case wallPos.right:
-      case wallPos.left:
-        reverseDx();
-        logger.finer("Ball dx is reversed.");
-        return;
-      case wallPos.top:
-      case wallPos.bottom:
-        logger.finer("Ball dy is reversed.");
-        reverseDy();
-        return;
+  void reverseByOffsets(Vector2 offsets) {
+    if (offsets[0] == 0 && offsets[1] != 0) {
+      reverseDy();
+      logger.finer("reverseByOffsets dy.");
+      return;
     }
+    else if (offsets[0] != 0 && offsets[1] == 0) {
+      reverseDx();
+      logger.finer("reverseByOffsets dx.");
+      return;
+    }
+    throw Exception("No match condition.");
+  }
+
+  void bounceAtWall(Vector2 offsets) {
+    stepBackward();
+    reverseByOffsets(offsets);
   }
 
   bool bounceAtPaddle(wallPos pos, Rect rect) {
