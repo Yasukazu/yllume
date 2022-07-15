@@ -47,7 +47,7 @@ class WallO extends WallBaseO {
     for (Collision col in collisions) {
       if (col.component is BallO) {
         final ball = col.component as BallO;
-          ball.bounceAtWall(pos);
+          ball.bounceAtWall(surfaceOffsets);
           logger.fine("Ball is reversed by Wall.");
           break;
       }
