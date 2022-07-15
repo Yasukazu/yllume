@@ -58,7 +58,7 @@ class BallO extends GameObject with Backwardable {
   bool iRotateCCW = true;
   late final PaddleO selfPaddle;
   final void Function(wallPos) pause;
-  final void Function(void Function()) setState;
+  final void Function(VoidCallback) setState;
   BallO(this.setState, this.selfPaddle, this.yieldBallPos, this.pause, this._dx, this._dy,
       [this._speed = defaultBallSpeed, this.ratio = PongGamePage.ballSize, this.pickupCycle = 2, this.pickupDelay = 2]) {
     assert(_dx > 0 && _dy > 0);
@@ -131,6 +131,7 @@ class BallO extends GameObject with Backwardable {
         Vector2(gx / 2, selfPaddleTopSurface - oSize / 2 - gap); // , gy / 2);
     initialised = true;
     _stepCount = 0;
+    rebuildWidgetIfNeeded = true;
   }
 
   @override
@@ -218,10 +219,13 @@ class BallO extends GameObject with Backwardable {
     if (delta.inMilliseconds - _lastUpdate > stepInterval) {
       _lastUpdate = delta.inMilliseconds;
       position = stepForward();
-      setState(() {
+      // setState(() {
         iPos = iPos + 1;
         coreAlignment = coreAlignments[iPos % coreAlignments.length];
-      });
+        logger.finer("coreAlignment is set as $coreAlignment by $iPos.");
+      // });
+      rebuildWidget();
+      logger.finer("rebuild ball.");
       logger.finest("Update ball pos: (${position[0]}, ${position[1]}).");
       if (_stepCount % pickupCycle == 0) {
         // delta != Duration.zero && position != Vector2.zero() &&
