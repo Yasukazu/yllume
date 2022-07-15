@@ -1,9 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:illume/illume.dart';
 import 'pongPage.dart';
-enum wallPos { top(0), bottom(1), right(2), left(3);
+enum wallPos { top(0), bottom(2), left(3), right(1);
   final int value;
   const wallPos(this.value);
+
+  Vector2 get offsetVector {
+    switch(this) {
+      case top:
+        return Vector2(0, -1);
+      case bottom:
+        return Vector2(0, 1);
+      case right:
+        return Vector2(1, 0);
+      case left:
+        return Vector2(-1, 0);
+    }
+  }
+
   wallPos get opposite {
         switch(this) {
           case top:
