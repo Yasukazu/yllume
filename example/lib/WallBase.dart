@@ -11,7 +11,7 @@ extension OffsetVector2 on Vector2 {
 }
 
 enum wallPos { top(0), bottom(2), left(3), right(1);
-  final Vector2 value;
+  final int value;
   const wallPos(this.value);
 
   Vector2 get offsetVector {
