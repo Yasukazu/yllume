@@ -58,8 +58,7 @@ class BallO extends GameObject with Backwardable {
   bool iRotateCCW = true;
   late final PaddleO selfPaddle;
   final void Function(wallPos) pause;
-  final void Function(VoidCallback) setState;
-  BallO(this.setState, this.selfPaddle, this.yieldBallPos, this.pause, this._dx, this._dy,
+  BallO(this.selfPaddle, this.yieldBallPos, this.pause, this._dx, this._dy,
       [this._speed = defaultBallSpeed, this.ratio = PongGamePage.ballSize, this.pickupCycle = 2, this.pickupDelay = 2]) {
     assert(_dx > 0 && _dy > 0);
     assert(_speed > 0);
@@ -71,8 +70,7 @@ class BallO extends GameObject with Backwardable {
   final void Function(DeltaPosition?) yieldBallPos;
 
   late final RandAngleIterator? angleProvider;
-  BallO.withAngleProvider(this.setState,
-      this.selfPaddle, this.yieldBallPos, this.pause, this.angleProvider,
+  BallO.withAngleProvider(this.selfPaddle, this.yieldBallPos, this.pause, this.angleProvider,
       this._speed, this.ratio, [this.pickupCycle = 2, this.pickupDelay = 2]) {
     assert(angleProvider != null);
     _angle = angleProvider!.current;

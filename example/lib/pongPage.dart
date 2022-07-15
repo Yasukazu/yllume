@@ -94,7 +94,7 @@ class _PongGamePageState extends State<PongGamePage> {
     ballChaser = BallChaser(posToWall, PongGamePage.ballSize);
     enemyPaddle = EnemyPaddleO(ballChaser, posToWall, wallPos.top,
         PongGamePage.paddleWidth, PongGamePage.paddleStep);
-    ball = BallO.withAngleProvider(setState,
+    ball = BallO.withAngleProvider(
         selfPaddle, ballChaser.pickupBallPos, pause, ballAngleIterator, speed, PongGamePage.ballSize);
   }
 
