@@ -1,20 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:illume/illume.dart';
 import 'pongPage.dart';
+
+extension OffsetVector2 on Vector2 {
+  static Vector2? _topOffset;
+  static Vector2 topOffset() {
+    _topOffset ??= Vector2(0, -1);
+    return _topOffset as Vector2;
+  }
+}
+
 enum wallPos { top(0), bottom(2), left(3), right(1);
-  final int value;
+  final Vector2 value;
   const wallPos(this.value);
 
   Vector2 get offsetVector {
     switch(this) {
       case top:
-        return Vector2(0, -1);
+        return OffsetVector2.topOffset();
       case bottom:
         return Vector2(0, 1);
       case right:
         return Vector2(1, 0);
       case left:
         return Vector2(-1, 0);
+      default:
+        throw Exception("No match enum.");
     }
   }
 
@@ -28,6 +39,8 @@ enum wallPos { top(0), bottom(2), left(3), right(1);
             return wallPos.left;
           case left:
             return wallPos.right;
+          default:
+            throw Exception("No match enum.");
         }
   } // => value & 1 != 0 ? value & 0 : value + 1;
 }
@@ -69,6 +82,19 @@ abstract class WallBaseO extends GameObject {
         return -size[0] / 2;
       case wallPos.right:
         return size[0] / 2;
+    }
+  }
+
+  Vector2 get surfaceOffsets  {
+    switch(pos) {
+      case wallPos.top:
+        return Vector2(0, -size[1] / 2);
+      case wallPos.bottom:
+        return Vector2(0, size[1] / 2);
+      case wallPos.left:
+        return Vector2(-size[0] / 2, 0);
+      case wallPos.right:
+        return Vector2(size[0] / 2, 0);
     }
   }
 
