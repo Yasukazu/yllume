@@ -10,9 +10,13 @@ extension OffsetVector2 on Vector2 {
   }
 }
 
+enum WallSurface {homeToAway, sideToSide}
+
 enum wallPos { top(0), bottom(2), left(3), right(1);
   final int value;
   const wallPos(this.value);
+
+  WallSurface get surface => this == top || this == bottom ? WallSurface.sideToSide : WallSurface.homeToAway;
 
   Vector2 get offsetVector {
     switch(this) {
