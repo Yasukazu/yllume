@@ -40,6 +40,10 @@ class BallO extends GameObject with Backwardable {
     Alignment.bottomCenter,
     Alignment.centerLeft,
   ];
+  Alignment coreAlignment = coreAlignments[0];
+  static Alignment getCoreAlignment(int i) {
+    return coreAlignments[i % coreAlignments.length];
+  }
   static const Color color = Color.fromRGBO(255, 255, 255, 1);
   final double ratio; // self size
   static const BoxShape shape = BoxShape.circle;
@@ -48,11 +52,14 @@ class BallO extends GameObject with Backwardable {
   int get stepCount => _stepCount;
 
   /// core size
-  late double iSize;
+  double iSize = 0;
   static const iRatio = 0.5;
+  int iPos = 0;
+  bool iRotateCCW = true;
   late final PaddleO selfPaddle;
   final void Function(wallPos) pause;
-  BallO(this.selfPaddle, this.yieldBallPos, this.pause, this._dx, this._dy,
+  final void Function(void Function()) setState;
+  BallO(this.setState, this.selfPaddle, this.yieldBallPos, this.pause, this._dx, this._dy,
       [this._speed = defaultBallSpeed, this.ratio = PongGamePage.ballSize, this.pickupCycle = 2, this.pickupDelay = 2]) {
     assert(_dx > 0 && _dy > 0);
     assert(_speed > 0);
@@ -64,7 +71,7 @@ class BallO extends GameObject with Backwardable {
   final void Function(DeltaPosition?) yieldBallPos;
 
   late final RandAngleIterator? angleProvider;
-  BallO.withAngleProvider(
+  BallO.withAngleProvider(this.setState,
       this.selfPaddle, this.yieldBallPos, this.pause, this.angleProvider,
       this._speed, this.ratio, [this.pickupCycle = 2, this.pickupDelay = 2]) {
     assert(angleProvider != null);
@@ -162,7 +169,7 @@ class BallO extends GameObject with Backwardable {
         ),
       ),
       Align(
-        alignment: Alignment.center, // coreAlignments[corePos % 4],
+        alignment: coreAlignment,
         child: Container(
           decoration: const BoxDecoration(shape: shape, color: Colors.black),
           width: iSize,
@@ -202,11 +209,19 @@ class BallO extends GameObject with Backwardable {
   int _yieldCount = 0;
   static const yieldMax = 2;
 
+  DeltaPosition yieldPosition(Duration delta, Vector2 position) {
+    return DeltaPosition(delta, position);
+  }
+
   @override
   void update(Duration delta) {
     if (delta.inMilliseconds - _lastUpdate > stepInterval) {
       _lastUpdate = delta.inMilliseconds;
       position = stepForward();
+      setState(() {
+        iPos = iPos + 1;
+        coreAlignment = coreAlignments[iPos % coreAlignments.length];
+      });
       logger.finest("Update ball pos: (${position[0]}, ${position[1]}).");
       if (_stepCount % pickupCycle == 0) {
         // delta != Duration.zero && position != Vector2.zero() &&
