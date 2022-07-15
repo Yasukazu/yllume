@@ -55,7 +55,7 @@ class BallO extends GameObject with Backwardable {
   double iSize = 0;
   static const iRatio = 0.5;
   int iPos = 0;
-  bool iRotateCCW = true;
+  bool _rotateCW = true;
   late final PaddleO selfPaddle;
   final void Function(wallPos) pause;
   BallO(this.selfPaddle, this.yieldBallPos, this.pause, this._dx, this._dy,
@@ -70,6 +70,7 @@ class BallO extends GameObject with Backwardable {
   final void Function(DeltaPosition?) yieldBallPos;
 
   late final RandAngleIterator? angleProvider;
+  final RandSignIterator randSignIterator = RandSignIterator();
   BallO.withAngleProvider(this.selfPaddle, this.yieldBallPos, this.pause, this.angleProvider,
       this._speed, this.ratio, [this.pickupCycle = 2, this.pickupDelay = 2]) {
     assert(angleProvider != null);
@@ -88,6 +89,8 @@ class BallO extends GameObject with Backwardable {
   }
 
   void reset() {
+    randSignIterator.moveNext();
+    _rotateCW = randSignIterator.current;
     final ang = getNextAngle();
     if (ang != null) {
       _angle = ang;
@@ -130,6 +133,7 @@ class BallO extends GameObject with Backwardable {
     initialised = true;
     _stepCount = 0;
     rebuildWidgetIfNeeded = true;
+    randSignIterator.moveNext();
   }
 
   @override
@@ -155,6 +159,7 @@ class BallO extends GameObject with Backwardable {
         Vector2(gx / 2, selfPaddleTopSurface - oSize / 2 - gap); // , gy / 2);
     initialised = true;
     _stepCount = 0;
+    randSignIterator.moveNext();
   }
 
   @override
@@ -218,7 +223,7 @@ class BallO extends GameObject with Backwardable {
       _lastUpdate = delta.inMilliseconds;
       position = stepForward();
       // setState(() {
-        iPos = iPos + 1;
+        iPos = iPos + (_rotateCW ? 1 : -1);
         coreAlignment = coreAlignments[iPos % coreAlignments.length];
         logger.finer("coreAlignment is set as $coreAlignment by $iPos.");
       // });
@@ -306,12 +311,13 @@ class RandAngleIterator extends Iterable with Iterator {
   final bool reverse;
   final rand = Random(DateTime.now().millisecondsSinceEpoch);
   var _e = 0;
-  // var _s = false;
-  int get v => reverse ? -(start + _e) : (start + _e); //  * (_s ? 1 : -1);
+  var _s = false;
+  int get v => (reverse ? -(start + _e) : (start + _e)) * (_s ? 1 : -1);
+  bool get clockwise => _s;
 
   RandAngleIterator(this.start, this.range, this.reverse) {
     _e = rand.nextInt(range);
-    // _s = rand.nextBool();
+    _s = rand.nextBool();
   }
 
   @override
@@ -320,7 +326,29 @@ class RandAngleIterator extends Iterable with Iterator {
   @override
   bool moveNext() {
     _e = rand.nextInt(range);
-    // _s = rand.nextBool();
+    _s = rand.nextBool();
+    return true;
+  }
+
+  @override
+  Iterator get iterator => this;
+}
+
+class RandSignIterator extends Iterable with Iterator {
+  final rand = Random(DateTime.now().millisecondsSinceEpoch);
+  var _s = false;
+  int get s => _s ? 1 : -1;
+
+  RandSignIterator() {
+    _s = rand.nextBool();
+  }
+
+  @override
+  bool get current => _s;
+
+  @override
+  bool moveNext() {
+    _s = rand.nextBool();
     return true;
   }
 
