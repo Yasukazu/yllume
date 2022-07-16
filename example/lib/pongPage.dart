@@ -121,8 +121,8 @@ class _PongGamePageState extends State<PongGamePage> {
       rightWall,
       enemyPaddle,
       selfPaddle,
-      ball,
       motionLine,
+      ball,
       ballChaser
     ]);
   }
