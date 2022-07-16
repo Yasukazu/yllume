@@ -8,6 +8,7 @@ import 'Wall.dart';
 import 'Paddle.dart';
 import 'ballchaser.dart';
 import 'dart:math';
+import 'motionline.dart';
 
 class Screen {
   static const centerToSide = 1.0;
@@ -47,6 +48,7 @@ class _PongGamePageState extends State<PongGamePage> {
   late final WallO rightWall;
   late final EnemyPaddleO enemyPaddle;
   late final PaddleO selfPaddle;
+  late final MotionLine motionLine;
   List<WallO> get walls => [topWall, bottomWall, leftWall, rightWall];
   IllumeController get gameController => PongGamePage.gameController;
   bool gameStarted = false;
@@ -94,8 +96,17 @@ class _PongGamePageState extends State<PongGamePage> {
     ballChaser = BallChaser(posToWall, PongGamePage.ballSize);
     enemyPaddle = EnemyPaddleO(ballChaser, posToWall, wallPos.top,
         PongGamePage.paddleWidth, PongGamePage.paddleStep);
-    ball = BallO.withAngleProvider(
+    motionLine = MotionLine();
+    ball = BallO.withAngleProvider(motionLine,
         selfPaddle, ballChaser.pickupBallPos, pause, ballAngleIterator, speed, PongGamePage.ballSize);
+  }
+
+  void addWithDuration(GameObject object) {
+    gameController.gameObjects.add(object);
+    Future.delayed(const Duration(milliseconds: 300)).then((_) {
+      object.visible = false;
+      gameController.gameObjects.remove(object);
+    });
   }
 
   @override
