@@ -7,6 +7,7 @@ import 'WallBase.dart';
 import 'Paddle.dart';
 import 'pongPage.dart';
 import 'Backwardable.dart';
+import 'motionline.dart';
 
 class BallO extends GameObject with Backwardable {
   static const defaultBallSpeed = 1000; // ms / diagonal
@@ -58,7 +59,8 @@ class BallO extends GameObject with Backwardable {
   bool _rotateCW = true;
   late final PaddleO selfPaddle;
   final void Function(wallPos) pause;
-  BallO(this.selfPaddle, this.yieldBallPos, this.pause, this._dx, this._dy,
+  final MotionLine motionLine;
+  BallO(this.motionLine, this.selfPaddle, this.yieldBallPos, this.pause, this._dx, this._dy,
       [this._speed = defaultBallSpeed, this.ratio = PongGamePage.ballSize, this.pickupCycle = 2, this.pickupDelay = 2]) {
     assert(_dx > 0 && _dy > 0);
     assert(_speed > 0);
@@ -71,7 +73,8 @@ class BallO extends GameObject with Backwardable {
 
   late final RandAngleIterator? angleProvider;
   final RandSignIterator randSignIterator = RandSignIterator();
-  BallO.withAngleProvider(this.selfPaddle, this.yieldBallPos, this.pause, this.angleProvider,
+  // final void Function(GameObject) addWithDuration;
+  BallO.withAngleProvider(this.motionLine, this.selfPaddle, this.yieldBallPos, this.pause, this.angleProvider,
       this._speed, this.ratio, [this.pickupCycle = 2, this.pickupDelay = 2]) {
     assert(angleProvider != null);
     _angle = angleProvider!.current;
@@ -134,6 +137,7 @@ class BallO extends GameObject with Backwardable {
     _stepCount = 0;
     rebuildWidgetIfNeeded = true;
     randSignIterator.moveNext();
+    motionLine.givenSize = size;
   }
 
   @override
@@ -216,6 +220,9 @@ class BallO extends GameObject with Backwardable {
     return DeltaPosition(delta, position);
   }
 
+  final motionCycleRatio = 2;
+  double _motionCount = 0;
+
   @override
   void update(Duration delta) {
     if (delta.inMilliseconds - _lastUpdate > stepInterval) {
@@ -236,6 +243,11 @@ class BallO extends GameObject with Backwardable {
           yieldBallPos(_pickupDeltaPositionQueue.removeFirst());
           ++_yieldCount;
         }
+      }
+      if (_stepCount % (pickupCycle * motionCycleRatio) == 0 && _pickupDeltaPositionQueue.isNotEmpty) {
+        final Vector2 lastPosition = _pickupDeltaPositionQueue.elementAt(0).position;
+        motionLine.givenPosition = lastPosition;
+        _motionCount++;
       }
       ++_stepCount;
     }
