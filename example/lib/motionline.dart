@@ -9,22 +9,22 @@ import 'pongPage.dart';
 import 'Backwardable.dart';
 
 class MotionLine extends GameObject {
-  final Vector2 givenSize;
-  final Vector2 givenPosition;
-
-  MotionLine(this.givenSize, this.givenPosition);
+  Vector2 givenSize = Vector2.zero();
+  Vector2 givenPosition = Vector2.zero();
 
   @override init() {
     size = givenSize;
     position = givenPosition;
     alignment = GameObjectAlignment.center;
     collidable = false;
+    rebuildWidgetIfNeeded = true;
+    visible = true;
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-            decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.black.withOpacity(0.3)),
+            decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.black.withOpacity(0.6)),
     );
   }
 
@@ -32,6 +32,8 @@ class MotionLine extends GameObject {
   }
 
   @override void update(Duration delta) {
+    size = givenSize;
+    position = givenPosition;
   }
 
   @override void onScreenSizeChange(Vector2 size) {
