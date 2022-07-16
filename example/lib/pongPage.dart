@@ -7,7 +7,6 @@ import 'WallBase.dart';
 import 'Wall.dart';
 import 'Paddle.dart';
 import 'ballchaser.dart';
-import 'dart:math';
 import 'motionline.dart';
 
 class Screen {
@@ -232,67 +231,8 @@ class _PongGamePageState extends State<PongGamePage> {
     ),
   );
 
-  /// returns 0 if not available.
-  double calcLandingPos(
-      List<DeltaPosition> ballDPs, Duration delta, Vector2 gameSize, double x) {
-    assert(ballDPs.length >= 2);
-
-    /// vector dXY
-    final double dY = ballDPs[1].position[1] - ballDPs[0].position[1];
-    final double dX = ballDPs[1].position[0] - ballDPs[0].position[0];
-    final double dXY = sqrt(dX * dX + dY * dY);
-
-    /// time dT
-    final int dT = (ballDPs[1].delta - ballDPs[0].delta).inMilliseconds;
-
-    /// speed vXY
-    // final double speed = dXY / dT;
-
-    /// current position = dXY + d2XY
-    // final d2XY = speed * (delta - ballDPs[1].delta).inMilliseconds;
-    // final Vector2 curPos = (dXY + d2XY) / dXY * ballDPs[0];
-    /* if (ballDPs.length < 2) {
-      ballDPs = peekBallPos();
-    }
-    if (ballDPs.length < 2) {
-      return 0;
-    } */
-    final ballDy = ballDPs[1].position[1] - ballDPs[0].position[1];
-    if (ballDy >= 0) {
-      return 0;
-    }
-    // TODO: set proper dx
-    final lastBallX = ballDPs[1].position[0];
-    final ballDx = ballDPs[1].position[0] - ballDPs[0].position[0];
-    // final ballDt = ballDPs[1].delta - ballDPs[0].delta;
-    // final ballXspeed = ballDx / ballDt.inMilliseconds;
-    // final past = delta - ballDPs[1].delta;
-    final landingDy = gameSize[1] - ballDPs[1].position[1];
-    final landingCycle = landingDy / ballDy;
-    // final landingTime = ballDt * landingCycle - past;
-    final landingDx = lastBallX + ballDx * landingCycle;
-    var cdx = 0.0;
-    if (landingDx.abs() > gameSize[1]) {
-      final fold = landingDx.abs() - gameSize[1];
-      cdx = landingDx + ((landingDx >= 0) ? -fold : fold) - x;
-    } else {
-      cdx = landingDx - x;
-    }
-
-    return 0.0;
-  }
 }
 
-abstract class NoCollidableGameObject implements GameObject {
-  @override
-  void onCollision(List<Collision> cols) {
-  }
-
-  @override
-  init() {
-    collidable = false;
-  }
-}
 
 class Score extends StatelessWidget {
   final int enemyScore;
