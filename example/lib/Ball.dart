@@ -16,16 +16,16 @@ class BallO extends GameObject with Backwardable {
   static final initialXY = Vector2(initialX, initialY);
   final int _speed; // millisecond per diagonal
   int get speed => _speed;
-  late double _angle;
+  double _angle = 0;
   double get angle => _angle;
-  late double stepInterval;
-  late double _stepX;
-  late double _stepY;
+  double stepInterval = 0;
+  double _stepX = 0;
+  double _stepY = 0;
   double get stepX => dxReverse ? -_stepX : _stepX;
   double get stepY => dyReverse ? -_stepY : _stepY;
   Vector2 get stepVector => Vector2(stepX, stepY);
-  late double _dx;
-  late double _dy;
+  double _dx = 0;
+  double _dy = 0;
   static const gap = 3;
   bool _dxReverse = false;
   bool _dyReverse = false;
@@ -204,7 +204,6 @@ class BallO extends GameObject with Backwardable {
     _pickupDeltaPositionQueue.clear();
     logger.finer("yieldBallPos(null) to clear DPQueue.");
   }
-
 
   final int pickupDelay; // final Vector2 ballPos;;
   final _pickupDeltaPositionQueue = Queue<DeltaPosition>();
