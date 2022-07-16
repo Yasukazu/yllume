@@ -214,7 +214,7 @@ class BallO extends GameObject with Backwardable {
   final int pickupCycle;
   int _lastUpdate = 0;
   int _yieldCount = 0;
-  static const yieldMax = 2;
+  static const yieldMax = 6;
 
   DeltaPosition yieldPosition(Duration delta, Vector2 position) {
     return DeltaPosition(delta, position);
@@ -247,6 +247,8 @@ class BallO extends GameObject with Backwardable {
       if (_stepCount % (pickupCycle * motionCycleRatio) == 0 && _pickupDeltaPositionQueue.isNotEmpty) {
         final Vector2 lastPosition = _pickupDeltaPositionQueue.elementAt(0).position;
         motionLine.givenPosition = lastPosition;
+        motionLine.givenSize = size;
+        logger.fine("Motionline");
         _motionCount++;
       }
       ++_stepCount;
