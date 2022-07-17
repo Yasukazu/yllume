@@ -15,7 +15,7 @@ class BallO extends GameObject with Backwardable {
   static const initialX = 0.5;
   static const initialY = 0.5;
   static final initialXY = Vector2(initialX, initialY);
-  final int _speed; // millisecond per diagonal
+  int _speed = 0; // millisecond per diagonal
   int get speed => _speed;
   double _angle = 0;
   double get angle => _angle;
