@@ -9,20 +9,22 @@ import 'Paddle.dart';
 import 'ballchaser.dart';
 import 'motionline.dart';
 
-
 class SpeedSlider extends StatelessWidget {
 
-  final double _value = 0.5;
+  double value = 0.5;
 
-  final void Function(double) changeSlider;
   final void Function(double) startSlider;
+  final void Function(double) setSlider;
   final void Function(double) endSlider;
 
-  SpeedSlider(this.changeSlider, this.startSlider, this.endSlider, [this._min = 0.0, this._value = 0.5, this._max = 1], {Key? key}) : super(key: key);
+  SpeedSlider(this.startSlider, this.setSlider, this.endSlider,
+      {Key? key}
+      )
+      : super(key: key);
 
   /// as ratio min and max
-  final double _min;
-  final double _max;
+  final double min = 0;
+  final double max = 1;
 
   @override
   Widget build(BuildContext context) {
@@ -33,13 +35,13 @@ class SpeedSlider extends StatelessWidget {
             // Center(child:Text("Speed：${_value}")),
             Slider(
               label: 'Ball Speed',
-              min: _min,
-              max: _max,
-              value: _value,
-              activeColor: Colors.orange,
-              inactiveColor: Colors.blueAccent,
+              min: min,
+              max: max,
+              value: value,
               // divisions: 10,
-              onChanged: changeSlider,
+              onChanged: (value) {
+                setState()
+              },
               onChangeStart: startSlider,
               onChangeEnd: endSlider,
             )
@@ -47,4 +49,4 @@ class SpeedSlider extends StatelessWidget {
         )
     );
   }
-Speed
+}
