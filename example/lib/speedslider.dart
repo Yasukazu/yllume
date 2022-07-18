@@ -12,9 +12,7 @@ import 'motionline.dart';
 
 class SpeedSlider extends StatelessWidget {
 
-  double _value = 0.5;
-  double _startValue = 0.0;
-  double _endValue = 0.0;
+  final double _value = 0.5;
 
   final void Function(double) changeSlider;
   final void Function(double) startSlider;
@@ -25,7 +23,6 @@ class SpeedSlider extends StatelessWidget {
   /// as ratio min and max
   final double _min;
   final double _max;
-  double _value = 0.5;
 
   @override
   Widget build(BuildContext context) {

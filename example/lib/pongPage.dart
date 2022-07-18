@@ -8,6 +8,7 @@ import 'Wall.dart';
 import 'Paddle.dart';
 import 'ballchaser.dart';
 import 'motionline.dart';
+import 'speedslider.dart';
 
 class Screen {
   static const centerToSide = 1.0;
@@ -207,7 +208,10 @@ class _PongGamePageState extends State<PongGamePage> {
           appBar: AppBar(
             title: Text(PongGamePage.statusBar),
           ),
-          body: Stack(
+          body: Column(
+            children: [
+              SpeedSlider((p0) { }, (p0) { }, (p0) { })
+          Stack(
             children: [
               background,
               Score(enemyScore, playerScore),
