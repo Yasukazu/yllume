@@ -15,8 +15,8 @@ class BallO extends GameObject with Backwardable {
   static const initialX = 0.5;
   static const initialY = 0.5;
   static final initialXY = Vector2(initialX, initialY);
-  int _speed = 0; // millisecond per diagonal
-  int get speed => _speed;
+  final int _speed; // millisecond per diagonal
+  int get speed => (_speed * _speedRatio).round();
   double _angle = 0;
   double get angle => _angle;
   double stepInterval = 0;
@@ -316,6 +316,12 @@ class BallO extends GameObject with Backwardable {
     // reverseDx();
     return false;
   }
+
+  double _speedRatio = 1;
+  void changeSlider(double speed) {
+    _speedRatio = speed;
+  }
+
 }
 
 class RandAngleIterator extends Iterable with Iterator {
