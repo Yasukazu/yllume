@@ -208,21 +208,33 @@ class _PongGamePageState extends State<PongGamePage> {
           appBar: AppBar(
             title: Text(PongGamePage.statusBar),
           ),
-          body: Column(
-            children: [
-              SpeedSlider((p0) { }, (p0) { }, (p0) { })
-          Stack(
-            children: [
-              background,
-              Score(enemyScore, playerScore),
-              Illume(
-                illumeController: gameController,
-              ),
-            ],
-          ),
+          body: Column( children: [
+              SpeedSlider(pauseBySlider, ball.changeSlider, resumeBySlider),
+              Stack( children: [
+                background,
+                Score(enemyScore, playerScore),
+                Illume(
+                  illumeController: gameController,
+                ),
+              ] ),
+          ] ),
         ),
-      ),
+      )
     );
+  }
+
+  void pauseBySlider(double slider) {
+    gameController.pause();
+    gamePaused = true;
+    setState(() {
+      PongGamePage.statusBar = PongGamePage.mainText + ": pause by slider.";
+    });
+    logger.fine("pause by slider.");
+  }
+
+  void resumeBySlider(double slider) {
+    resume();
+    logger.fine("resume by slider.");
   }
 
   var background = Container(
