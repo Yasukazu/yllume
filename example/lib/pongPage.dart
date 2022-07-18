@@ -211,7 +211,7 @@ class _PongGamePageState extends State<PongGamePage> {
               child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Expanded(child:
+                    SizedBox(height: 100,  child:
                     // SpeedSlider(pauseBySlider, ball.changeSlider, resumeBySlider)
                     Slider(
                       label: 'Ball Speed',
@@ -227,7 +227,6 @@ class _PongGamePageState extends State<PongGamePage> {
                       onChangeStart: pauseBySlider,
                       onChangeEnd: resumeBySlider,
                     )
-
                     ),
                     Expanded(child:  Stack( children: [
                         background,
