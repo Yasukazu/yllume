@@ -8,7 +8,6 @@ import 'Wall.dart';
 import 'Paddle.dart';
 import 'ballchaser.dart';
 import 'motionline.dart';
-import 'speedslider.dart';
 
 class Screen {
   static const centerToSide = 1.0;
@@ -208,17 +207,35 @@ class _PongGamePageState extends State<PongGamePage> {
           appBar: AppBar(
             title: Text(PongGamePage.statusBar),
           ),
-          body: Column( children: [
-              SpeedSlider(pauseBySlider, ball.changeSlider, resumeBySlider),
-              Stack( children: [
-                background,
-                Score(enemyScore, playerScore),
-                Illume(
-                  illumeController: gameController,
-                ),
-              ] ),
-          ] ),
-        ),
+          body: Center(
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(child:
+                    // SpeedSlider(pauseBySlider, ball.changeSlider, resumeBySlider)
+                    Slider(
+                      label: 'Ball Speed',
+                      min: 0,
+                      max: 1,
+                      value: ball.getSliderValue(),
+                      // divisions: 10,
+                      onChanged: (givenValue) {
+                        setState(() {
+                          ball.changeSliderValue(givenValue);
+                        });
+                      },
+                      onChangeStart: pauseBySlider,
+                      onChangeEnd: resumeBySlider,
+                    )
+
+                    ),
+                    Expanded(child:  Stack( children: [
+                        background,
+                        Score(enemyScore, playerScore),
+                        Illume( illumeController: gameController),
+                      ] ) )
+          ] ) ),
+        )
       )
     );
   }
