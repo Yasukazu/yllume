@@ -318,9 +318,10 @@ class BallO extends GameObject with Backwardable {
   }
 
   double _speedRatio = 1;
-  void changeSlider(double speed) {
+  void changeSliderValue(double speed) {
     _speedRatio = speed;
   }
+  double getSliderValue() => _speedRatio;
 
 }
 
