@@ -30,7 +30,8 @@ class WallO extends WallBaseO {
     }
   }
 
-  Vector2 surfacePosition() {
+  Vector2 surfacePosition() => position + surfaceOffsets;
+  /*{
     switch(pos) {
       case wallPos.top:
       case wallPos.bottom:
@@ -39,14 +40,14 @@ class WallO extends WallBaseO {
       case wallPos.right:
         return Vector2(position[0] + surfaceOffset, position[1]);
     }
-  }
+  }*/
 
   @override
   void onCollision(List<Collision> collisions) {
     for (Collision col in collisions) {
       if (col.component is BallO) {
         final ball = col.component as BallO;
-          ball.bounceAtWall(pos);
+          ball.bounceAtWall(surfaceOffsets);
           logger.fine("Ball is reversed by Wall.");
           break;
       }

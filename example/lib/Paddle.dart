@@ -4,7 +4,7 @@ import 'Wall.dart';
 import 'WallBase.dart';
 import 'pongPage.dart';
 import 'ballchaser.dart';
-import 'backwardable.dart';
+import 'Backwardable.dart';
 import 'package:illume/illume.dart';
 
 class PaddleO extends GameObject with Backwardable {

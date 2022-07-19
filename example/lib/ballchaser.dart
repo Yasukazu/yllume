@@ -63,7 +63,7 @@ class BallChaser extends GameObject {
       return dY < 0;
     }
   }
-  void yieldBallPos(DeltaPosition? deltaPosition) {
+  void pickupBallPos(DeltaPosition? deltaPosition) {
     if (deltaPosition == null) {
       dPQueue.clear();
       logger.finer("dPQueue clear.");

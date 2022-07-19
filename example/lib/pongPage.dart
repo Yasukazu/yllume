@@ -7,7 +7,7 @@ import 'WallBase.dart';
 import 'Wall.dart';
 import 'Paddle.dart';
 import 'ballchaser.dart';
-import 'dart:math';
+import 'motionline.dart';
 
 class Screen {
   static const centerToSide = 1.0;
@@ -47,6 +47,7 @@ class _PongGamePageState extends State<PongGamePage> {
   late final WallO rightWall;
   late final EnemyPaddleO enemyPaddle;
   late final PaddleO selfPaddle;
+  late final MotionLine motionLine;
   List<WallO> get walls => [topWall, bottomWall, leftWall, rightWall];
   IllumeController get gameController => PongGamePage.gameController;
   bool gameStarted = false;
@@ -94,8 +95,17 @@ class _PongGamePageState extends State<PongGamePage> {
     ballChaser = BallChaser(posToWall, PongGamePage.ballSize);
     enemyPaddle = EnemyPaddleO(ballChaser, posToWall, wallPos.top,
         PongGamePage.paddleWidth, PongGamePage.paddleStep);
-    ball = BallO.withAngleProvider(
-        selfPaddle, ballChaser.yieldBallPos, pause, ballAngleIterator, speed, PongGamePage.ballSize);
+    motionLine = MotionLine();
+    ball = BallO.withAngleProvider(motionLine,
+        selfPaddle, ballChaser.pickupBallPos, pause, ballAngleIterator, speed, PongGamePage.ballSize);
+  }
+
+  void addWithDuration(GameObject object) {
+    gameController.gameObjects.add(object);
+    Future.delayed(const Duration(milliseconds: 300)).then((_) {
+      object.visible = false;
+      gameController.gameObjects.remove(object);
+    });
   }
 
   @override
@@ -110,6 +120,7 @@ class _PongGamePageState extends State<PongGamePage> {
       rightWall,
       enemyPaddle,
       selfPaddle,
+      motionLine,
       ball,
       ballChaser
     ]);
@@ -196,18 +207,50 @@ class _PongGamePageState extends State<PongGamePage> {
           appBar: AppBar(
             title: Text(PongGamePage.statusBar),
           ),
-          body: Stack(
-            children: [
-              background,
-              Score(enemyScore, playerScore),
-              Illume(
-                illumeController: gameController,
-              ),
-            ],
-          ),
-        ),
-      ),
+          body: Center(
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(height: 100,  child:
+                    // SpeedSlider(pauseBySlider, ball.changeSlider, resumeBySlider)
+                    Slider(
+                      label: 'Ball Speed',
+                      min: 0,
+                      max: 1,
+                      value: ball.getSliderValue(),
+                      // divisions: 10,
+                      onChanged: (givenValue) {
+                        setState(() {
+                          ball.changeSliderValue(givenValue);
+                        });
+                      },
+                      onChangeStart: pauseBySlider,
+                      onChangeEnd: resumeBySlider,
+                    )
+                    ),
+                    Expanded(child:  Stack( children: [
+                        background,
+                        Score(enemyScore, playerScore),
+                        Illume( illumeController: gameController),
+                      ] ) )
+          ] ) ),
+        )
+      )
     );
+  }
+
+  void pauseBySlider(double slider) {
+    gameController.pause();
+    gamePaused = true;
+    setState(() {
+      PongGamePage.statusBar = PongGamePage.mainText + ": pause by slider.";
+    });
+    logger.fine("pause by slider.");
+  }
+
+  void resumeBySlider(double slider) {
+    resume();
+    logger.fine("resume by slider.");
   }
 
   var background = Container(
@@ -220,67 +263,8 @@ class _PongGamePageState extends State<PongGamePage> {
     ),
   );
 
-  /// returns 0 if not available.
-  double calcLandingPos(
-      List<DeltaPosition> ballDPs, Duration delta, Vector2 gameSize, double x) {
-    assert(ballDPs.length >= 2);
-
-    /// vector dXY
-    final double dY = ballDPs[1].position[1] - ballDPs[0].position[1];
-    final double dX = ballDPs[1].position[0] - ballDPs[0].position[0];
-    final double dXY = sqrt(dX * dX + dY * dY);
-
-    /// time dT
-    final int dT = (ballDPs[1].delta - ballDPs[0].delta).inMilliseconds;
-
-    /// speed vXY
-    // final double speed = dXY / dT;
-
-    /// current position = dXY + d2XY
-    // final d2XY = speed * (delta - ballDPs[1].delta).inMilliseconds;
-    // final Vector2 curPos = (dXY + d2XY) / dXY * ballDPs[0];
-    /* if (ballDPs.length < 2) {
-      ballDPs = peekBallPos();
-    }
-    if (ballDPs.length < 2) {
-      return 0;
-    } */
-    final ballDy = ballDPs[1].position[1] - ballDPs[0].position[1];
-    if (ballDy >= 0) {
-      return 0;
-    }
-    // TODO: set proper dx
-    final lastBallX = ballDPs[1].position[0];
-    final ballDx = ballDPs[1].position[0] - ballDPs[0].position[0];
-    // final ballDt = ballDPs[1].delta - ballDPs[0].delta;
-    // final ballXspeed = ballDx / ballDt.inMilliseconds;
-    // final past = delta - ballDPs[1].delta;
-    final landingDy = gameSize[1] - ballDPs[1].position[1];
-    final landingCycle = landingDy / ballDy;
-    // final landingTime = ballDt * landingCycle - past;
-    final landingDx = lastBallX + ballDx * landingCycle;
-    var cdx = 0.0;
-    if (landingDx.abs() > gameSize[1]) {
-      final fold = landingDx.abs() - gameSize[1];
-      cdx = landingDx + ((landingDx >= 0) ? -fold : fold) - x;
-    } else {
-      cdx = landingDx - x;
-    }
-
-    return 0.0;
-  }
 }
 
-abstract class NoCollidableGameObject implements GameObject {
-  @override
-  void onCollision(List<Collision> cols) {
-  }
-
-  @override
-  init() {
-    collidable = false;
-  }
-}
 
 class Score extends StatelessWidget {
   final int enemyScore;

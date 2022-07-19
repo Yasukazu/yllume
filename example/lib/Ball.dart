@@ -7,6 +7,7 @@ import 'WallBase.dart';
 import 'Paddle.dart';
 import 'pongPage.dart';
 import 'Backwardable.dart';
+import 'motionline.dart';
 
 class BallO extends GameObject with Backwardable {
   static const defaultBallSpeed = 1000; // ms / diagonal
@@ -15,17 +16,17 @@ class BallO extends GameObject with Backwardable {
   static const initialY = 0.5;
   static final initialXY = Vector2(initialX, initialY);
   final int _speed; // millisecond per diagonal
-  int get speed => _speed;
-  late double _angle;
+  int get speed => (_speed * _speedRatio).round();
+  double _angle = 0;
   double get angle => _angle;
-  late double stepInterval;
-  late double _stepX;
-  late double _stepY;
+  double stepInterval = 0;
+  double _stepX = 0;
+  double _stepY = 0;
   double get stepX => dxReverse ? -_stepX : _stepX;
   double get stepY => dyReverse ? -_stepY : _stepY;
   Vector2 get stepVector => Vector2(stepX, stepY);
-  late double _dx;
-  late double _dy;
+  double _dx = 0;
+  double _dy = 0;
   static const gap = 3;
   bool _dxReverse = false;
   bool _dyReverse = false;
@@ -40,6 +41,10 @@ class BallO extends GameObject with Backwardable {
     Alignment.bottomCenter,
     Alignment.centerLeft,
   ];
+  Alignment coreAlignment = coreAlignments[0];
+  static Alignment getCoreAlignment(int i) {
+    return coreAlignments[i % coreAlignments.length];
+  }
   static const Color color = Color.fromRGBO(255, 255, 255, 1);
   final double ratio; // self size
   static const BoxShape shape = BoxShape.circle;
@@ -48,11 +53,14 @@ class BallO extends GameObject with Backwardable {
   int get stepCount => _stepCount;
 
   /// core size
-  late double iSize;
+  double iSize = 0;
   static const iRatio = 0.5;
+  int iPos = 0;
+  bool _rotateCW = true;
   late final PaddleO selfPaddle;
   final void Function(wallPos) pause;
-  BallO(this.selfPaddle, this.yieldBallPos, this.pause, this._dx, this._dy,
+  final MotionLine motionLine;
+  BallO(this.motionLine, this.selfPaddle, this.yieldBallPos, this.pause, this._dx, this._dy,
       [this._speed = defaultBallSpeed, this.ratio = PongGamePage.ballSize, this.pickupCycle = 2, this.pickupDelay = 2]) {
     assert(_dx > 0 && _dy > 0);
     assert(_speed > 0);
@@ -64,8 +72,9 @@ class BallO extends GameObject with Backwardable {
   final void Function(DeltaPosition?) yieldBallPos;
 
   late final RandAngleIterator? angleProvider;
-  BallO.withAngleProvider(
-      this.selfPaddle, this.yieldBallPos, this.pause, this.angleProvider,
+  final RandSignIterator randSignIterator = RandSignIterator();
+  // final void Function(GameObject) addWithDuration;
+  BallO.withAngleProvider(this.motionLine, this.selfPaddle, this.yieldBallPos, this.pause, this.angleProvider,
       this._speed, this.ratio, [this.pickupCycle = 2, this.pickupDelay = 2]) {
     assert(angleProvider != null);
     _angle = angleProvider!.current;
@@ -83,6 +92,8 @@ class BallO extends GameObject with Backwardable {
   }
 
   void reset() {
+    randSignIterator.moveNext();
+    _rotateCW = randSignIterator.current;
     final ang = getNextAngle();
     if (ang != null) {
       _angle = ang;
@@ -124,6 +135,9 @@ class BallO extends GameObject with Backwardable {
         Vector2(gx / 2, selfPaddleTopSurface - oSize / 2 - gap); // , gy / 2);
     initialised = true;
     _stepCount = 0;
+    rebuildWidgetIfNeeded = true;
+    randSignIterator.moveNext();
+    motionLine.givenSize = size;
   }
 
   @override
@@ -149,6 +163,7 @@ class BallO extends GameObject with Backwardable {
         Vector2(gx / 2, selfPaddleTopSurface - oSize / 2 - gap); // , gy / 2);
     initialised = true;
     _stepCount = 0;
+    randSignIterator.moveNext();
   }
 
   @override
@@ -162,7 +177,7 @@ class BallO extends GameObject with Backwardable {
         ),
       ),
       Align(
-        alignment: Alignment.center, // coreAlignments[corePos % 4],
+        alignment: coreAlignment,
         child: Container(
           decoration: const BoxDecoration(shape: shape, color: Colors.black),
           width: iSize,
@@ -194,19 +209,32 @@ class BallO extends GameObject with Backwardable {
     logger.finer("yieldBallPos(null) to clear DPQueue.");
   }
 
-
   final int pickupDelay; // final Vector2 ballPos;;
   final _pickupDeltaPositionQueue = Queue<DeltaPosition>();
   final int pickupCycle;
   int _lastUpdate = 0;
   int _yieldCount = 0;
-  static const yieldMax = 2;
+  static const yieldMax = 6;
+
+  DeltaPosition yieldPosition(Duration delta, Vector2 position) {
+    return DeltaPosition(delta, position);
+  }
+
+  final motionCycleRatio = 2;
+  double _motionCount = 0;
 
   @override
   void update(Duration delta) {
     if (delta.inMilliseconds - _lastUpdate > stepInterval) {
       _lastUpdate = delta.inMilliseconds;
       position = stepForward();
+      // setState(() {
+        iPos = iPos + (_rotateCW ? 1 : -1);
+        coreAlignment = coreAlignments[iPos % coreAlignments.length];
+        logger.finer("coreAlignment is set as $coreAlignment by $iPos.");
+      // });
+      rebuildWidget();
+      logger.finer("rebuild ball.");
       logger.finest("Update ball pos: (${position[0]}, ${position[1]}).");
       if (_stepCount % pickupCycle == 0) {
         // delta != Duration.zero && position != Vector2.zero() &&
@@ -215,6 +243,13 @@ class BallO extends GameObject with Backwardable {
           yieldBallPos(_pickupDeltaPositionQueue.removeFirst());
           ++_yieldCount;
         }
+      }
+      if (_stepCount % (pickupCycle * motionCycleRatio) == 0 && _pickupDeltaPositionQueue.isNotEmpty) {
+        final Vector2 lastPosition = _pickupDeltaPositionQueue.elementAt(0).position;
+        motionLine.givenPosition = lastPosition;
+        motionLine.givenSize = size;
+        logger.fine("Motionline");
+        _motionCount++;
       }
       ++_stepCount;
     }
@@ -246,24 +281,23 @@ class BallO extends GameObject with Backwardable {
 
   void reverseDx() => _dxReverse = !_dxReverse;
   void reverseDy() => _dyReverse = !_dyReverse;
-
-  void bounceAtWall(wallPos pos) {
-    // wallPos wp) {
-    // clearStepCount();
-    // updateLastPosWithPosition();
-    stepBackward();
-    switch (pos) {
-      case wallPos.right:
-      case wallPos.left:
-        reverseDx();
-        logger.finer("Ball dx is reversed.");
-        return;
-      case wallPos.top:
-      case wallPos.bottom:
-        logger.finer("Ball dy is reversed.");
-        reverseDy();
-        return;
+  void reverseByOffsets(Vector2 offsets) {
+    if (offsets[0] == 0 && offsets[1] != 0) {
+      reverseDy();
+      logger.finer("reverseByOffsets dy.");
+      return;
     }
+    else if (offsets[0] != 0 && offsets[1] == 0) {
+      reverseDx();
+      logger.finer("reverseByOffsets dx.");
+      return;
+    }
+    throw Exception("No match condition.");
+  }
+
+  void bounceAtWall(Vector2 offsets) {
+    stepBackward();
+    reverseByOffsets(offsets);
   }
 
   bool bounceAtPaddle(wallPos pos, Rect rect) {
@@ -282,6 +316,13 @@ class BallO extends GameObject with Backwardable {
     // reverseDx();
     return false;
   }
+
+  double _speedRatio = 1;
+  void changeSliderValue(double speed) {
+    _speedRatio = speed;
+  }
+  double getSliderValue() => _speedRatio;
+
 }
 
 class RandAngleIterator extends Iterable with Iterator {
@@ -290,12 +331,13 @@ class RandAngleIterator extends Iterable with Iterator {
   final bool reverse;
   final rand = Random(DateTime.now().millisecondsSinceEpoch);
   var _e = 0;
-  // var _s = false;
-  int get v => reverse ? -(start + _e) : (start + _e); //  * (_s ? 1 : -1);
+  var _s = false;
+  int get v => (reverse ? -(start + _e) : (start + _e)) * (_s ? 1 : -1);
+  bool get clockwise => _s;
 
   RandAngleIterator(this.start, this.range, this.reverse) {
     _e = rand.nextInt(range);
-    // _s = rand.nextBool();
+    _s = rand.nextBool();
   }
 
   @override
@@ -304,7 +346,29 @@ class RandAngleIterator extends Iterable with Iterator {
   @override
   bool moveNext() {
     _e = rand.nextInt(range);
-    // _s = rand.nextBool();
+    _s = rand.nextBool();
+    return true;
+  }
+
+  @override
+  Iterator get iterator => this;
+}
+
+class RandSignIterator extends Iterable with Iterator {
+  final rand = Random(DateTime.now().millisecondsSinceEpoch);
+  var _s = false;
+  int get s => _s ? 1 : -1;
+
+  RandSignIterator() {
+    _s = rand.nextBool();
+  }
+
+  @override
+  bool get current => _s;
+
+  @override
+  bool moveNext() {
+    _s = rand.nextBool();
     return true;
   }
 
