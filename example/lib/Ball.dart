@@ -403,3 +403,21 @@ class DelayBuffer {
     }
   }
 }
+
+enum PlusMinus {
+  plus(1),
+  minus(-1);
+
+  final int value;
+
+  const PlusMinus(this.value);
+
+  static PlusMinus fromInt(int i) {
+    if (i == 0) {
+      throw Exception("0 is undefined plus or minus.");
+    }
+    return i > 0 ? PlusMinus.plus : PlusMinus.minus;
+  }
+}
+
+enum Clockwise {cw, ccw}
