@@ -61,7 +61,7 @@ class BallO extends GameObject with Backwardable {
   late final PaddleO selfPaddle;
   final void Function(wallPos) pause;
   final MotionLine motionLine;
-  static const defaultRotation = 0.5;
+  static const defaultRotation = 0.1; // rad
   double _rotation = defaultRotation;
   double get rotation => _rotateCW ? _rotation : -_rotation;
   BallO(this.motionLine, this.selfPaddle, this.yieldBallPos, this.pause, this._dx, this._dy,
@@ -361,7 +361,7 @@ class BallO extends GameObject with Backwardable {
       _reverseDy(); // _dy = -_dy; // reverse dy
       final lap = intersectionRect.bottom - intersectionRect.top;
       assert(lap > 0);
-      final dist = Vector2(0, dy > 0 ? lap + collisionGap : -lap - collisionGap);
+      final dist = Vector2(0, dy < 0 ? lap + collisionGap : -lap - collisionGap);
       position.add(dist);
       _rotate();
       // _pickupDeltaPositionQueue.clear();
