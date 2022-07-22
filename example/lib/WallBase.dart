@@ -4,7 +4,7 @@ import 'pongPage.dart';
 
 extension OffsetVector2 on Vector2 {
   static Vector2? _topOffset;
-  static Vector2 topOffset() {
+  static Vector2 get topOffset {
     _topOffset ??= Vector2(0, -1);
     return _topOffset as Vector2;
   }
@@ -21,7 +21,7 @@ enum wallPos { top(0), bottom(2), left(3), right(1);
   Vector2 get offsetVector {
     switch(this) {
       case top:
-        return OffsetVector2.topOffset();
+        return Vector2(0, -1);
       case bottom:
         return Vector2(0, 1);
       case right:
@@ -29,7 +29,7 @@ enum wallPos { top(0), bottom(2), left(3), right(1);
       case left:
         return Vector2(-1, 0);
       default:
-        throw Exception("No match enum.");
+        throw Exception("Not defined.");
     }
   }
 
@@ -44,7 +44,7 @@ enum wallPos { top(0), bottom(2), left(3), right(1);
           case left:
             return wallPos.right;
           default:
-            throw Exception("No match enum.");
+            throw Exception("Not defined.");
         }
   } // => value & 1 != 0 ? value & 0 : value + 1;
 }
@@ -92,7 +92,7 @@ abstract class WallBaseO extends GameObject {
   Vector2 get surfaceOffsets  {
     switch(pos) {
       case wallPos.top:
-        return Vector2(0, -size[1] / 2);
+        return Vector2(0, -size[1] / 2); //  (offsetVector.clone().multiply(size)) / 2
       case wallPos.bottom:
         return Vector2(0, size[1] / 2);
       case wallPos.left:
