@@ -23,11 +23,12 @@ class WallO extends WallBaseO {
   late final DoWithBall bounce;
 
   WallO(wallPos pos) : super(pos) {
-    if (pos == wallPos.top || pos == wallPos.bottom) {
+    bounce = (ball) => ball.bounceAtWall(this);
+    /* if (pos == wallPos.top || pos == wallPos.bottom) {
       bounce = (ball) => ball.reverseDy;
     } else {
       bounce = (ball) => ball.reverseDx;
-    }
+    } */
   }
 
   Vector2 surfacePosition() => position + surfaceOffsets;
@@ -46,10 +47,9 @@ class WallO extends WallBaseO {
   void onCollision(List<Collision> collisions) {
     for (Collision col in collisions) {
       if (col.component is BallO) {
-        final ball = col.component as BallO;
-          ball.bounceAtWall(surfaceOffsets);
-          logger.fine("Ball is reversed by Wall.");
-          break;
+        // final ball = col.component as BallO;
+          // ball.bounceAtWall(this);
+        logger.finer("Ball collision is delegated to ball.");
       }
     }
   }

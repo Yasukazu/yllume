@@ -195,13 +195,18 @@ class BallO extends GameObject with Backwardable {
   void onCollision(List<Collision> collisions) {
     logger.info("Ball collided with ${collisions.length} collisions.");
     for (Collision col in collisions) {
+      logger.finer("collision component is ${col.component}.");
       if (col.component is PaddleO) {
         resetYield();
         final paddle = col.component as PaddleO;
         if (!bounceAtPaddle(paddle.pos, col.intersectionRect)) {
-          logger.finer("Paddle hit fail. Pausing..");
+          logger.fine("Paddle hit fail. Pausing..");
           pause(paddle.pos);
         }
+      }
+      else if (col.component is WallBaseO) {
+        bounceAtWall(col.component as WallBaseO);
+        logger.finer("bounce at wall.");
       }
     }
   }
@@ -344,22 +349,29 @@ class BallO extends GameObject with Backwardable {
     return vector;
   }
 
-  bool bounceAtPaddle(wallPos pos, Rect rect) {
+  static const collisionGap = 2;
+  bool bounceAtPaddle(wallPos pos, Rect intersectionRect) {
     // wallPos wp) {
     // clearStepCount();
     // updateLastPosWithPosition();
-    stepBackward();
+    // stepBackward();
     final rx = position[0];
-    if (rx >= rect.left && rx <= rect.right) {
-      logger.finer("Paddle top/bottom hit Ball.");
-      _dy = -_dy; // reverse dy
+    if (rx >= intersectionRect.left && rx <= intersectionRect.right) {
+      logger.fine("Paddle top/bottom hit Ball.");
+      _reverseDy(); // _dy = -_dy; // reverse dy
+      final lap = intersectionRect.bottom - intersectionRect.top;
+      assert(lap > 0);
+      final dist = Vector2(0, dy > 0 ? lap + collisionGap : -lap - collisionGap);
+      position.add(dist);
       _rotate();
       // _pickupDeltaPositionQueue.clear();
       return true;
     }
-    logger.fine("Paddle side hit Ball.");
-    // reverseDx();
-    return false;
+    else {
+      logger.fine("Paddle side hit Ball.");
+      // reverseDx();
+      return false;
+    }
   }
 
   double _speedRatio = 1;
@@ -375,14 +387,14 @@ class RandAngleIterator extends Iterable with Iterator {
   final int range;
   final bool reverse;
   final rand = Random(DateTime.now().millisecondsSinceEpoch);
-  var _e = 0;
-  var _s = false;
-  int get v => (reverse ? -(start + _e) : (start + _e)) * (_s ? 1 : -1);
-  bool get clockwise => _s;
+  int _e = 0;
+  // var _s = false;
+  int get v => reverse ? -(start + _e) : (start + _e); // ) * (_s ? 1 : -1);
+  // bool get clockwise => _s;
 
-  RandAngleIterator(this.start, this.range, this.reverse) {
+  RandAngleIterator(this.start, this.range, {this.reverse = true}) {
     _e = rand.nextInt(range);
-    _s = rand.nextBool();
+    // _s = rand.nextBool();
   }
 
   @override
@@ -391,7 +403,7 @@ class RandAngleIterator extends Iterable with Iterator {
   @override
   bool moveNext() {
     _e = rand.nextInt(range);
-    _s = rand.nextBool();
+    // _s = rand.nextBool();
     return true;
   }
 
