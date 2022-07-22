@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vector_math/vector_math.dart' hide Colors;
 import 'dart:math';
 import 'dart:collection';
 import 'main.dart'; // logger
@@ -24,7 +25,7 @@ class BallO extends GameObject with Backwardable {
   double _stepY = 0;
   double get stepX => dxReverse ? -_stepX : _stepX;
   double get stepY => dyReverse ? -_stepY : _stepY;
-  Vector2 get stepVector => Vector2(stepX, stepY);
+  // Vector2 get stepVector => Vector2(stepX, stepY);
   double _dx = 0;
   double _dy = 0;
   static const gap = 3;
@@ -60,6 +61,9 @@ class BallO extends GameObject with Backwardable {
   late final PaddleO selfPaddle;
   final void Function(wallPos) pause;
   final MotionLine motionLine;
+  static const defaultRotation = 0.5;
+  double _rotation = defaultRotation;
+  double get rotation => _rotateCW ? _rotation : -_rotation;
   BallO(this.motionLine, this.selfPaddle, this.yieldBallPos, this.pause, this._dx, this._dy,
       [this._speed = defaultBallSpeed, this.ratio = PongGamePage.ballSize, this.pickupCycle = 2, this.pickupDelay = 2]) {
     assert(_dx > 0 && _dy > 0);
@@ -269,35 +273,75 @@ class BallO extends GameObject with Backwardable {
     return _step();
   }
 
-  void stepBackward() {
+  bool stepBackward() {
     if (lastPosForBackward != null) {
       position = lastPosForBackward as Vector2;
+      logger.finer("step backward by lastPosForBackward.");
+      return true;
+    }
+    else {
+      logger.warning("step backward failed 'cause lastPosForBackward == null.");
+      return false;
     }
   }
 
   // void clearStepCount() { _stepCount = 0; }
-
   // void updateLastPosWithPosition() { lastPos = position; }
 
-  void reverseDx() => _dxReverse = !_dxReverse;
-  void reverseDy() => _dyReverse = !_dyReverse;
-  void reverseByOffsets(Vector2 offsets) {
-    if (offsets[0] == 0 && offsets[1] != 0) {
-      reverseDy();
-      logger.finer("reverseByOffsets dy.");
-      return;
-    }
-    else if (offsets[0] != 0 && offsets[1] == 0) {
-      reverseDx();
-      logger.finer("reverseByOffsets dx.");
-      return;
-    }
-    throw Exception("No match condition.");
+  void _reverseDx() {
+    _dx = - _dx;
+    logger.finer("dx reverse.");
   }
 
-  void bounceAtWall(Vector2 offsets) {
-    stepBackward();
-    reverseByOffsets(offsets);
+  void _reverseDy() {
+    _dy = - _dy;
+    logger.finer("dy reverse.");
+  }
+
+  void _reverseByWallPos(wallPos pos) {
+    switch (pos) {
+      case wallPos.left:
+      case wallPos.right: // if( offsets[0] == 0 && offsets[1] != 0) {
+        _reverseDx();
+        logger.finer("reverseByWallPos dx.");
+        break;
+      case wallPos.top:
+      case wallPos.bottom:
+        _reverseDy();
+        logger.finer("reverseByWallPos dy.");
+        break;
+      default:
+        throw Exception ( " No match condition. " );
+    }
+  }
+
+  void bounceAtWall(WallBaseO wallBase) { // Vector2 offsets) {
+    if(!stepBackward()) {
+      throw Exception("stepBackward failed!");
+    }
+    _reverseByWallPos(wallBase.pos);
+    _rotate();
+  }
+
+  void _rotate() {
+    final Vector2 _rotated = _getRotated();
+    if (dx.sign == _rotated[0].sign && dy.sign == _rotated[1].sign) {
+      logger.finer("before dx and dy are rotated: ($dx, $dy)");
+      _dx = _rotated[0];
+      _dy = _rotated[1];
+      logger.finer("after dx and dy are rotated: ($dx, $dy)");
+    }
+    else {
+      logger.warning("ball rotation failed.");
+    }
+  }
+
+  Vector2 _getRotated() {
+    final a = rotation;
+    final rotator = Matrix2(cos(a), -sin(a), sin(a), cos(a));
+    final vector = Vector2(dx, dy);
+    vector.postmultiply(rotator);
+    return vector;
   }
 
   bool bounceAtPaddle(wallPos pos, Rect rect) {
@@ -308,7 +352,8 @@ class BallO extends GameObject with Backwardable {
     final rx = position[0];
     if (rx >= rect.left && rx <= rect.right) {
       logger.finer("Paddle top/bottom hit Ball.");
-      reverseDy();
+      _dy = -_dy; // reverse dy
+      _rotate();
       // _pickupDeltaPositionQueue.clear();
       return true;
     }
