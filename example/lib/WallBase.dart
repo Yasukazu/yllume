@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:illume/illume.dart';
 import 'pongPage.dart';
+import 'package:example/Backwardable.dart';
 
 extension OffsetVector2 on Vector2 {
   static Vector2? _topOffset;
@@ -49,7 +50,7 @@ enum wallPos { top(0), bottom(2), left(3), right(1);
   } // => value & 1 != 0 ? value & 0 : value + 1;
 }
 
-abstract class WallBaseO extends GameObject {
+abstract class WallBaseO extends GameObject with CollisionFront {
   static const shape = BoxShape.rectangle;
   static const b = PongGamePage.wallT;
   static topOffset(Vector2 gameSize) =>
@@ -131,4 +132,22 @@ abstract class WallBaseO extends GameObject {
 
   @override
   void update(Duration delta) {}
+
+  @override
+  Vector2 get toFront {
+    switch (pos) {
+      case wallPos.bottom:
+        return Vector2(0, size.y / 2);
+      case wallPos.top:
+        return Vector2(0, -size.y / 2);
+      case wallPos.right:
+        return Vector2(size.y / 2, 0);
+      case wallPos.left:
+        return Vector2(-size.y / 2, 0);
+      default:
+        throw Exception("Not defined.");
+    }
+  }
+  @override
+  Vector2 get frontPosition => position + toFront;
 }

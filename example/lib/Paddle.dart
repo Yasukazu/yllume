@@ -7,7 +7,7 @@ import 'ballchaser.dart';
 import 'Backwardable.dart';
 import 'package:illume/illume.dart';
 
-class PaddleO extends GameObject with Backwardable {
+class PaddleO extends GameObject with Backwardable, CollisionFront {
   static const color = Colors.yellow;
   static const shape = BoxShape.rectangle;
   final double stepRatio;
@@ -192,6 +192,9 @@ class EnemyPaddleO extends PaddleO {
       }
     }
   }
+
+  @override
+  Vector2 get frontPosition => position + toFront;
 
   CommandPacket? commandPacket;
   late RightLeft _direction;

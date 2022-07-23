@@ -5,7 +5,7 @@ import 'package:illume/illume.dart';
 import 'main.dart'; // logger
 import 'pongPage.dart';
 
-typedef DoWithBall = void Function(BallO ball);
+typedef DoWithBall = void Function(BallO ball, Rect rect);
 
 class WallO extends WallBaseO {
   Vector2 _rect = Vector2.zero();
@@ -23,7 +23,7 @@ class WallO extends WallBaseO {
   late final DoWithBall bounce;
 
   WallO(wallPos pos) : super(pos) {
-    bounce = (ball) => ball.bounceAtWall(this);
+    bounce = (ball, rect) => ball.bounceAtWall(this, rect);
     /* if (pos == wallPos.top || pos == wallPos.bottom) {
       bounce = (ball) => ball.reverseDy;
     } else {
