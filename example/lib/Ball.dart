@@ -279,6 +279,7 @@ class BallO extends GameObject with Backwardable {
       return _step();
     }
 
+    /*
     bool stepBackward() {
       if (lastPosForBackward != null) {
         position.setFrom(lastPosForBackward as Vector2);
@@ -289,7 +290,7 @@ class BallO extends GameObject with Backwardable {
         logger.warning("step backward failed 'cause lastPosForBackward == null.");
         return false;
       }
-    }
+    } */
 
     // void clearStepCount() { _stepCount = 0; }
     // void updateLastPosWithPosition() { lastPos = position; }
@@ -323,10 +324,11 @@ class BallO extends GameObject with Backwardable {
 
     void bounceAtWall(WallBaseO wall, Rect rect) { // Vector2 offsets) {
       // if(!stepBackward()) { throw Exception("stepBackward failed!"); }
-      final surface = wall.frontPosition;
-      final lap = rect.bottom - rect.top;
+      assert(wall.pos == wallPos.left || wall.pos == wallPos.right);
+      final lap = rect.right - rect.left;
       assert(lap > 0);
-      final dist = Vector2(0, surface == rect.bottom ? lap + collisionGap : -lap - collisionGap);
+      Vector2 dist = Vector2(wall.pos == wallPos.left ? lap + collisionGap :
+      -lap -collisionGap, 0);
       logger.fine("going to add position($position): $dist");
       position.add(dist);
       _reverseByWallPos(wall.pos);
