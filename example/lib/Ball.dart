@@ -62,11 +62,11 @@ class BallO extends GameObject with Backwardable {
   late final PaddleO selfPaddle;
   final void Function(wallPos) pause;
   final MotionLine motionLine;
-  static const defaultRotation = 0.1; // rad
-  double _rotation = defaultRotation;
+  static const defaultRotation = 0.3; // rad
+  double _rotation = 0;
   double get rotation => _rotateCW ? _rotation : -_rotation;
   BallO(this.motionLine, this.selfPaddle, this.yieldBallPos, this.pause, this._dx, this._dy,
-      [this._speed = defaultBallSpeed, this.ratio = PongGamePage.ballSize, this.pickupCycle = 2, this.pickupDelay = 2]) {
+      [this._speed = defaultBallSpeed, this.ratio = PongGamePage.ballSize, this.pickupCycle = 2, this.pickupDelay = 2, this._rotation = defaultRotation]) {
     assert(_dx > 0 && _dy > 0);
     assert(_speed > 0);
     assert(ratio > 0);
@@ -80,7 +80,7 @@ class BallO extends GameObject with Backwardable {
   final RandSignIterator randSignIterator = RandSignIterator();
   // final void Function(GameObject) addWithDuration;
   BallO.withAngleProvider(this.motionLine, this.selfPaddle, this.yieldBallPos, this.pause, this.angleProvider,
-      this._speed, this.ratio, [this.pickupCycle = 2, this.pickupDelay = 2]) {
+      this._speed, this.ratio, [this.pickupCycle = 2, this.pickupDelay = 2, this._rotation = defaultRotation]) {
     assert(angleProvider != null);
     _angle = angleProvider!.current;
     _dy = cos(_angle);
