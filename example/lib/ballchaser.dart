@@ -22,7 +22,11 @@ class BallChaser extends GameObject {
   double _xMin = 0;
   double _xMax = 0;
 
-  BallChaser(this.posToWall, this._ballRatio, {this.sizeRatio = 0.2});
+  /// forward calculated ball position.
+  static const int defaultForward = 900; // ms
+  final int forwardTime;
+
+  BallChaser(this.posToWall, this._ballRatio, {this.sizeRatio = 0.2, this.forwardTime = defaultForward});
 
   @override
   void init() {
@@ -78,8 +82,6 @@ class BallChaser extends GameObject {
     }
   }
 
-  /// forward calculated ball position.
-  static const dTForward = 500;
 
   /// returns Vector2.zero() if ballDPs.length is not enough to calculate.
   Vector2 getBallCurPos(Duration delta) {
@@ -99,7 +101,7 @@ class BallChaser extends GameObject {
     final double ySpeed = dY / dT;
 
     /// current scalars
-    final dT2 = delta.inMilliseconds - ballDPs[1].delta.inMilliseconds + dTForward;
+    final int dT2 = delta.inMilliseconds - ballDPs[1].delta.inMilliseconds + forwardTime;
     final d2X = xSpeed * dT2;
     final d2Y = ySpeed * dT2;
 
