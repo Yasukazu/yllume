@@ -29,7 +29,7 @@ class BallO extends GameObject with Backwardable {
   // Vector2 get stepVector => Vector2(stepX, stepY);
   double _dx = 0;
   double _dy = 0;
-  static const gap = 3;
+  static const gap = 30;
   bool _dxReverse = false;
   bool _dyReverse = false;
   bool get dxReverse => _dxReverse;
@@ -200,7 +200,7 @@ class BallO extends GameObject with Backwardable {
       if (col.component is PaddleO) {
         resetYield();
         final paddle = col.component as PaddleO;
-        if (!bounceAtPaddle(paddle.pos, col.intersectionRect)) {
+        if (!bounceAtPaddle(paddle, col.intersectionRect)) {
           logger.fine("Paddle hit fail. Pausing..");
           pause(paddle.pos);
         }
@@ -351,18 +351,19 @@ class BallO extends GameObject with Backwardable {
   }
 
   static const collisionGap = 2;
-  bool bounceAtPaddle(wallPos pos, Rect intersectionRect) {
+  bool bounceAtPaddle(PaddleO paddle, Rect intersectionRect) {
     // wallPos wp) {
     // clearStepCount();
     // updateLastPosWithPosition();
     // stepBackward();
+    final double yDistToPaddle = (position - paddle.position)[1];
     final rx = position[0];
     if (rx >= intersectionRect.left && rx <= intersectionRect.right) {
       logger.fine("Paddle top/bottom hit Ball.");
       _reverseDy(); // _dy = -_dy; // reverse dy
       final lap = intersectionRect.bottom - intersectionRect.top;
       assert(lap > 0);
-      final dist = Vector2(0, dy < 0 ? lap + collisionGap : -lap - collisionGap);
+      final dist = Vector2(0, yDistToPaddle < 0 ? lap + collisionGap : -lap - collisionGap);
       position.add(dist);
       _rotate();
       // _pickupDeltaPositionQueue.clear();
