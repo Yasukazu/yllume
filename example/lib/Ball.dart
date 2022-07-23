@@ -5,6 +5,7 @@ import 'dart:collection';
 import 'main.dart'; // logger
 import 'package:illume/illume.dart';
 import 'WallBase.dart';
+import 'Wall.dart';
 import 'Paddle.dart';
 import 'pongPage.dart';
 import 'Backwardable.dart';
@@ -204,8 +205,8 @@ class BallO extends GameObject with Backwardable {
           pause(paddle.pos);
         }
       }
-      else if (col.component is WallBaseO) {
-        bounceAtWall(col.component as WallBaseO);
+      else if (col.component is WallO) {
+        bounceAtWall(col.component as WallO);
         logger.finer("bounce at wall.");
       }
     }
