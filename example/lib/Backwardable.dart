@@ -9,3 +9,8 @@ mixin Backwardable on GameObject {
     }
   }
 }
+
+mixin CollisionFront on GameObject {
+  Vector2 get toFront => Vector2(0, size.y / 2); // for player paddle;override other class
+  Vector2 get frontPosition => position - toFront;
+}
