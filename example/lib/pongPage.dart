@@ -47,7 +47,8 @@ class _PongGamePageState extends State<PongGamePage> {
   late final WallO rightWall;
   late final EnemyPaddleO enemyPaddle;
   late final PaddleO selfPaddle;
-  late final MotionLine motionLine;
+  final List<MotionLine> motionLines = [];
+  // late final MotionLine motionLine;
   List<WallO> get walls => [topWall, bottomWall, leftWall, rightWall];
   IllumeController get gameController => PongGamePage.gameController;
   bool gameStarted = false;
@@ -95,10 +96,15 @@ class _PongGamePageState extends State<PongGamePage> {
     ballChaser = BallChaser(posToWall, PongGamePage.ballSize);
     enemyPaddle = EnemyPaddleO(ballChaser, posToWall, wallPos.top,
         PongGamePage.paddleWidth, PongGamePage.paddleStep);
-    motionLine = MotionLine();
-    ball = BallO.withAngleProvider(motionLine,
+    for (int i = 0; i < motionCount; ++i) {
+      motionLines.add(MotionLine());
+    }
+    // motionLine = MotionLine();
+    ball = BallO.withAngleProvider(motionLines,
         selfPaddle, ballChaser.pickupBallPos, pause, ballAngleIterator, speed, PongGamePage.ballSize);
   }
+
+  static const motionCount = 3;
 
   void addWithDuration(GameObject object) {
     gameController.gameObjects.add(object);
@@ -120,7 +126,11 @@ class _PongGamePageState extends State<PongGamePage> {
       rightWall,
       enemyPaddle,
       selfPaddle,
-      motionLine,
+    ]);
+    for (var motionLine in motionLines) {
+      gameController.gameObjects.add(motionLine);
+    }
+    gameController.gameObjects.addAll([
       ball,
       ballChaser
     ]);
