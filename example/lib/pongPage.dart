@@ -52,7 +52,7 @@ class _PongGamePageState extends State<PongGamePage> {
   IllumeController get gameController => PongGamePage.gameController;
   bool gameStarted = false;
   final ballAngleIterator =
-      RandAngleIterator(30, 14, true); // 30 to 44 degree, reverse
+      RandAngleIterator(30, 14, reverse: true); // 30 to 44 degree, reverse
   int enemyScore = 0;
   int playerScore = 0;
 
