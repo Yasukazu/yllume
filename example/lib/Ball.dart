@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+// logger.fine('stepBackwardResult: $backwardResult. after position = [$position].');
+
 import 'package:vector_math/vector_math.dart' hide Colors;
 import 'dart:math';
 import 'dart:collection';
@@ -21,21 +23,23 @@ class BallO extends GameObject with Backwardable {
   int get speed => (_speed * _speedRatio).round();
   double _angle = 0;
   double get angle => _angle;
-  double stepInterval = 0;
-  double _stepX = 0;
-  double _stepY = 0;
-  double get stepX => dxReverse ? -_stepX : _stepX;
-  double get stepY => dyReverse ? -_stepY : _stepY;
+  double _stepInterval = 0;
+  double get stepInterval => _stepInterval;
+  // double _stepX = 0;
+  // double _stepY = 0;
+  final Vector2 steps = Vector2(0, 0);
+  double get stepX => steps.x; // _stepX; // dxReverse ? -_stepX : _stepX;
+  double get stepY => steps.y; // _stepY; // dyReverse ? -_stepY : _stepY;
   // Vector2 get stepVector => Vector2(stepX, stepY);
   double _dx = 0;
   double _dy = 0;
   static const gap = 30;
-  bool _dxReverse = false;
-  bool _dyReverse = false;
-  bool get dxReverse => _dxReverse;
-  bool get dyReverse => _dyReverse;
-  double get dx => dxReverse ? -_dx : _dx;
-  double get dy => dyReverse ? -_dy : _dy;
+  // bool _dxReverse = false;
+  // bool _dyReverse = false;
+  // bool get dxReverse => _dxReverse;
+  // bool get dyReverse => _dyReverse;
+  // double get dx => dxReverse ? -_dx : _dx;
+  // double get dy => dyReverse ? -_dy : _dy;
   double get orgAngle => atan2(_dx, _dy);
   static const coreAlignments = [
     Alignment.topCenter,
@@ -105,8 +109,8 @@ class BallO extends GameObject with Backwardable {
       _dy = cos(_angle);
       _dx = sin(_angle);
     }
-    _dxReverse = false;
-    _dyReverse = false;
+    // _dxReverse = false;
+    // _dyReverse = false;
     init();
   }
 
@@ -116,24 +120,19 @@ class BallO extends GameObject with Backwardable {
     return sqrt(x_ * x_ + y_ * y_); // outer size
   }
 
-    void _setSteps() {
+    void _setSteps(Vector2 gameSize) {
       final gx = gameSize[0];
       final gy = gameSize[1];
       final diagonal = sqrt(gx * gx + gy * gy);
       final stepLength = diagonal / defaultBallFPS * speed / 1000;
-      _stepX = stepLength * dx;
-      _stepY = stepLength * dy;
+      _stepInterval = diagonal / stepLength;
+      steps.x = stepLength * _dx;
+      steps.y = stepLength * _dy;
     }
 
     @override
     void init() {
-      final gx = gameSize[0];
-      final gy = gameSize[1];
-      final diagonal = sqrt(gx * gx + gy * gy);
-      final stepLength = diagonal / defaultBallFPS * speed / 1000;
-      stepInterval = diagonal / stepLength;
-      _stepX = stepLength * dx;
-      _stepY = stepLength * dy;
+      _setSteps(gameSize);
       logger.finer("stepInterval = $stepInterval");
       // final virtualLandingPoint = y * dx / dy;
       final oSize = calcSize(gameSize, ratio);
@@ -142,11 +141,11 @@ class BallO extends GameObject with Backwardable {
       size = Vector2.all(oSize);
       alignment = GameObjectAlignment.center;
       // final double offset = WallBaseO.bottomOffset(gameSize)[1];
-      final double selfPaddleYPos = selfPaddle.position[1];
-      final double selfPaddleHSize = selfPaddle.size[1];
+      final double selfPaddleYPos = selfPaddle.position.y;
+      final double selfPaddleHSize = selfPaddle.size.y;
       final double selfPaddleTopSurface = selfPaddleYPos - selfPaddleHSize / 2;
-      position =
-          Vector2(gx / 2, selfPaddleTopSurface - oSize / 2 - gap); // , gy / 2);
+      position.setValues(
+          gameSize[0] / 2, selfPaddleTopSurface - oSize / 2 - gap); // , gy / 2);
       initialised = true;
       _stepCount = 0;
       rebuildWidgetIfNeeded = true;
@@ -156,16 +155,9 @@ class BallO extends GameObject with Backwardable {
 
     @override
     void onScreenSizeChange(Vector2 size) {
-      final gameSize = size;
-      final gx = gameSize[0];
-      final gy = gameSize[1];
-      final diagonal = sqrt(gx * gx + gy * gy);
-      final stepLength = diagonal / defaultBallFPS * speed / 1000;
-      stepInterval = diagonal / stepLength;
-      _stepX = stepLength * dx;
-      _stepY = stepLength * dy;
+      _setSteps(size);
       logger.finer("stepInterval = $stepInterval");
-      final oSize = calcSize(gameSize, ratio);
+      final oSize = calcSize(size, ratio);
       iSize = oSize * iRatio;
       logger.finer("Ball outer size = $oSize");
       this.size = Vector2.all(oSize);
@@ -173,8 +165,7 @@ class BallO extends GameObject with Backwardable {
       final double selfPaddleYPos = selfPaddle.position[1];
       final double selfPaddleHSize = selfPaddle.size[1];
       final double selfPaddleTopSurface = selfPaddleYPos - selfPaddleHSize / 2;
-      position =
-          Vector2(gx / 2, selfPaddleTopSurface - oSize / 2 - gap); // , gy / 2);
+      position.setValues(size[0] / 2, selfPaddleTopSurface - oSize / 2 - gap); // , gy / 2);
       initialised = true;
       _stepCount = 0;
       randSignIterator.moveNext();
@@ -215,7 +206,7 @@ class BallO extends GameObject with Backwardable {
           }
         }
         else if (col.component is WallO) {
-          bounceAtWall(col.component as WallO);
+          bounceAtWall(col.component as WallO, col.intersectionRect);
           logger.finer("bounce at wall.");
         }
       }
@@ -246,7 +237,7 @@ class BallO extends GameObject with Backwardable {
     void update(Duration delta) {
       if (delta.inMilliseconds - _lastUpdate > stepInterval) {
         _lastUpdate = delta.inMilliseconds;
-        position = stepForward();
+        position.setFrom(stepForward());
         // setState(() {
         iPos = iPos + (_rotateCW ? 1 : -1);
         coreAlignment = coreAlignments[iPos % coreAlignments.length];
@@ -284,13 +275,13 @@ class BallO extends GameObject with Backwardable {
     }
 
     Vector2 stepForward() {
-      lastPosForBackward = position;
+      lastPosForBackward = position.clone();
       return _step();
     }
 
     bool stepBackward() {
       if (lastPosForBackward != null) {
-        position = lastPosForBackward as Vector2;
+        position.setFrom(lastPosForBackward as Vector2);
         logger.finer("step backward by lastPosForBackward.");
         return true;
       }
@@ -330,32 +321,36 @@ class BallO extends GameObject with Backwardable {
       }
     }
 
-    void bounceAtWall(WallBaseO wallBase) { // Vector2 offsets) {
-      if(!stepBackward()) {
-        throw Exception("stepBackward failed!");
-      }
-      _reverseByWallPos(wallBase.pos);
+    void bounceAtWall(WallBaseO wall, Rect rect) { // Vector2 offsets) {
+      // if(!stepBackward()) { throw Exception("stepBackward failed!"); }
+      final surface = wall.frontPosition;
+      final lap = rect.bottom - rect.top;
+      assert(lap > 0);
+      final dist = Vector2(0, surface == rect.bottom ? lap + collisionGap : -lap - collisionGap);
+      logger.fine("going to add position($position): $dist");
+      position.add(dist);
+      _reverseByWallPos(wall.pos);
       _rotate();
-      _setSteps();
+      _setSteps(gameSize);
     }
 
     void _rotate() {
       final Vector2 _rotated = _getRotated();
-      if (dx.sign == _rotated[0].sign && dy.sign == _rotated[1].sign) {
-        logger.finer("before dx and dy are rotated: ($dx, $dy)");
+      if (_dx.sign == _rotated[0].sign && _dy.sign == _rotated[1].sign) {
+        logger.finer("before _dx and _dy are rotated: ($_dx, $_dy)");
         _dx = _rotated[0];
         _dy = _rotated[1];
-        logger.finer("after dx and dy are rotated: ($dx, $dy)");
+        logger.finer("after _dx and _dy are rotated: ($_dx, $_dy)");
       }
       else {
-        logger.warning("ball rotation failed.");
+        logger.warning("_dx _dy rotation failed.");
       }
     }
 
     Vector2 _getRotated() {
       final a = rotation;
       final rotator = Matrix2(cos(a), -sin(a), sin(a), cos(a));
-      final vector = Vector2(dx, dy);
+      final vector = Vector2(_dx, _dy);
       vector.postmultiply(rotator);
       return vector;
     }
@@ -368,24 +363,24 @@ class BallO extends GameObject with Backwardable {
       final rx = position[0];
       if (rx >= intersectionRect.left && rx <= intersectionRect.right) {
         logger.fine("Paddle top/bottom hit Ball.");
-        // logger.fine('stepBackward. before position = [$position].');
         // final backwardResult = stepBackward();
-        // logger.fine('stepBackwardResult: $backwardResult. after position = [$position].');
         _reverseDy(); // _dy = -_dy; // reverse dy
-        logger.fine("dy is reversed to $dy.");
+        logger.fine("_dy is reversed to $_dy.");
+        final paddleSurface = paddle.frontPosition.y;
+        assert(paddleSurface == intersectionRect.bottom || paddleSurface == intersectionRect.top);
         final lap = intersectionRect.bottom - intersectionRect.top;
         assert(lap > 0);
-        final double yDistToPaddle = (position - paddle.position)[1];
-        final dist = Vector2(0, yDistToPaddle > 0 ? lap + collisionGap : -lap - collisionGap);
+        // final double yDistToPaddle = (position - paddle.position)[1];
+        final dist = Vector2(0, paddleSurface == intersectionRect.bottom ? lap + collisionGap : -lap - collisionGap);
         logger.fine("going to add position($position): $dist");
         position.add(dist);
         logger.fine("position is moved to $position");
-        logger.fine("rotated before dx, dy = ($dx, $dy).");
+        logger.fine("rotated before dx, dy = ($_dx, $_dy).");
         _rotate();
-        logger.fine("rotated after dx, dy = ($dx, $dy).");
-        logger.fine("before steps: ($_stepX, $_stepY).");
-        _setSteps();
-        logger.fine("after steps: ($_stepX, $_stepY).");
+        logger.fine("rotated after dx, dy = ($_dx, $_dy).");
+        logger.fine("before steps: $steps.");
+        _setSteps(gameSize);
+        logger.fine("after steps: $steps.");
         // _pickupDeltaPositionQueue.clear();
         return true;
       }
