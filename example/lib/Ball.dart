@@ -65,11 +65,11 @@ class BallO extends GameObject with Backwardable {
   bool _rotateCW = true;
   late final PaddleO selfPaddle;
   final void Function(wallPos) pause;
-  final MotionLine motionLine;
+  final List<MotionLine> motionLines;
   static const defaultRotation = 0.3; // rad
   double _rotation = 0;
   double get rotation => _rotateCW ? _rotation : -_rotation;
-  BallO(this.motionLine, this.selfPaddle, this.yieldBallPos, this.pause, this._dx, this._dy,
+  BallO(this.motionLines, this.selfPaddle, this.yieldBallPos, this.pause, this._dx, this._dy,
       [this._speed = defaultBallSpeed, this.ratio = PongGamePage.ballSize, this.pickupCycle = 2, this.pickupDelay = 2, this._rotation = defaultRotation]) {
     assert(_dx > 0 && _dy > 0);
     assert(_speed > 0);
@@ -83,7 +83,7 @@ class BallO extends GameObject with Backwardable {
   late final RandAngleIterator? angleProvider;
   final RandSignIterator randSignIterator = RandSignIterator();
   // final void Function(GameObject) addWithDuration;
-  BallO.withAngleProvider(this.motionLine, this.selfPaddle, this.yieldBallPos, this.pause, this.angleProvider,
+  BallO.withAngleProvider(this.motionLines, this.selfPaddle, this.yieldBallPos, this.pause, this.angleProvider,
       this._speed, this.ratio, [this.pickupCycle = 2, this.pickupDelay = 2, this._rotation = defaultRotation]) {
     assert(angleProvider != null);
     _angle = angleProvider!.current;
@@ -150,7 +150,9 @@ class BallO extends GameObject with Backwardable {
       _stepCount = 0;
       rebuildWidgetIfNeeded = true;
       randSignIterator.moveNext();
-      motionLine.givenSize = size;
+      for (var motionLine in motionLines) {
+        motionLine.givenSize = size;
+      }
     }
 
     @override
@@ -242,7 +244,7 @@ class BallO extends GameObject with Backwardable {
     }
 
     final motionCycleRatio = 2;
-    double _motionCount = 0;
+    int _motionCount = 0;
 
     @override
     void update(Duration delta) {
@@ -260,16 +262,19 @@ class BallO extends GameObject with Backwardable {
         if (_stepCount % pickupCycle == 0) {
           // delta != Duration.zero && position != Vector2.zero() &&
           _pickupDeltaPositionQueue.add(DeltaPosition(delta, position));
-          if (_yieldCount < yieldMax && _pickupDeltaPositionQueue.length >= pickupDelay) {
+          if (_yieldCount < yieldMax && _pickupDeltaPositionQueue.length >= pickupDelay) { //_yieldCount < yieldMax &&
             yieldBallPos(_pickupDeltaPositionQueue.removeFirst());
             ++_yieldCount;
           }
         }
         if (_stepCount % (pickupCycle * motionCycleRatio) == 0 && _pickupDeltaPositionQueue.isNotEmpty) {
           final Vector2 lastPosition = _pickupDeltaPositionQueue.elementAt(0).position;
-          motionLine.givenPosition = lastPosition;
-          motionLine.givenSize = size;
-          logger.fine("Motionline");
+          final motionNumber = _motionCount % motionLines.length;
+          final motionLine = motionLines[motionNumber];
+          motionLine.position = lastPosition;
+          motionLine.size = size;
+          motionLine.turnOn();
+          logger.fine("Motionline[$motionNumber] position is set to $lastPosition, size is set to $size.");
           _motionCount++;
         }
         ++_stepCount;
