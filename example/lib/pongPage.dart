@@ -93,15 +93,15 @@ class _PongGamePageState extends State<PongGamePage> {
     };
     selfPaddle = PaddleO(posToWall, wallPos.bottom, PongGamePage.paddleWidth,
         PongGamePage.paddleStep);
-    ballChaser = BallChaser(posToWall, PongGamePage.ballSize);
+    ballChaser = BallChaser(posToWall, PongGamePage.ballSize, forwardTime: 1300);
     enemyPaddle = EnemyPaddleO(ballChaser, posToWall, wallPos.top,
         PongGamePage.paddleWidth, PongGamePage.paddleStep);
-    for (int i = 0; i < motionCount; ++i) {
-      motionLines.add(MotionLine());
-    }
     // motionLine = MotionLine();
     ball = BallO.withAngleProvider(motionLines,
         selfPaddle, ballChaser.pickupBallPos, pause, ballAngleIterator, speed, PongGamePage.ballSize);
+    for (int i = 0; i < motionCount; ++i) {
+      motionLines.add(MotionLine(i, ball.size));
+    }
   }
 
   static const motionCount = 3;
@@ -218,12 +218,14 @@ class _PongGamePageState extends State<PongGamePage> {
             title: Text(PongGamePage.statusBar),
           ),
           body: Center(
-              child: Column(
+              child: Row( // Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    SizedBox(height: 100,  child:
+                    SizedBox(width: 100,  child:
                     // SpeedSlider(pauseBySlider, ball.changeSlider, resumeBySlider)
-                    Slider(
+                    RotatedBox(
+                      quarterTurns: 3,
+                      child: Slider(
                       label: 'Ball Speed',
                       min: 0,
                       max: 1,
@@ -236,6 +238,7 @@ class _PongGamePageState extends State<PongGamePage> {
                       },
                       onChangeStart: pauseBySlider,
                       onChangeEnd: resumeBySlider,
+                    )
                     )
                     ),
                     Expanded(child:  Stack( children: [
