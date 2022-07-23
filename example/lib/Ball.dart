@@ -336,6 +336,7 @@ class BallO extends GameObject with Backwardable {
       }
       _reverseByWallPos(wallBase.pos);
       _rotate();
+      _setSteps();
     }
 
     void _rotate() {
