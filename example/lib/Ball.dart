@@ -252,35 +252,35 @@ class BallO extends GameObject with Backwardable {
       if (delta.inMilliseconds - _lastUpdate > stepInterval) {
         _lastUpdate = delta.inMilliseconds;
         position.setFrom(stepForward());
-        // setState(() {
         iPos = iPos + (_rotateCW ? 1 : -1);
         coreAlignment = coreAlignments[iPos % coreAlignments.length];
         ++_stepCount;
         logger.finer("coreAlignment is set as $coreAlignment by $iPos.");
-        // });
         rebuildWidget();
         logger.finer("rebuild ball.");
         logger.finest("Update ball pos: (${position[0]}, ${position[1]}).");
-        if (_stepCount % pickupCycle == 0) { // delta != Duration.zero && position != Vector2.zero()) {
-          if (_pickupDeltaPositionQueue.isNotEmpty && _pickupDeltaPositionQueue.last.position == position) {
-            return;
-          }
-          _pickupDeltaPositionQueue.add(DeltaPosition(delta, position));
+        if (_stepCount % pickupCycle ==
+            0) { // delta != Duration.zero && position != Vector2.zero()) {
+
+          _pickupDeltaPositionQueue.add(DeltaPosition(delta, position.clone()));
           logger.finer("_pickupDeltaPositionQueue.add:($delta, $position)");
-          if (_pickupDeltaPositionQueue.length >= pickupDelay) { //_yieldCount < yieldMax &&
+          if (_pickupDeltaPositionQueue.length >= pickupDelay ) { //_yieldCount < yieldMax &&
             final deltaPosition = _pickupDeltaPositionQueue.removeFirst();
             yieldBallPos(deltaPosition);
             ++_yieldCount;
-            final Vector2 lastPosition = deltaPosition.position;
-            final motionNumber = _motionCount % motionLines.length;
-            final motionLine = motionLines[motionNumber];
-            motionLine.position = lastPosition;
-            logger.fine("Motionline[$motionNumber] position is set to $lastPosition.");
-            // motionLine.size = size;
-            motionLine.turnOn();
-            motionLine.update(delta);
-            _motionCount++;
           }
+        }
+        if (_stepCount % (pickupCycle * motionCycleRatio) == 0 &&
+            _pickupDeltaPositionQueue.isNotEmpty) {
+          final Vector2 lastPosition = _pickupDeltaPositionQueue.elementAt(0).position;
+          final motionNumber = _motionCount % motionLines.length;
+          final motionLine = motionLines[motionNumber];
+          motionLine.position = lastPosition;
+          logger.fine( "Motionline[$motionNumber] position is set to $lastPosition.");
+          // motionLine.size = size;
+          motionLine.turnOn();
+          motionLine.update(delta);
+          _motionCount++;
         }
       }
     }
