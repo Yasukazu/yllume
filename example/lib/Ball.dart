@@ -76,7 +76,8 @@ class BallO extends GameObject with Backwardable {
     assert(ratio > 0);
     _angle = atan2(_dx, _dy);
   }
-
+  Matrix2 _bounceRotator = Matrix2(1, -0, 0, 1);
+  Matrix2 _stepRotator = Matrix2(1, -0, 0, 1);
   /// send null to clear dp queue
   final void Function(DeltaPosition?) yieldBallPos;
 
@@ -153,6 +154,8 @@ class BallO extends GameObject with Backwardable {
       for (var motionLine in motionLines) {
         motionLine.size = size;
       }
+      _bounceRotator = Matrix2(cos(rotation), -sin(rotation), sin(rotation), cos(rotation));
+      _stepRotator = Matrix2(cos(rotation / 9), -sin(rotation / 9), sin(rotation / 9), cos(rotation / 9));
     }
 
     @override
@@ -251,7 +254,8 @@ class BallO extends GameObject with Backwardable {
     void update(Duration delta) {
       if (delta.inMilliseconds - _lastUpdate > stepInterval) {
         _lastUpdate = delta.inMilliseconds;
-        position.setFrom(stepForward());
+        steps.postmultiply(_stepRotator);
+        position.add(steps); // setFrom(stepForward());
         // setState(() {
         iPos = iPos + (_rotateCW ? 1 : -1);
         coreAlignment = coreAlignments[iPos % coreAlignments.length];
@@ -262,10 +266,7 @@ class BallO extends GameObject with Backwardable {
         logger.finer("rebuild ball.");
         logger.finest("Update ball pos: (${position[0]}, ${position[1]}).");
         if (_stepCount % pickupCycle == 0) { // delta != Duration.zero && position != Vector2.zero()) {
-          if (_pickupDeltaPositionQueue.isNotEmpty && _pickupDeltaPositionQueue.last.position == position) {
-            return;
-          }
-          _pickupDeltaPositionQueue.add(DeltaPosition(delta, position));
+          _pickupDeltaPositionQueue.add(DeltaPosition(delta, position.clone()));
           logger.finer("_pickupDeltaPositionQueue.add:($delta, $position)");
           if (_pickupDeltaPositionQueue.length >= pickupDelay) { //_yieldCount < yieldMax &&
             final deltaPosition = _pickupDeltaPositionQueue.removeFirst();
@@ -285,7 +286,7 @@ class BallO extends GameObject with Backwardable {
       }
     }
 
-    Vector2 _step() {
+    /* Vector2 _step() {
       final x = position[0];
       final y = position[1];
       final np = Vector2(x + stepX, y + stepY);
@@ -297,7 +298,7 @@ class BallO extends GameObject with Backwardable {
     Vector2 stepForward() {
       lastPosForBackward = position.clone();
       return _step();
-    }
+    } */
 
     /*
     bool stepBackward() {
@@ -342,18 +343,20 @@ class BallO extends GameObject with Backwardable {
       }
     }
 
-    void bounceAtWall(WallBaseO wall, Rect rect) { // Vector2 offsets) {
+    bool bounceAtWall(WallBaseO wall, Rect rect) { // Vector2 offsets) {
       // if(!stepBackward()) { throw Exception("stepBackward failed!"); }
-      assert(wall.pos == wallPos.left || wall.pos == wallPos.right);
+      if (wall.pos == wallPos.top || wall.pos == wallPos.bottom) {
+        return false;
+      }
       final lap = rect.width;
-      assert(lap > 0);
       Vector2 dist = Vector2(wall.pos == wallPos.left ? lap + collisionGap :
       -lap -collisionGap, 0);
       logger.fine("going to add position($position): $dist");
       position.add(dist);
-      _reverseByWallPos(wall.pos);
-      _rotate();
-      _setSteps(gameSize);
+      steps.multiply(Vector2(-1, 1)); // _reverseByWallPos(wall.pos);
+      steps.postmultiply(_bounceRotator); // _rotate();
+      position.add(steps); // _setSteps(gameSize);
+      return true;
     }
 
     void _rotate() {
@@ -386,7 +389,7 @@ class BallO extends GameObject with Backwardable {
       if (rx >= intersectionRect.left && rx <= intersectionRect.right) {
         logger.fine("Paddle top/bottom hit Ball.");
         // final backwardResult = stepBackward();
-        _reverseDy(); // _dy = -_dy; // reverse dy
+        steps.multiply(Vector2(1, -1)); // _reverseDy(); // _dy = -_dy; // reverse dy
         logger.fine("_dy is reversed to $_dy.");
         final paddleSurface = paddle.frontPosition.y;
         assert(paddleSurface == intersectionRect.bottom || paddleSurface == intersectionRect.top);
@@ -394,14 +397,14 @@ class BallO extends GameObject with Backwardable {
         assert(lap > 0);
         // final double yDistToPaddle = (position - paddle.position)[1];
         final dist = Vector2(0, paddleSurface == intersectionRect.bottom ? lap + collisionGap : -lap - collisionGap);
-        logger.fine("going to add position($position): $dist");
+        logger.fine("Get distance from paddle:($position): $dist");
         position.add(dist);
         logger.fine("position is moved to $position");
-        logger.fine("rotated before dx, dy = ($_dx, $_dy).");
-        _rotate();
-        logger.fine("rotated after dx, dy = ($_dx, $_dy).");
+        logger.fine("before rotate dx, dy = ($_dx, $_dy).");
+        steps.postmultiply(_bounceRotator); // _rotate();
+        logger.fine("after rotate dx, dy = ($_dx, $_dy).");
         logger.fine("before steps: $steps.");
-        _setSteps(gameSize);
+        // _setSteps(gameSize);
         logger.fine("after steps: $steps.");
         // _pickupDeltaPositionQueue.clear();
         return true;
