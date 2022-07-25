@@ -1,4 +1,4 @@
-import 'package:example/main.dart';
+import 'main.dart';
 import 'package:flutter/material.dart';
 import 'Wall.dart';
 import 'WallBase.dart';

@@ -254,94 +254,43 @@ class BallO extends GameObject with Backwardable {
     void update(Duration delta) {
       if (delta.inMilliseconds - _lastUpdate > stepInterval) {
         _lastUpdate = delta.inMilliseconds;
+
         steps.postmultiply(_stepRotator);
         position.add(steps); // setFrom(stepForward());
-        // setState(() {
+
         iPos = iPos + (_rotateCW ? 1 : -1);
         coreAlignment = coreAlignments[iPos % coreAlignments.length];
         ++_stepCount;
         logger.finer("coreAlignment is set as $coreAlignment by $iPos.");
-        // });
         rebuildWidget();
         logger.finer("rebuild ball.");
         logger.finest("Update ball pos: (${position[0]}, ${position[1]}).");
-        if (_stepCount % pickupCycle == 0) { // delta != Duration.zero && position != Vector2.zero()) {
+
+        if (_stepCount % pickupCycle == 0) {
           _pickupDeltaPositionQueue.add(DeltaPosition(delta, position.clone()));
           logger.finer("_pickupDeltaPositionQueue.add:($delta, $position)");
-          if (_pickupDeltaPositionQueue.length >= pickupDelay) { //_yieldCount < yieldMax &&
+          if (_pickupDeltaPositionQueue.length >= pickupDelay ) { //_yieldCount < yieldMax &&
             final deltaPosition = _pickupDeltaPositionQueue.removeFirst();
             yieldBallPos(deltaPosition);
             ++_yieldCount;
-            final Vector2 lastPosition = deltaPosition.position;
-            final motionNumber = _motionCount % motionLines.length;
-            final motionLine = motionLines[motionNumber];
-            motionLine.position = lastPosition;
-            logger.fine("Motionline[$motionNumber] position is set to $lastPosition.");
-            // motionLine.size = size;
-            motionLine.turnOn();
-            motionLine.update(delta);
-            _motionCount++;
           }
+        }
+        if (_stepCount % (pickupCycle * motionCycleRatio) == 0 &&
+            _pickupDeltaPositionQueue.isNotEmpty) {
+          final Vector2 lastPosition = _pickupDeltaPositionQueue.elementAt(0).position;
+          final motionNumber = _motionCount % motionLines.length;
+          final motionLine = motionLines[motionNumber];
+          motionLine.position = lastPosition;
+          logger.fine( "Motionline[$motionNumber] position is set to $lastPosition.");
+          // motionLine.size = size;
+          motionLine.turnOn();
+          motionLine.update(delta);
+          _motionCount++;
         }
       }
     }
 
-    /* Vector2 _step() {
-      final x = position[0];
-      final y = position[1];
-      final np = Vector2(x + stepX, y + stepY);
-      return np;
-      // position[0] += stepX;
-      // position[1] += stepY;
-    }
 
-    Vector2 stepForward() {
-      lastPosForBackward = position.clone();
-      return _step();
-    } */
-
-    /*
-    bool stepBackward() {
-      if (lastPosForBackward != null) {
-        position.setFrom(lastPosForBackward as Vector2);
-        logger.finer("step backward by lastPosForBackward.");
-        return true;
-      }
-      else {
-        logger.warning("step backward failed 'cause lastPosForBackward == null.");
-        return false;
-      }
-    } */
-
-    // void clearStepCount() { _stepCount = 0; }
-    // void updateLastPosWithPosition() { lastPos = position; }
-
-    void _reverseDx() {
-      _dx = - _dx;
-      logger.finer("dx reverse.");
-    }
-
-    void _reverseDy() {
-      _dy = - _dy;
-      logger.finer("dy reverse.");
-    }
-
-    void _reverseByWallPos(wallPos pos) {
-      switch (pos) {
-        case wallPos.left:
-        case wallPos.right: // if( offsets[0] == 0 && offsets[1] != 0) {
-          _reverseDx();
-          logger.finer("reverseByWallPos dx.");
-          break;
-        case wallPos.top:
-        case wallPos.bottom:
-          _reverseDy();
-          logger.finer("reverseByWallPos dy.");
-          break;
-        default:
-          throw Exception ( " No match condition. " );
-      }
-    }
 
     bool bounceAtWall(WallBaseO wall, Rect rect) { // Vector2 offsets) {
       // if(!stepBackward()) { throw Exception("stepBackward failed!"); }
@@ -357,27 +306,6 @@ class BallO extends GameObject with Backwardable {
       steps.postmultiply(_bounceRotator); // _rotate();
       position.add(steps); // _setSteps(gameSize);
       return true;
-    }
-
-    void _rotate() {
-      final Vector2 _rotated = _getRotated();
-      if (_dx.sign == _rotated[0].sign && _dy.sign == _rotated[1].sign) {
-        logger.finer("before _dx and _dy are rotated: ($_dx, $_dy)");
-        _dx = _rotated[0];
-        _dy = _rotated[1];
-        logger.finer("after _dx and _dy are rotated: ($_dx, $_dy)");
-      }
-      else {
-        logger.warning("_dx _dy rotation failed.");
-      }
-    }
-
-    Vector2 _getRotated() {
-      final a = rotation;
-      final rotator = Matrix2(cos(a), -sin(a), sin(a), cos(a));
-      final vector = Vector2(_dx, _dy);
-      vector.postmultiply(rotator);
-      return vector;
     }
 
     static const collisionGap = 2;
