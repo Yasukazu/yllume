@@ -3,7 +3,7 @@
 An example project for the Illume game engine.
 Programs are in "lib" folder.
 The main program is "main.dart".
-
+![pong game](https://github.com/yasukazu/yllume/example/ponggame.gif)
 ## References
  - [Pong game on Flutter without framework](https://github.com/Yasukazu/Pyong)
 
