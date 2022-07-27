@@ -42,19 +42,22 @@ class BallChaser extends GameObject {
     final wallXPos = rightWall.position[0] + rightWall.surfaceOffset;
     _xMax = wallXPos - _ballRad;
 
-    size = Vector2(sizeRatio * gameSize[0], sizeRatio * gameSize[1]);
-    position = Vector2.zero();
+    size..setFrom(gameSize)
+        ..scale(sizeRatio);
+    position.x = 0;
+    position.y = 0;
   }
 
   @override
   void onScreenSizeChange(Vector2 size) {
-    _ballRad = BallO.calcSize(gameSize, _ballRatio) / 2;
+    _ballRad = BallO.calcSize(size, _ballRatio) / 2;
     final wallSurfaceXPos = posToWall(wallPos.left).surfacePosition()[0];
     _xMin = wallSurfaceXPos + _ballRad;
     final WallO rightWall = posToWall(wallPos.right);
     final wallXPos = rightWall.position[0] + rightWall.surfaceOffset;
     _xMax = wallXPos - _ballRad;
-    size = gameSize * sizeRatio; // Vector2(sizeRatio * gameSize[0], sizeRatio * gameSize[1]);
+    size..setFrom(size)
+      ..scale(sizeRatio);
   }
 
   bool? ballIsApproaching() {
@@ -62,7 +65,7 @@ class BallChaser extends GameObject {
       return null;
     }
     else {
-      final dY = dPQueue.elementAt(1).position[1] - dPQueue.elementAt(0).position[1];
+      final dY = dPQueue.elementAt(1).y - dPQueue.elementAt(0).y;
       return dY < 0;
     }
   }
@@ -83,29 +86,21 @@ class BallChaser extends GameObject {
   }
 
 
-  /// returns Vector2.zero() if ballDPs.length is not enough to calculate.
+  /// returns null if ballDPs.length is not enough to calculate.
   Vector2 getBallCurPos(Duration delta) {
-    if (ballDPs.length < 2) {
-      return Vector2.zero();
-    }
-
-    /// vectors
-    final double dY = ballDPs[1].position[1] - ballDPs[0].position[1];
-    final double dX = ballDPs[1].position[0] - ballDPs[0].position[0];
-
-    /// time dT
-    final int dT = ballDPs[1].delta.inMilliseconds - ballDPs[0].delta.inMilliseconds;
+    assert(ballDPs.length >= 2);
 
     /// speeds
-    final double xSpeed = dX / dT;
-    final double ySpeed = dY / dT;
+    final speeds = ballDPs[0].getSpeedVector(ballDPs[1]);
+    final double xSpeed = speeds.x;
+    final double ySpeed = speeds.y;
 
     /// current scalars
     final int dT2 = delta.inMilliseconds - ballDPs[1].delta.inMilliseconds + forwardTime;
     final d2X = xSpeed * dT2;
     final d2Y = ySpeed * dT2;
 
-    double x2 = ballDPs[1].position[0] + d2X;
+    double x2 = ballDPs[1].x + d2X;
     final double max = _xMax;
     if (x2 > max) {
       final diff = x2 - max;
@@ -116,7 +111,7 @@ class BallChaser extends GameObject {
       final diff = min - x2;
       x2 += 2 * diff;
     }
-    final y1 = ballDPs[1].position[1];
+    final y1 = ballDPs[1].x;
     return Vector2(x2, y1 + d2Y);
   }
 
@@ -154,11 +149,15 @@ class BallChaser extends GameObject {
   void update(Duration delta) {
     if (dPQueue.length >= 2) {
       ballDPs = dPQueue.take(2).toList();
-      _calculatedPos = getBallCurPos(delta);
-      logger.finer("calculatedPos = $_calculatedPos");
-      position = _calculatedPos;
+      final stepTime = (ballDPs[1].delta - ballDPs[0].delta).inMilliseconds;
+      final stepSpeeds = ballDPs[0].getSpeedVector(ballDPs[1]);
+      final ballCurPos = getBallCurPos(delta);
+      logger.finer("calculated current ball Position = $ballCurPos");
+      position.setFrom(ballCurPos);
+      _calculatedPos.setFrom(ballCurPos);
     }
   }
+
   @override
   void onCollision(List<Collision> collisions) {
   }
