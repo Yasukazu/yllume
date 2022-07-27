@@ -98,7 +98,7 @@ class _PongGamePageState extends State<PongGamePage> {
         PongGamePage.paddleWidth, PongGamePage.paddleStep);
     // motionLine = MotionLine();
     ball = BallO.withAngleProvider(motionLines,
-        selfPaddle, ballChaser.pickupBallPos, pause, ballAngleIterator, speed, PongGamePage.ballSize);
+        selfPaddle, ballChaser.putinBallPos, pause, ballAngleIterator, speed, PongGamePage.ballSize);
     for (int i = 0; i < motionCount; ++i) {
       motionLines.add(MotionLine(i, ball.size));
     }
