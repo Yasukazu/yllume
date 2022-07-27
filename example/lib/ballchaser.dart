@@ -102,7 +102,7 @@ class BallChaser extends GameObject {
     final startPos = Vector2(ballDPs[0].x, ballDPs[0].y);
     final nextPos = Vector2(ballDPs[1].x, ballDPs[1].y);
     final nextPos2 = Vector2(ballDPs[2].x, ballDPs[2].y);
-    var proceed = nextPos - startPos;
+    final proceed = nextPos - startPos;
     final proceed2 = nextPos2 - nextPos;
     final rotation = proceed.angleToSigned(proceed2);
     final rotator = Matrix2(cos(rotation), -sin(rotation), sin(rotation), cos(rotation));
@@ -110,13 +110,8 @@ class BallChaser extends GameObject {
     /// proceed to current ball position
     for (int i = 0; i < steps; ++i) {
       cursor.add(proceed);
-      if (cursor.x > _xMax) {
-        final r = 2 * Vector2(0, -1).angleToSigned(proceed);
-        cursor.postmultiply(Matrix2(cos(r), -sin(r), sin(r), cos(r)));
-      }
-      else if (cursor.x < _xMin) {
-        final r = 2 * Vector2(0, 1).angleToSigned(proceed);
-        cursor.postmultiply(Matrix2(cos(r), -sin(r), sin(r), cos(r)));
+      if (cursor.x > _xMax || cursor.x < _xMin) {
+        proceed.multiply(Vector2(-1, 1));
       }
       proceed.postmultiply(rotator);
     }
