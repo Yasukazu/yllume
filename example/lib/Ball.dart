@@ -134,7 +134,7 @@ class BallO extends GameObject with Backwardable {
     @override
     void init() {
       _setSteps(gameSize);
-      logger.finer("stepInterval = $stepInterval");
+      logger.finer("stepInterva 33= $stepInterval");
       // final virtualLandingPoint = y * dx / dy;
       final oSize = calcSize(gameSize, ratio);
       iSize = oSize * iRatio;
@@ -427,26 +427,6 @@ class DeltaPosition {
 
 }
 
-class DelayBuffer {
-  final _queue = Queue<DeltaPosition>();
-  final int size;
-  DelayBuffer(this.size);
-
-  DeltaPosition putOut() {
-    if (_queue.length >= size) {
-      return _queue.removeFirst();
-    } else {
-      return DeltaPosition.zero();
-    }
-  }
-
-  void putIn(DeltaPosition dp) {
-    _queue.add(dp);
-    if (_queue.length > size) {
-      _queue.removeFirst();
-    }
-  }
-}
 
 enum PlusMinus {
   plus(1),
