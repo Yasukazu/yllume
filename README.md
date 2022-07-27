@@ -1,7 +1,7 @@
-# illume 
+﻿# illume 
 
 ## A Widget-based Game Engine for Flutter 
-![pong game](https://github.com/yasukazu/yllume/example/ponggame.gif)
+![pong game](https://github.com/Yasukazu/yllume/blob/train/example/ponggame.gif)
 Illume is a simple Flutter game engine which uses widgets to create game objects instead of sprites 
 in normal game engines. This allows the app and game part to be quite integrated and use a lot of 
 common components without needing graphics work to create sprites and backgrounds (which was honestly 
