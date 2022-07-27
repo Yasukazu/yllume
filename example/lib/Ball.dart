@@ -243,7 +243,7 @@ class BallO extends GameObject with Backwardable {
     static const yieldMax = 6;
 
     DeltaPosition yieldPosition(Duration delta, Vector2 position) {
-      return DeltaPosition(delta, position);
+      return DeltaPosition(delta, position.x, position.y);
     }
 
     final motionCycleRatio = 2;
@@ -267,7 +267,7 @@ class BallO extends GameObject with Backwardable {
         logger.finest("Update ball pos: (${position[0]}, ${position[1]}).");
 
         if (_stepCount % pickupCycle == 0) {
-          _pickupDeltaPositionQueue.add(DeltaPosition(delta, position.clone()));
+          _pickupDeltaPositionQueue.add(DeltaPosition(delta, position.x, position.y));
           logger.finer("_pickupDeltaPositionQueue.add:($delta, $position)");
           if (_pickupDeltaPositionQueue.length >= pickupDelay ) { //_yieldCount < yieldMax &&
             final deltaPosition = _pickupDeltaPositionQueue.removeFirst();
@@ -277,11 +277,11 @@ class BallO extends GameObject with Backwardable {
         }
         if (_stepCount % (pickupCycle * motionCycleRatio) == 0 &&
             _pickupDeltaPositionQueue.isNotEmpty) {
-          final Vector2 lastPosition = _pickupDeltaPositionQueue.elementAt(0).position;
+          final lastElement = _pickupDeltaPositionQueue.elementAt(0);
           final motionNumber = _motionCount % motionLines.length;
           final motionLine = motionLines[motionNumber];
-          motionLine.position = lastPosition;
-          logger.fine( "Motionline[$motionNumber] position is set to $lastPosition.");
+          motionLine.position.setValues(lastElement.x, lastElement.y);
+          logger.fine( "Motionline[$motionNumber] position is set to $position.");
           // motionLine.size = size;
           motionLine.turnOn();
           motionLine.update(delta);
@@ -403,10 +403,28 @@ class RandSignIterator extends Iterable with Iterator {
 }
 
 class DeltaPosition {
-  Duration delta;
-  Vector2 position;
-  DeltaPosition(this.delta, this.position);
-  static zero() => DeltaPosition(Duration.zero, Vector2.zero());
+  final double x;
+  final double y;
+  final Duration delta;
+
+  DeltaPosition(this.delta, this.x, this.y); // Vector2 position) {
+    // x = position.x; y = position.y; }
+
+  static zero() => DeltaPosition(Duration.zero, 0, 0);
+
+  /// speed per ms
+  Vector2 getSpeedVector(DeltaPosition after) {
+    /// vectors
+    final double dX = after.x - x;
+    final double dY = after.y - y;
+    /// time dT
+    final int dT = after.delta.inMilliseconds - delta.inMilliseconds;
+    /// speeds
+    final double xSpeed = dX / dT;
+    final double ySpeed = dY / dT;
+    return Vector2(xSpeed, ySpeed);
+  }
+
 }
 
 class DelayBuffer {
