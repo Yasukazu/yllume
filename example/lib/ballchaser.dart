@@ -5,14 +5,16 @@ import 'Ball.dart';
 import 'Wall.dart';
 import 'WallBase.dart';
 import 'dart:collection';
+import 'package:vector_math/vector_math.dart' hide Colors;
+import 'dart:math';
 
 class BallChaser extends GameObject {
   static const color = Colors.red;
   final double sizeRatio;
-  static const sampleCount = 2;
-  final dPQueue = Queue<DeltaPosition>();
-  List<DeltaPosition> ballDPs = [];
-  Vector2 _calculatedPos = Vector2.zero();
+  static const sampleCount = 3;
+  final _dPQueue = DelayBuffer(sampleCount); // Queue<DeltaPosition>();
+  // List<DeltaPosition> ballDPs = [];
+  final Vector2 _calculatedPos = Vector2.zero();
   Vector2 get calculatedPos => _calculatedPos;
   // final Map<wallPos, WallO> pos2wall;
   final WallO Function(wallPos) posToWall;
@@ -61,40 +63,65 @@ class BallChaser extends GameObject {
   }
 
   bool? ballIsApproaching() {
-    if (dPQueue.length < 2) {
+    if (_dPQueue.length < 2) {
       return null;
     }
     else {
-      final dY = dPQueue.elementAt(1).y - dPQueue.elementAt(0).y;
+      final dY = _dPQueue[1].y - _dPQueue[0].y;
       return dY < 0;
     }
   }
-  void pickupBallPos(DeltaPosition? deltaPosition) {
+
+  /// buffer clear command when parameter is null
+  void putinBallPos(DeltaPosition? deltaPosition) {
     if (deltaPosition == null) {
-      dPQueue.clear();
+      _dPQueue.clear();
       logger.finer("dPQueue clear.");
     }
     else {
-      if (dPQueue.isNotEmpty) {
-        assert(dPQueue.last != deltaPosition);
-      }
-      dPQueue.add(deltaPosition);
-      if (dPQueue.length > sampleCount) {
-        dPQueue.removeFirst();
-      }
+      _dPQueue.putIn(deltaPosition);
     }
   }
 
 
   /// returns null if ballDPs.length is not enough to calculate.
-  Vector2 getBallCurPos(Duration delta) {
-    assert(ballDPs.length >= 2);
+  Matrix2 getBallCurPos(Vector2 cursor,List<DeltaPosition> ballDPs, Duration delta) {
+    assert(sampleCount >= 3);
+    assert(ballDPs.length >= sampleCount);
 
-    /// speeds
-    final speeds = ballDPs[0].getSpeedVector(ballDPs[1]);
-    final double xSpeed = speeds.x;
-    final double ySpeed = speeds.y;
-
+    /// step time [ms]
+    final stepTime = ballDPs[1].delta.inMilliseconds - ballDPs[0].delta.inMilliseconds;
+    final steps = (delta - ballDPs[0].delta).inMilliseconds / stepTime;
+    logger.fine("steps = $steps.");
+    /// speeds [pxl/ms]
+    // final speeds = ballDPs[0].getSpeedVector(ballDPs[1]);
+    // final double xSpeed = speeds.x;
+    // final double ySpeed = speeds.y;
+    // final speeds2 = ballDPs[1].getSpeedVector(ballDPs[2]);
+    /// angle of 2 vectors
+    final startPos = Vector2(ballDPs[0].x, ballDPs[0].y);
+    final nextPos = Vector2(ballDPs[1].x, ballDPs[1].y);
+    final nextPos2 = Vector2(ballDPs[2].x, ballDPs[2].y);
+    var proceed = nextPos - startPos;
+    final proceed2 = nextPos2 - nextPos;
+    final rotation = proceed.angleToSigned(proceed2);
+    final rotator = Matrix2(cos(rotation), -sin(rotation), sin(rotation), cos(rotation));
+    cursor.setFrom(startPos);
+    /// proceed to current ball position
+    for (int i = 0; i < steps; ++i) {
+      cursor.add(proceed);
+      if (cursor.x > _xMax) {
+        final r = 2 * Vector2(0, -1).angleToSigned(proceed);
+        cursor.postmultiply(Matrix2(cos(r), -sin(r), sin(r), cos(r)));
+      }
+      else if (cursor.x < _xMin) {
+        final r = 2 * Vector2(0, 1).angleToSigned(proceed);
+        cursor.postmultiply(Matrix2(cos(r), -sin(r), sin(r), cos(r)));
+      }
+      proceed.postmultiply(rotator);
+    }
+    return rotator;
+    /*
     /// current scalars
     final int dT2 = delta.inMilliseconds - ballDPs[1].delta.inMilliseconds + forwardTime;
     final d2X = xSpeed * dT2;
@@ -112,17 +139,9 @@ class BallChaser extends GameObject {
       x2 += 2 * diff;
     }
     final y1 = ballDPs[1].x;
-    return Vector2(x2, y1 + d2Y);
+    return Vector2(x2, y1 + d2Y); */
   }
 
-  /// returns [] if not enough data
-  List<DeltaPosition> getBallPoss() {
-    if (dPQueue.length >= sampleCount) {
-      return dPQueue.take(sampleCount).toList();
-    } else {
-      return [];
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -147,18 +166,49 @@ class BallChaser extends GameObject {
 
   @override
   void update(Duration delta) {
-    if (dPQueue.length >= 2) {
-      ballDPs = dPQueue.take(2).toList();
-      final stepTime = (ballDPs[1].delta - ballDPs[0].delta).inMilliseconds;
-      final stepSpeeds = ballDPs[0].getSpeedVector(ballDPs[1]);
-      final ballCurPos = getBallCurPos(delta);
-      logger.finer("calculated current ball Position = $ballCurPos");
-      position.setFrom(ballCurPos);
-      _calculatedPos.setFrom(ballCurPos);
+    if (_dPQueue.length >= 2) {
+      final List<DeltaPosition>?  buffer = _dPQueue.putOut();
+      if ( buffer == null) {
+        return;
+      }
+      // final stepTime = (buffer[1].delta - buffer[0].delta).inMilliseconds;
+      // final stepSpeeds = buffer[0].getSpeedVector(buffer[1]);
+      final Vector2 cursor = Vector2(0, 0);
+      final rotator = getBallCurPos(cursor, buffer, delta);
+      logger.finer("calculated current ball Position = $cursor");
+      position.setFrom(cursor);
+      _calculatedPos.setFrom(cursor);
     }
   }
 
   @override
   void onCollision(List<Collision> collisions) {
   }
+}
+
+class DelayBuffer {
+  final _queue = Queue<DeltaPosition>();
+  final int size;
+  DelayBuffer(this.size);
+  int get length => _queue.length;
+
+  operator [](int i) => _queue.elementAt(i);
+
+  List<DeltaPosition>? putOut() {
+    if (_queue.length >= size) {
+      return _queue.take(size).toList();
+    } else {
+      return null;
+    }
+  }
+
+  bool putIn(DeltaPosition dp) {
+    if (_queue.length < size) {
+      _queue.add(dp);
+      return true;
+    }
+    return false;
+  }
+
+  void clear() => _queue.clear();
 }
