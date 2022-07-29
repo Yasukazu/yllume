@@ -4,6 +4,7 @@ import 'package:illume/illume.dart';
 import 'Ball.dart';
 import 'Wall.dart';
 import 'WallBase.dart';
+import 'Paddle.dart';
 import 'dart:collection';
 import 'package:vector_math/vector_math.dart' hide Colors;
 import 'dart:math';
@@ -85,20 +86,10 @@ class BallChaser extends GameObject {
 
 
   /// returns null if ballDPs.length is not enough to calculate.
-  Matrix2 getBallCurPos(Vector2 cursor,List<DeltaPosition> ballDPs, Duration delta) {
+  Matrix2 getBallCurPos(Vector2 cursor,List<DeltaPosition> ballDPs, Duration delta, {setCurPos = true}) {
     assert(sampleCount >= 3);
     assert(ballDPs.length >= sampleCount);
 
-    /// step time [ms]
-    final stepTime = ballDPs[1].delta.inMilliseconds - ballDPs[0].delta.inMilliseconds;
-    final steps = (delta - ballDPs[0].delta).inMilliseconds / stepTime;
-    logger.fine("steps = $steps.");
-    /// speeds [pxl/ms]
-    // final speeds = ballDPs[0].getSpeedVector(ballDPs[1]);
-    // final double xSpeed = speeds.x;
-    // final double ySpeed = speeds.y;
-    // final speeds2 = ballDPs[1].getSpeedVector(ballDPs[2]);
-    /// angle of 2 vectors
     final startPos = Vector2(ballDPs[0].x, ballDPs[0].y);
     final nextPos = Vector2(ballDPs[1].x, ballDPs[1].y);
     final nextPos2 = Vector2(ballDPs[2].x, ballDPs[2].y);
@@ -108,12 +99,18 @@ class BallChaser extends GameObject {
     final rotator = Matrix2(cos(rotation), -sin(rotation), sin(rotation), cos(rotation));
     cursor.setFrom(startPos);
     /// proceed to current ball position
-    for (int i = 0; i < steps; ++i) {
-      cursor.add(proceed);
-      if (cursor.x > _xMax || cursor.x < _xMin) {
-        proceed.multiply(Vector2(-1, 1));
+    if (setCurPos) {
+      /// step time [ms]
+      final stepTime = ballDPs[1].delta.inMilliseconds - ballDPs[0].delta.inMilliseconds;
+      final steps = (delta - ballDPs[0].delta).inMilliseconds / stepTime;
+      logger.fine("steps = $steps.");
+      for (int i = 0; i < steps; ++i) {
+        cursor.add(proceed);
+        if (cursor.x > _xMax || cursor.x < _xMin) {
+          proceed.multiply(Vector2(-1, 1));
+        }
+        proceed.postmultiply(rotator);
       }
-      proceed.postmultiply(rotator);
     }
     return rotator;
     /*
@@ -176,10 +173,26 @@ class BallChaser extends GameObject {
     }
   }
 
+
+  GoalTo goalTo = GoalTo.enemy;
   @override
   void onCollision(List<Collision> collisions) {
+    collisions.firstWhere((col) {
+      if(col.component is PaddleO) {
+        if (col.component is EnemyPaddleO) {
+          goalTo = GoalTo.player;
+          logger.fine("Goal to player.");
+        }
+        else {
+          goalTo = GoalTo.enemy;
+          logger.fine("Goal to enemy.");
+        }
+      }
+    }
   }
 }
+
+enum GoalTo {enemy, player}
 
 class DelayBuffer {
   final _queue = Queue<DeltaPosition>();
