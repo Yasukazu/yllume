@@ -16,7 +16,9 @@ class BallChaser extends GameObject {
   final _dPQueue = DelayBuffer(sampleCount); // Queue<DeltaPosition>();
   // List<DeltaPosition> ballDPs = [];
   final Vector2 _calculatedPos = Vector2.zero();
+
   Vector2 get calculatedPos => _calculatedPos;
+
   // final Map<wallPos, WallO> pos2wall;
   final WallO Function(wallPos) posToWall;
   final double _ballRatio;
@@ -29,7 +31,10 @@ class BallChaser extends GameObject {
   static const int defaultForward = 900; // ms
   final int forwardTime;
 
-  BallChaser(this.posToWall, this._ballRatio, {this.sizeRatio = 0.2, this.forwardTime = defaultForward});
+  PaddleO lastHitPaddle;
+
+  BallChaser(this.lastHitPaddle, this.posToWall, this._ballRatio,
+      {this.sizeRatio = 0.2, this.forwardTime = defaultForward});
 
   @override
   void init() {
@@ -45,8 +50,9 @@ class BallChaser extends GameObject {
     final wallXPos = rightWall.position[0] + rightWall.surfaceOffset;
     _xMax = wallXPos - _ballRad;
 
-    size..setFrom(gameSize)
-        ..scale(sizeRatio);
+    size
+      ..setFrom(gameSize)
+      ..scale(sizeRatio);
     position.x = 0;
     position.y = 0;
   }
@@ -59,7 +65,8 @@ class BallChaser extends GameObject {
     final WallO rightWall = posToWall(wallPos.right);
     final wallXPos = rightWall.position[0] + rightWall.surfaceOffset;
     _xMax = wallXPos - _ballRad;
-    size..setFrom(size)
+    size
+      ..setFrom(size)
       ..scale(sizeRatio);
   }
 
@@ -86,7 +93,8 @@ class BallChaser extends GameObject {
 
 
   /// returns null if ballDPs.length is not enough to calculate.
-  Matrix2 getBallCurPos(Vector2 cursor,List<DeltaPosition> ballDPs, Duration delta, {setCurPos = true}) {
+  Matrix2 getBallCurPos(Vector2 cursor, List<DeltaPosition> ballDPs,
+      Duration delta, {setCurPos = true}) {
     assert(sampleCount >= 3);
     assert(ballDPs.length >= sampleCount);
 
@@ -96,12 +104,15 @@ class BallChaser extends GameObject {
     final proceed = nextPos - startPos;
     final proceed2 = nextPos2 - nextPos;
     final rotation = proceed.angleToSigned(proceed2);
-    final rotator = Matrix2(cos(rotation), -sin(rotation), sin(rotation), cos(rotation));
+    final rotator = Matrix2(
+        cos(rotation), -sin(rotation), sin(rotation), cos(rotation));
     cursor.setFrom(startPos);
+
     /// proceed to current ball position
     if (setCurPos) {
       /// step time [ms]
-      final stepTime = ballDPs[1].delta.inMilliseconds - ballDPs[0].delta.inMilliseconds;
+      final stepTime = ballDPs[1].delta.inMilliseconds -
+          ballDPs[0].delta.inMilliseconds;
       final steps = (delta - ballDPs[0].delta).inMilliseconds / stepTime;
       logger.fine("steps = $steps.");
       for (int i = 0; i < steps; ++i) {
@@ -158,9 +169,12 @@ class BallChaser extends GameObject {
 
   @override
   void update(Duration delta) {
+    if (lastHitPaddle is EnemyPaddleO) {
+      return;
+    }
     if (_dPQueue.length >= 2) {
-      final List<DeltaPosition>?  buffer = _dPQueue.putOut();
-      if ( buffer == null) {
+      final List<DeltaPosition>? buffer = _dPQueue.putOut();
+      if (buffer == null) {
         return;
       }
       // final stepTime = (buffer[1].delta - buffer[0].delta).inMilliseconds;
@@ -173,26 +187,11 @@ class BallChaser extends GameObject {
     }
   }
 
-
-  GoalTo goalTo = GoalTo.enemy;
   @override
   void onCollision(List<Collision> collisions) {
-    collisions.firstWhere((col) {
-      if(col.component is PaddleO) {
-        if (col.component is EnemyPaddleO) {
-          goalTo = GoalTo.player;
-          logger.fine("Goal to player.");
-        }
-        else {
-          goalTo = GoalTo.enemy;
-          logger.fine("Goal to enemy.");
-        }
-      }
-    }
   }
 }
 
-enum GoalTo {enemy, player}
 
 class DelayBuffer {
   final _queue = Queue<DeltaPosition>();

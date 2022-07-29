@@ -105,13 +105,7 @@ class PaddleO extends GameObject with Backwardable, CollisionFront {
         _lastCollisionMove = RightLeft.left;
       }
       position = Vector2(x, y);
-      /*
-      backward(this);
-      if (lastPosForBackward != null) {
-        x = (lastPosForBackward as Vector2)[0];
-        logger.finer("Paddle backward with Wall.");
-      }
-      */
+
     }
   }
 
@@ -132,7 +126,6 @@ class PaddleO extends GameObject with Backwardable, CollisionFront {
       ),
     ]);
   }
-
 
   void moveRight() {
     if (offset.isRightLimit) {
@@ -156,6 +149,8 @@ class PaddleO extends GameObject with Backwardable, CollisionFront {
     logger.finer("move Left. x = $x");
   }
 }
+
+enum GoalTo {enemy, player}
 
 class EnemyPaddleO extends PaddleO {
   final BallChaser ballChaser; // List<DeltaPosition> Function() getBallPoss;

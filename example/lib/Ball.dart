@@ -69,7 +69,7 @@ class BallO extends GameObject with Backwardable {
   static const defaultRotation = 0.3; // rad
   double _rotation = 0;
   double get rotation => _rotateCW ? _rotation : -_rotation;
-  BallO(this.motionLines, this.selfPaddle, this.yieldBallPos, this.pause, this._dx, this._dy,
+  BallO(this.lastHitPaddle, this.motionLines, this.selfPaddle, this.yieldBallPos, this.pause, this._dx, this._dy,
       [this._speed = defaultBallSpeed, this.ratio = PongGamePage.ballSize, this.pickupCycle = 2, this.pickupDelay = 2, this._rotation = defaultRotation]) {
     assert(_dx > 0 && _dy > 0);
     assert(_speed > 0);
@@ -84,7 +84,7 @@ class BallO extends GameObject with Backwardable {
   late final RandAngleIterator? angleProvider;
   final RandSignIterator randSignIterator = RandSignIterator();
   // final void Function(GameObject) addWithDuration;
-  BallO.withAngleProvider(this.motionLines, this.selfPaddle, this.yieldBallPos, this.pause, this.angleProvider,
+  BallO.withAngleProvider(this.lastHitPaddle, this.motionLines, this.selfPaddle, this.yieldBallPos, this.pause, this.angleProvider,
       this._speed, this.ratio, [this.pickupCycle = 2, this.pickupDelay = 2, this._rotation = defaultRotation]) {
     assert(angleProvider != null);
     _angle = angleProvider!.current;
@@ -197,12 +197,15 @@ class BallO extends GameObject with Backwardable {
         ]);
     }
 
+    PaddleO lastHitPaddle;
+
     @override
     void onCollision(List<Collision> collisions) {
       logger.info("Ball collided with ${collisions.length} collisions.");
       for (Collision col in collisions) {
         logger.finer("collision component is ${col.component}.");
         if (col.component is PaddleO) {
+          lastHitPaddle = col.component as PaddleO;
           resetYield();
           final paddle = col.component as PaddleO;
           if (!bounceAtPaddle(paddle, col.intersectionRect)) {
