@@ -207,6 +207,11 @@ class BallO extends GameObject with Backwardable {
         if (col.component is PaddleO) {
           if (col.component is EnemyPaddleO) {
             ballChaser.lastHitPaddleIsEnemy = true;
+            logger.info("lastHitPaddle is enemy.");
+          }
+          else {
+            ballChaser.lastHitPaddleIsEnemy = false;
+            logger.info("lastHitPaddle is player.");
           }
           resetYield();
           final paddle = col.component as PaddleO;
