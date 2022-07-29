@@ -31,9 +31,9 @@ class BallChaser extends GameObject {
   static const int defaultForward = 900; // ms
   final int forwardTime;
 
-  PaddleO lastHitPaddle;
+  bool lastHitPaddleIsEnemy = false;
 
-  BallChaser(this.lastHitPaddle, this.posToWall, this._ballRatio,
+  BallChaser(this.posToWall, this._ballRatio,
       {this.sizeRatio = 0.2, this.forwardTime = defaultForward});
 
   @override
@@ -169,7 +169,7 @@ class BallChaser extends GameObject {
 
   @override
   void update(Duration delta) {
-    if (lastHitPaddle is EnemyPaddleO) {
+    if (lastHitPaddleIsEnemy) {
       return;
     }
     if (_dPQueue.length >= 2) {

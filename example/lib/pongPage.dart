@@ -93,18 +93,16 @@ class _PongGamePageState extends State<PongGamePage> {
     };
     selfPaddle = PaddleO(posToWall, wallPos.bottom, PongGamePage.paddleWidth,
         PongGamePage.paddleStep);
-    lastHitPaddle = selfPaddle;
-    ballChaser = BallChaser(lastHitPaddle, posToWall, PongGamePage.ballSize, forwardTime: 1300);
+    ballChaser = BallChaser(posToWall, PongGamePage.ballSize, forwardTime: 1300);
     enemyPaddle = EnemyPaddleO(ballChaser, posToWall, wallPos.top,
         PongGamePage.paddleWidth, PongGamePage.paddleStep);
     // motionLine = MotionLine();
-    ball = BallO.withAngleProvider(lastHitPaddle, motionLines,
-        selfPaddle, ballChaser.putinBallPos, pause, ballAngleIterator, speed, PongGamePage.ballSize);
+    ball = BallO.withAngleProvider(motionLines,
+        selfPaddle, ballChaser, pause, ballAngleIterator, speed, PongGamePage.ballSize);
     for (int i = 0; i < motionCount; ++i) {
       motionLines.add(MotionLine(i, ball.size));
     }
   }
-  late PaddleO lastHitPaddle;
 
   static const motionCount = 3;
 
