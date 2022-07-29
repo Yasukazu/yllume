@@ -4,7 +4,6 @@ import 'package:illume/illume.dart';
 import 'Ball.dart';
 import 'Wall.dart';
 import 'WallBase.dart';
-import 'Paddle.dart';
 import 'dart:collection';
 import 'package:vector_math/vector_math.dart' hide Colors;
 import 'dart:math';
@@ -26,7 +25,7 @@ class BallChaser extends GameObject {
 
   double _xMin = 0;
   double _xMax = 0;
-
+  double _yMin = 0;
   /// forward calculated ball position.
   static const int defaultForward = 900; // ms
   final int forwardTime;
@@ -49,6 +48,7 @@ class BallChaser extends GameObject {
     final WallO rightWall = posToWall(wallPos.right);
     final wallXPos = rightWall.position[0] + rightWall.surfaceOffset;
     _xMax = wallXPos - _ballRad;
+    _yMin =  posToWall(wallPos.top).surfacePosition().y + _ballRad;
 
     size
       ..setFrom(gameSize)
@@ -124,28 +124,35 @@ class BallChaser extends GameObject {
       }
     }
     return rotator;
-    /*
-    /// current scalars
-    final int dT2 = delta.inMilliseconds - ballDPs[1].delta.inMilliseconds + forwardTime;
-    final d2X = xSpeed * dT2;
-    final d2Y = ySpeed * dT2;
-
-    double x2 = ballDPs[1].x + d2X;
-    final double max = _xMax;
-    if (x2 > max) {
-      final diff = x2 - max;
-      x2 -= 2 * diff;
-    }
-    final min = _xMin;
-    if (x2 < min) {
-      final diff = min - x2;
-      x2 += 2 * diff;
-    }
-    final y1 = ballDPs[1].x;
-    return Vector2(x2, y1 + d2Y); */
   }
 
+  /// calculate about landing position into cursor.
+  /// returns false if over max bounce.
+  bool calcLandingPos(Vector2 cursor, List<DeltaPosition> ballDPs, Matrix2 rotator) {
+    assert(sampleCount >= 3);
+    assert(ballDPs.length >= sampleCount);
 
+    final startPos = Vector2(ballDPs[0].x, ballDPs[0].y);
+    final nextPos = Vector2(ballDPs[1].x, ballDPs[1].y);
+    final proceed = nextPos - startPos;
+    var maxLoop = 500;
+    var maxBounce = 5;
+    cursor.setFrom(startPos);
+    while (maxBounce > 0 && maxLoop-- > 0) {
+      cursor.add(proceed);
+      if (cursor.x > _xMax || cursor.x < _xMin) {
+        proceed.multiply(Vector2(-1, 1));
+        --maxBounce;
+      }
+      proceed.postmultiply(rotator);
+      if (cursor.y <= _yMin) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  static const thickness = 2.0;
   @override
   Widget build(BuildContext context) {
     return Stack(children: [
@@ -153,14 +160,14 @@ class BallChaser extends GameObject {
           alignment: Alignment.center,
           child: Container(
             color: color,
-            height: 2,
+            height: thickness,
           )
       ),
       Align(
           alignment: Alignment.center,
           child: Container(
             color: color,
-            width: 1,
+            width: thickness,
           )
       ),
     ]);
@@ -172,19 +179,21 @@ class BallChaser extends GameObject {
     if (lastHitPaddleIsEnemy) {
       return;
     }
-    if (_dPQueue.length >= 2) {
-      final List<DeltaPosition>? buffer = _dPQueue.putOut();
-      if (buffer == null) {
+      final List<DeltaPosition>? ballDPs = _dPQueue.putOut();
+      if (ballDPs == null) {
         return;
       }
-      // final stepTime = (buffer[1].delta - buffer[0].delta).inMilliseconds;
-      // final stepSpeeds = buffer[0].getSpeedVector(buffer[1]);
       final Vector2 cursor = Vector2(0, 0);
-      final rotator = getBallCurPos(cursor, buffer, delta);
-      logger.finer("calculated current ball Position = $cursor");
-      position.setFrom(cursor);
-      _calculatedPos.setFrom(cursor);
-    }
+      final rotator = getBallCurPos(cursor, ballDPs, delta, setCurPos: true);
+      final calcSuccess = calcLandingPos(cursor, ballDPs, rotator);
+      if (calcSuccess) {
+        logger.finer("calculated current ball Position = $cursor");
+        position.setFrom(cursor);
+        _calculatedPos.setFrom(cursor);
+      }
+      else {
+        logger.info("ball landing position to enemy failed.");
+      }
   }
 
   @override
