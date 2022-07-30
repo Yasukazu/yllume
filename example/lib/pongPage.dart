@@ -22,6 +22,8 @@ class PongGamePage extends StatefulWidget {
   static const wallT = ballSize / 2 - wpGap - 0.001; // wall thickness1 per 1
   static const paddleStep = 0.1;
   static const paddleWidth = 0.25;
+  static const enemyPaddleStep = 0.025;
+  static const enemyPaddleWidth = 0.2;
   static const paddleT = 0.06;
   const PongGamePage({Key? key}) : super(key: key);
   static const mainText = 'Pong game';
@@ -30,11 +32,11 @@ class PongGamePage extends StatefulWidget {
   static IllumeController gameController = IllumeController();
 
   @override
-  _PongGamePageState createState() => _PongGamePageState();
+  PongGamePageState createState() => PongGamePageState();
 }
 
 /// Pong game
-class _PongGamePageState extends State<PongGamePage> {
+class PongGamePageState extends State<PongGamePage> {
   // FlappyWidget flappyWidget = FlappyWidget();
   // Wall wall = Wall(200, false);
   // Wall wall2 = Wall(400, true);
@@ -73,12 +75,11 @@ class _PongGamePageState extends State<PongGamePage> {
 
   late WallO Function(wallPos) posToWall;
 
-  _PongGamePageState() {
+  PongGamePageState() {
     topWall = PlayerWallO(wallPos.top, pause);
     bottomWall = PlayerWallO(wallPos.bottom, pause);
-    rightWall = WallO(wallPos.right);
-    leftWall = WallO(wallPos.left);
-    // final pos2wall = {wallPos.top: topWall, wallPos.bottom: bottomWall, wallPos.right: rightWall, wallPos.left: leftWall};
+    rightWall = SideWallO(wallPos.right);
+    leftWall = SideWallO(wallPos.left);
     posToWall = (wp) {
       switch(wp) {
         case wallPos.top:
@@ -95,12 +96,12 @@ class _PongGamePageState extends State<PongGamePage> {
         PongGamePage.paddleStep);
     ballChaser = BallChaser(posToWall, PongGamePage.ballSize, forwardTime: 1300);
     enemyPaddle = EnemyPaddleO(ballChaser, posToWall, wallPos.top,
-        PongGamePage.paddleWidth, PongGamePage.paddleStep);
+        PongGamePage.enemyPaddleWidth, PongGamePage.enemyPaddleStep);
     // motionLine = MotionLine();
     ball = BallO.withAngleProvider(motionLines,
         selfPaddle, ballChaser, pause, ballAngleIterator, speed, PongGamePage.ballSize);
     for (int i = 0; i < motionCount; ++i) {
-      motionLines.add(MotionLine(i, ball.size));
+      motionLines.add(MotionLine(i, PongGamePage.ballSize));
     }
   }
 
