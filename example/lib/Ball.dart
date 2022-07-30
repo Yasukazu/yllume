@@ -300,16 +300,21 @@ class BallO extends GameObject with Backwardable {
 
 
 
-    bool bounceAtWall(SideWallO wall, Rect rect) { // Vector2 offsets) {
-      final lap = rect.width + wall.gap(position.y);
-      Vector2 dist = Vector2(wall.pos == wallPos.left ? lap + collisionGap :
-      -lap -collisionGap, 0);
-      logger.fine("going to add position($position): $dist");
-      position.add(dist);
-      steps.multiply(Vector2(-1, 1)); // _reverseByWallPos(wall.pos);
-      steps.postmultiply(_bounceRotator); // _rotate();
-      position.add(steps); // _setSteps(gameSize);
-      return true;
+    bool bounceAtWall(WallO wall, Rect rect) { // Vector2 offsets) {
+      if (wall is! SideWallO) {
+        return false;
+      }
+      else {
+        final lap = rect.width + wall.gap(position.y);
+        Vector2 dist = Vector2(wall.pos == wallPos.left ? lap + collisionGap :
+        -lap - collisionGap, 0);
+        logger.fine("going to add position($position): $dist");
+        position.add(dist);
+        steps.multiply(Vector2(-1, 1)); // _reverseByWallPos(wall.pos);
+        steps.postmultiply(_bounceRotator); // _rotate();
+        position.add(steps); // _setSteps(gameSize);
+        return true;
+      }
     }
 
     static const collisionGap = 2;
