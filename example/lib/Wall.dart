@@ -22,7 +22,9 @@ class WallO extends WallBaseO {
 
   late final DoWithBall bounce;
 
-  WallO(wallPos pos) : super(pos) {
+  final double maxGapRatio;
+
+  WallO(wallPos pos, {this.maxGapRatio = 2}) : super(pos) {
     bounce = (ball, rect) => ball.bounceAtWall(this, rect);
     /* if (pos == wallPos.top || pos == wallPos.bottom) {
       bounce = (ball) => ball.reverseDy;
@@ -113,6 +115,38 @@ class WallO extends WallBaseO {
       color: color,
     );
   }
+
+}
+
+class SideWallO extends WallO {
+
+  SideWallO(super.pos) {
+    assert(pos == wallPos.left || pos == wallPos.right);
+  }
+
+  double maxGap = 0;
+  @override
+  void init() {
+    super.init();
+    maxGap = size.x * maxGapRatio;
+  }
+
+  @override
+  void onScreenSizeChange(Vector2 size) {
+    maxGap = size.x * maxGapRatio;
+  }
+
+  static const double minGap = 1;
+  double gap(double y) {
+    final g = maxGap / (size.y - y);
+    if (g < minGap) {
+      return minGap;
+    }
+    else {
+      return g;
+    }
+  }
+
 
 }
 
