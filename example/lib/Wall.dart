@@ -49,7 +49,7 @@ class WallO extends WallBaseO {
             WallBaseO.b * gameSize[1])
         : Vector2(WallBaseO.b * gameSize[0],
             (1 - WallBaseO.b - PongGamePage.ballSize) * gameSize[1]);
-    size = _rect;
+    size.setFrom(_rect);
     alignment = GameObjectAlignment.center;
     switch (pos) {
       case wallPos.top:
@@ -65,7 +65,7 @@ class WallO extends WallBaseO {
         _offset = WallBaseO.rightOffset(gameSize);
         break;
     }
-    position = _offset;
+    position.setFrom(_offset);
   }
 
   @override
@@ -107,7 +107,7 @@ class WallO extends WallBaseO {
 class SideWallO extends WallO {
 
   final double maxGapRatio;
-  SideWallO(super.pos, {this.maxGapRatio = 2}) {
+  SideWallO(super.pos, {this.maxGapRatio = 0.05}) {
     assert(pos == wallPos.left || pos == wallPos.right);
   }
 
@@ -115,18 +115,25 @@ class SideWallO extends WallO {
   @override
   void init() {
     super.init();
-    maxGap = size.x * maxGapRatio;
+    maxGap = size.y * maxGapRatio;
+    logger.info("side wall max gap is initialized to $maxGap.");
   }
 
   @override
   void onScreenSizeChange(Vector2 size) {
-    maxGap = size.x * maxGapRatio;
+    maxGap = size.y * maxGapRatio;
+    logger.info("side wall max gap is reset to $maxGap.");
   }
 
   static const double minGap = 1;
 
   /// variable gap
-  double gap(double y) => maxGap * (size.y - y) / size.y;
+  double gap(double y) {
+    final r = y / size.y;
+    final r2 = maxGap * r;
+    logger.info("gap ratio = $r, maxGap = $maxGap, return = $r2.");
+    return r2;
+  }
 
 }
 
