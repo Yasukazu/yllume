@@ -221,18 +221,16 @@ class BallO extends GameObject with Backwardable {
           }
         }
         else if (col.component is WallO) {
-          final wall = col.component as WallO;
-          switch(wall.pos) {
-            case wallPos.left:
-            case wallPos.right:
-              bounceAtWall(wall, col.intersectionRect);
-              logger.finer("bounce at wall.");
-              break;
-            case wallPos.top:
-            case wallPos.bottom:
-              resetYield();
-              logger.fine("ball hit top/bottom wall. pause..");
-              pause(wall.pos);
+          if (col.component is SideWallO) {
+            final wall = col.component as SideWallO;
+            bounceAtWall(wall, col.intersectionRect);
+            logger.finer("bounce at wall.");
+          }
+          else {
+            final wall = col.component as WallO;
+            resetYield();
+            logger.fine("ball hit top/bottom wall. pause..");
+            pause(wall.pos);
           }
         }
       }
@@ -302,12 +300,8 @@ class BallO extends GameObject with Backwardable {
 
 
 
-    bool bounceAtWall(WallBaseO wall, Rect rect) { // Vector2 offsets) {
-      // if(!stepBackward()) { throw Exception("stepBackward failed!"); }
-      if (wall.pos == wallPos.top || wall.pos == wallPos.bottom) {
-        return false;
-      }
-      final lap = rect.width;
+    bool bounceAtWall(SideWallO wall, Rect rect) { // Vector2 offsets) {
+      final lap = rect.width + wall.gap(position.y);
       Vector2 dist = Vector2(wall.pos == wallPos.left ? lap + collisionGap :
       -lap -collisionGap, 0);
       logger.fine("going to add position($position): $dist");
