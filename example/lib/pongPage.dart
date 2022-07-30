@@ -32,11 +32,11 @@ class PongGamePage extends StatefulWidget {
   static IllumeController gameController = IllumeController();
 
   @override
-  PongGamePageState createState() => PongGamePageState();
+  _PongGamePageState createState() => _PongGamePageState();
 }
 
 /// Pong game
-class PongGamePageState extends State<PongGamePage> {
+class _PongGamePageState extends State<PongGamePage> {
   // FlappyWidget flappyWidget = FlappyWidget();
   // Wall wall = Wall(200, false);
   // Wall wall2 = Wall(400, true);
@@ -75,7 +75,7 @@ class PongGamePageState extends State<PongGamePage> {
 
   late WallO Function(wallPos) posToWall;
 
-  PongGamePageState() {
+  _PongGamePageState() {
     topWall = PlayerWallO(wallPos.top, pause);
     bottomWall = PlayerWallO(wallPos.bottom, pause);
     rightWall = SideWallO(wallPos.right);
