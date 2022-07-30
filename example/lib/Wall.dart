@@ -22,28 +22,14 @@ class WallO extends WallBaseO {
 
   late final DoWithBall bounce;
 
-  final double maxGapRatio;
 
-  WallO(wallPos pos, {this.maxGapRatio = 2}) : super(pos) {
+  WallO(wallPos pos) : super(pos) {
     bounce = (ball, rect) => ball.bounceAtWall(this, rect);
-    /* if (pos == wallPos.top || pos == wallPos.bottom) {
-      bounce = (ball) => ball.reverseDy;
-    } else {
-      bounce = (ball) => ball.reverseDx;
-    } */
+
   }
 
   Vector2 surfacePosition() => position + surfaceOffsets;
-  /*{
-    switch(pos) {
-      case wallPos.top:
-      case wallPos.bottom:
-        return Vector2(position[0], position[1] + surfaceOffset);
-      case wallPos.left:
-      case wallPos.right:
-        return Vector2(position[0] + surfaceOffset, position[1]);
-    }
-  }*/
+
 
   @override
   void onCollision(List<Collision> collisions) {
@@ -120,7 +106,8 @@ class WallO extends WallBaseO {
 
 class SideWallO extends WallO {
 
-  SideWallO(super.pos) {
+  final double maxGapRatio;
+  SideWallO(super.pos, {this.maxGapRatio = 2}) {
     assert(pos == wallPos.left || pos == wallPos.right);
   }
 
@@ -137,16 +124,9 @@ class SideWallO extends WallO {
   }
 
   static const double minGap = 1;
-  double gap(double y) {
-    final g = maxGap / (size.y - y);
-    if (g < minGap) {
-      return minGap;
-    }
-    else {
-      return g;
-    }
-  }
 
+  /// variable gap
+  double gap(double y) => maxGap * (size.y - y) / size.y;
 
 }
 
