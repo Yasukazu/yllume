@@ -118,7 +118,13 @@ class BallChaser extends GameObject {
       for (int i = 0; i < steps; ++i) {
         cursor.add(proceed);
         if (cursor.x > _xMax || cursor.x < _xMin) {
-          proceed.multiply(Vector2(-1, 1));
+          var ar = 2 * proceed.angleTo(Vector2(0, 1));
+          if (cursor.x < _xMin) {
+            ar *= -1;
+          }
+          final rotr = Matrix2(cos(ar), -sin(ar), sin(ar), cos(ar));
+          proceed.postmultiply(rotr);
+          // proceed.multiply(Vector2(-1, 1));
         }
         proceed.postmultiply(rotator);
       }
@@ -188,12 +194,12 @@ class BallChaser extends GameObject {
       final calcSuccess = calcLandingPos(cursor, ballDPs, rotator);
       if (calcSuccess) {
         logger.finer("calculated current ball Position = $cursor");
-        position.setFrom(cursor);
-        _calculatedPos.setFrom(cursor);
       }
       else {
         logger.info("ball landing position to enemy failed.");
       }
+    position.setFrom(cursor);
+    _calculatedPos.setFrom(cursor);
   }
 
   @override
