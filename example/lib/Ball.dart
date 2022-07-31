@@ -213,11 +213,13 @@ class BallO extends GameObject with Backwardable {
             ballChaser.lastHitPaddleIsEnemy = false;
             logger.info("lastHitPaddle is player.");
           }
-          resetYield();
           final paddle = col.component as PaddleO;
           if (!bounceAtPaddle(paddle, col.intersectionRect)) {
             logger.fine("Paddle hit fail. Pausing..");
             pause(paddle.pos);
+          }
+          else {
+            resetYield();
           }
         }
         else if (col.component is WallO) {
@@ -225,10 +227,10 @@ class BallO extends GameObject with Backwardable {
             final wall = col.component as SideWallO;
             bounceAtWall(wall, col.intersectionRect);
             logger.finer("bounce at wall.");
+            resetYield();
           }
           else {
             final wall = col.component as WallO;
-            resetYield();
             logger.fine("ball hit top/bottom wall. pause..");
             pause(wall.pos);
           }
@@ -310,12 +312,11 @@ class BallO extends GameObject with Backwardable {
         -lap - collisionGap, 0);
         logger.fine("going to add position($position): $dist");
         position.add(dist);
-        Vector2 wallAngle = Vector2(size.y, wall.gap(position.y));
-        final angleToWall = steps.angleTo(wallAngle);
-        final rotation = wall.pos == wallPos.right ? -angleToWall * 2 : angleToWall * 2;
+        final gap = wall.gap(position.y);
+        var wallAngle = Vector2(stepX < 0 ? -gap : gap, position.y);
+        var rotation = steps.angleTo(wallAngle) * ((wall.pos == wallPos.right) ? 2 : -2);
         logger.info("bounceToWall rotation angle = ${rotation * 180}[degree].");
         final rotator = Matrix2(cos(rotation), -sin(rotation), sin(rotation), cos(rotation));
-        // steps.multiply(Vector2(-1, 1)); // _reverseByWallPos(wall.pos);
         steps.postmultiply(rotator);
         steps.postmultiply(_bounceRotator);
         position.add(steps);
