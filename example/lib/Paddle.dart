@@ -49,6 +49,7 @@ class PaddleO extends GameObject with Backwardable, CollisionFront {
     size =
         Vector2(widthRatio * gameSize[0], PongGamePage.paddleT * gameSize[1]);
     wallGap = PongGamePage.wpGap * gameSize[0];
+    alignment = GameObjectAlignment.center;
   }
 
   @override
@@ -158,6 +159,13 @@ class EnemyPaddleO extends PaddleO {
 
   final updateCycle = 300;
   var lastUpdate = 0;
+
+  @override
+  void init() {
+    super.init();
+    ballChaser.yMin = position.y + size.y / 2;
+  }
+
   @override
   void update(Duration delta) {
     if (delta.inMilliseconds - lastUpdate < updateCycle) {
