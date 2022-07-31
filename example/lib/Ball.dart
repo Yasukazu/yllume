@@ -312,21 +312,19 @@ class BallO extends GameObject with Backwardable {
         position.add(dist);
         Vector2 wallAngle = Vector2(size.y, wall.gap(position.y));
         final angleToWall = steps.angleTo(wallAngle);
-        final rotation = wall.pos == wallPos.right ? angleToWall * 2 : -angleToWall * 2;
+        final rotation = wall.pos == wallPos.right ? -angleToWall * 2 : angleToWall * 2;
         logger.info("bounceToWall rotation angle = ${rotation * 180}[degree].");
-        _bounceRotator = Matrix2(cos(rotation), -sin(rotation), sin(rotation), cos(rotation));
+        final rotator = Matrix2(cos(rotation), -sin(rotation), sin(rotation), cos(rotation));
         // steps.multiply(Vector2(-1, 1)); // _reverseByWallPos(wall.pos);
-        steps.postmultiply(_bounceRotator); // _rotate();
-        position.add(steps); // _setSteps(gameSize);
+        steps.postmultiply(rotator);
+        steps.postmultiply(_bounceRotator);
+        position.add(steps);
         return true;
       }
     }
 
     static const collisionGap = 2;
     bool bounceAtPaddle(PaddleO paddle, Rect intersectionRect) {
-      // wallPos wp) {
-      // clearStepCount();
-      // updateLastPosWithPosition();
       final rx = position[0];
       if (rx >= intersectionRect.left && rx <= intersectionRect.right) {
         logger.fine("Paddle top/bottom hit Ball.");
