@@ -164,6 +164,7 @@ class EnemyPaddleO extends PaddleO {
   void init() {
     super.init();
     ballChaser.yMin = position.y + size.y / 2;
+    logger.info("ballChaser.yMin is set as ${ballChaser.yMin}.");
   }
 
   @override
