@@ -314,11 +314,12 @@ class BallO extends GameObject with Backwardable {
         position.add(dist);
         final gap = wall.gap(position.y);
         var wallAngle = Vector2(stepX < 0 ? -gap : gap, position.y);
-        var rotation = steps.angleTo(wallAngle) * ((wall.pos == wallPos.right) ? 2 : -2);
+        logger.info("wallAngle: ${atan2(wallAngle.x, wallAngle.y) * 180}[degree], steps angle = ${atan2(steps.x, steps.y) * 180}");
+        var rotation = this.rotation + steps.angleToSigned(wallAngle) * ((wall.pos == wallPos.right) ? 2 : -2);
         logger.info("bounceToWall rotation angle = ${rotation * 180}[degree].");
         final rotator = Matrix2(cos(rotation), -sin(rotation), sin(rotation), cos(rotation));
         steps.postmultiply(rotator);
-        steps.postmultiply(_bounceRotator);
+        // steps.postmultiply(_bounceRotator);
         position.add(steps);
         return true;
       }
