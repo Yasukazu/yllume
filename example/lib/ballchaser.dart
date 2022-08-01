@@ -25,7 +25,7 @@ class BallChaser extends GameObject {
 
   double _xMin = 0;
   double _xMax = 0;
-  double _yMin = 0;
+  double yMin = 0;
   /// forward calculated ball position.
   static const int defaultForward = 900; // ms
   final int forwardTime;
@@ -48,7 +48,7 @@ class BallChaser extends GameObject {
     final WallO rightWall = posToWall(wallPos.right);
     final wallXPos = rightWall.position[0] + rightWall.surfaceOffset;
     _xMax = wallXPos - _ballRad;
-    _yMin =  posToWall(wallPos.top).surfacePosition().y + _ballRad;
+    // yMin =  posToWall(wallPos.top).surfacePosition().y + _ballRad;
 
     size
       ..setFrom(gameSize)
@@ -145,14 +145,14 @@ class BallChaser extends GameObject {
     cursor.setFrom(startPos);
     while (maxBounce > 0 && maxLoop-- > 0) {
       cursor.add(proceed);
+      if (cursor.y <= yMin) {
+        return true;
+      }
       if (cursor.x > _xMax || cursor.x < _xMin) {
         proceed.multiply(Vector2(-1, 1));
         --maxBounce;
       }
       proceed.postmultiply(rotator);
-      if (cursor.y <= _yMin) {
-        return true;
-      }
     }
     return false;
   }
