@@ -121,6 +121,7 @@ class SideWallO extends WallO {
 
   @override
   void onScreenSizeChange(Vector2 size) {
+    super.onScreenSizeChange(size);
     maxGap = size.y * maxGapRatio;
     logger.info("side wall max gap is reset to $maxGap.");
   }
