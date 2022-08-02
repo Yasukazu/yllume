@@ -65,7 +65,7 @@ class BallO extends GameObject with Backwardable {
   int iPos = 0;
   bool _rotateCW = true;
   late final PaddleO selfPaddle;
-  final void Function(wallPos) pause;
+  final void Function(GameObject) pause;
   final List<MotionLine> motionLines;
   static const defaultRotation = 0.3; // rad
   double _rotation = 0;
@@ -85,7 +85,6 @@ class BallO extends GameObject with Backwardable {
 
   late final RandAngleIterator? angleProvider;
   final RandSignIterator randSignIterator = RandSignIterator();
-  // final void Function(GameObject) addWithDuration;
   BallO.withAngleProvider(this.motionLines, this.selfPaddle, this.ballChaser, this.pause, this.angleProvider,
       this._speed, this.ratio, [this.pickupCycle = 2, this.pickupDelay = 2, this._rotation = defaultRotation]) {
     assert(angleProvider != null);
@@ -216,7 +215,7 @@ class BallO extends GameObject with Backwardable {
           final paddle = col.component as PaddleO;
           if (!bounceAtPaddle(paddle, col.intersectionRect)) {
             logger.fine("Paddle hit fail. Pausing..");
-            pause(paddle.pos);
+            pause(paddle);
           }
           else {
             resetYield();
@@ -232,7 +231,7 @@ class BallO extends GameObject with Backwardable {
           else {
             final wall = col.component as WallO;
             logger.fine("ball hit top/bottom wall. pause..");
-            pause(wall.pos);
+            pause(wall);
           }
         }
       }

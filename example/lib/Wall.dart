@@ -139,7 +139,7 @@ class SideWallO extends WallO {
 }
 
 class PlayerWallO extends WallO {
-  final void Function(wallPos) pause;
+  final void Function(GameObject) pause;
   PlayerWallO(super.pos, this.pause);
   @override
   void onCollision(List<Collision> collisions) {
@@ -147,7 +147,7 @@ class PlayerWallO extends WallO {
     for (Collision col in collisions) {
       if (col.component is BallO) {
         logger.info("Ball hit top/bottom wall!");
-        pause(pos); // if (pos == wallPos.top) { scoreEnemy(); }
+        pause(col.component); // if (pos == wallPos.top) { scoreEnemy(); }
         break;
       }
     }
