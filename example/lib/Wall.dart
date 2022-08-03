@@ -97,10 +97,11 @@ class WallO extends WallBaseO {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: color,
-    );
-  }
+      return
+          Container(
+            color: color,
+          );
+   }
 
 }
 
@@ -135,7 +136,36 @@ class SideWallO extends WallO {
     logger.info("gap ratio = $r, maxGap = $maxGap, return = $r2.");
     return r2;
   }
-
+  @override
+  Widget build(BuildContext context) {
+    final alpha = maxGap / size.y;
+    if (pos == wallPos.right) {
+      return
+        Transform(
+            transform: Matrix4.skewX(-alpha),
+            child:
+            Container(
+              color: color,
+            )
+        );
+    }
+    else if (pos == wallPos.left) {
+      return
+        Transform(
+            transform: Matrix4.skewX(alpha),
+            child:
+            Container(
+              color: color,
+            )
+        );
+    }
+    else {
+      return
+        Container(
+          color: color,
+        );
+    }
+  }
 }
 
 class PlayerWallO extends WallO {
