@@ -151,3 +151,7 @@ abstract class WallBaseO extends GameObject with CollisionFront {
   @override
   Vector2 get frontPosition => position + toFront;
 }
+
+mixin GetWallPos on GameObject {
+  wallPos getWallPos();
+}
