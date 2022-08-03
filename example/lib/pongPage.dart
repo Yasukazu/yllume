@@ -153,18 +153,36 @@ class _PongGamePageState extends State<PongGamePage> {
 
   bool gamePaused = false;
 
-  void pause(wallPos pos) {
+  void pause(GameObject cause) {
     gameController.pause();
     gamePaused = true;
     setState(() {
       PongGamePage.statusBar = PongGamePage.mainText + ": Tap to restart:";
     });
-    if (pos == wallPos.top) {
-      scorePlayer();
-      logger.info("Player +1 score.");
-    } else if (pos == wallPos.bottom) {
-      scoreEnemy();
-      logger.info("Enemy +1 score.");
+    var causeText = "";
+    wallPos? pos;
+    if (cause is WallO) {
+      pos = cause.pos;
+      causeText = "Wall";
+      if (pos == wallPos.top) {
+        scorePlayer();
+        logger.info("Player +1 score by $causeText.");
+      } else if (pos == wallPos.bottom) {
+        scoreEnemy();
+        logger.info("Enemy +1 score by $causeText.");
+      }
+      else {
+        logger.info("pause by $causeText");
+      }
+    }
+    else if (cause is PaddleO) {
+      pos = cause.pos;
+      causeText = "Paddle";
+      logger.info("pause by Paddle pos: $pos does not score.");
+    }
+    if (pos == null) {
+      logger.warning("pause cause is not proper.");
+      return;
     }
   }
 
