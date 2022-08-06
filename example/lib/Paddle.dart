@@ -6,6 +6,7 @@ import 'pongPage.dart';
 import 'ballchaser.dart';
 import 'Backwardable.dart';
 import 'package:illume/illume.dart';
+import 'dart:math';
 
 class PaddleO extends GameObject with Backwardable, CollisionFront {
   static const color = Colors.yellow;
@@ -106,26 +107,36 @@ class PaddleO extends GameObject with Backwardable, CollisionFront {
         _lastCollisionMove = RightLeft.left;
       }
       position = Vector2(x, y);
-
     }
   }
 
+  int paddleNose() => 1;
+  
   @override
   Widget build(BuildContext context) {
+    final double paddleSlant = atan(size.y / size.x) * paddleNose();
     return
         // Container( //alignment: Alignment(x, y), child:
-        Stack(alignment: AlignmentDirectional.center, children: [
-      Container(
-        decoration: const BoxDecoration(shape: shape, color: color),
-        // width: size[0],
-        // height: size[1],
-      ),
-      Container(
-        decoration: const BoxDecoration(shape: shape, color: Colors.black),
-        width: 10,
-        height: 10,
-      ),
-    ]);
+        // Stack(alignment: AlignmentDirectional.center, children: [
+        Container(
+            decoration: BoxDecoration(
+                shape: shape, color: Colors.black.withOpacity(0.0)),
+            child: Center(
+                child: Row(children: [
+              Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.skewY(-paddleSlant),
+                  child: Container(
+                      color: color, width: size.x / 2, height: size.y / 2)),
+              Flexible(
+                  child: Transform(
+                      alignment: Alignment.center,
+                      transform: Matrix4.skewY(paddleSlant),
+                      child: Container(
+                          color: color,
+                          width: size.x / 2,
+                          height: size.y / 2)))
+            ])));
   }
 
   void moveRight() {
@@ -151,11 +162,12 @@ class PaddleO extends GameObject with Backwardable, CollisionFront {
   }
 }
 
-enum GoalTo {enemy, player}
+enum GoalTo { enemy, player }
 
 class EnemyPaddleO extends PaddleO {
   final BallChaser ballChaser; // List<DeltaPosition> Function() getBallPoss;
-  EnemyPaddleO(this.ballChaser, super.posToWall, super.pos, super.width, super.step);
+  EnemyPaddleO(
+      this.ballChaser, super.posToWall, super.pos, super.width, super.step);
 
   final updateCycle = 300;
   var lastUpdate = 0;
@@ -173,19 +185,19 @@ class EnemyPaddleO extends PaddleO {
       return;
     }
     lastUpdate = delta.inMilliseconds;
-      Vector2 calculatedPos = ballChaser.calculatedPos;
-      if (calculatedPos != Vector2.zero()) {
-        logger.finest(
-            "Estimated ball position: (${calculatedPos[0]}, ${calculatedPos[1]}).");
-        final posDiff = x - calculatedPos[0];
-        if (posDiff > size.x / 2) {
-          moveLeft();
-          logger.finer("Enemy paddle moveLeft by $posDiff");
-        } else if (posDiff < -size.x / 2){
-          moveRight();
-          logger.finer("Enemy paddle moveRight by $posDiff");
-        }
+    Vector2 calculatedPos = ballChaser.calculatedPos;
+    if (calculatedPos != Vector2.zero()) {
+      logger.finest(
+          "Estimated ball position: (${calculatedPos[0]}, ${calculatedPos[1]}).");
+      final posDiff = x - calculatedPos[0];
+      if (posDiff > size.x / 2) {
+        moveLeft();
+        logger.finer("Enemy paddle moveLeft by $posDiff");
+      } else if (posDiff < -size.x / 2) {
+        moveRight();
+        logger.finer("Enemy paddle moveRight by $posDiff");
       }
+    }
     if (commandPacket != null) {
       final command = commandPacket as CommandPacket;
       if (command.count > 0) {
@@ -242,6 +254,8 @@ class EnemyPaddleO extends PaddleO {
     super.onCollision(collisions);
     estimatedBallPos = null;
   }
+
+  @override int paddleNose() => -1;
 }
 
 enum RightLeft { right, left }
