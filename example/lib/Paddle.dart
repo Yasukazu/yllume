@@ -92,26 +92,23 @@ class PaddleO extends GameObject with Backwardable, CollisionFront {
       if (col.component is WallO) {
         wall = col.component as WallO;
         lap = col.intersectionRect.width;
-        break;
+        final moveLen = lap.abs() + wallGap;
+        if (wall.pos == wallPos.left) {
+          offset.moveBy(moveLen);
+          logger.finer("offset moveBy ${moveLen}");
+          _lastCollisionMove = RightLeft.right;
+        } else {
+          offset.moveBy(-moveLen);
+          logger.finer("offset moveBy ${-moveLen}");
+          _lastCollisionMove = RightLeft.left;
+        }
+        position = Vector2(x, y);
       }
-    }
-    if (wall != null) {
-      final moveLen = lap.abs() + wallGap;
-      if (wall.pos == wallPos.left) {
-        offset.moveBy(moveLen);
-        logger.finer("offset moveBy ${moveLen}");
-        _lastCollisionMove = RightLeft.right;
-      } else {
-        offset.moveBy(-moveLen);
-        logger.finer("offset moveBy ${-moveLen}");
-        _lastCollisionMove = RightLeft.left;
-      }
-      position = Vector2(x, y);
     }
   }
 
   int paddleNose() => 1;
-  
+
   @override
   Widget build(BuildContext context) {
     final double paddleSlant = atan(size.y / size.x) * paddleNose();
@@ -121,19 +118,22 @@ class PaddleO extends GameObject with Backwardable, CollisionFront {
         Container(
             decoration: BoxDecoration(
                 shape: shape, color: Colors.black.withOpacity(0.0)),
-            child: Center( child: Row(children: [
-              Flexible( child: Transform(
-                  alignment: Alignment.center,
-                  transform: Matrix4.skewY(-paddleSlant),
-                  child: Container(
-                      color: color, width: size.x / 2, height: size.y / 2))),
-              Flexible( child: Transform(
+            child: Center(
+                child: Row(children: [
+              Flexible(
+                  child: Transform(
                       alignment: Alignment.center,
-                      transform: Matrix4.skewY(paddleSlant),
+                      transform: Matrix4.skewY(-paddleSlant),
                       child: Container(
                           color: color,
                           width: size.x / 2,
-                          height: size.y / 2)))
+                          height: size.y / 2))),
+              Flexible(
+                  child: Transform(
+                      alignment: Alignment.center,
+                      transform: Matrix4.skewY(paddleSlant),
+                      child: Container(
+                          color: color, width: size.x / 2, height: size.y / 2)))
             ])));
   }
 
@@ -253,7 +253,8 @@ class EnemyPaddleO extends PaddleO {
     estimatedBallPos = null;
   }
 
-  @override int paddleNose() => -1;
+  @override
+  int paddleNose() => -1;
 }
 
 enum RightLeft { right, left }
