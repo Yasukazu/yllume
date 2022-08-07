@@ -5,6 +5,7 @@ import 'WallBase.dart';
 import 'pongPage.dart';
 import 'ballchaser.dart';
 import 'Backwardable.dart';
+import 'Ball.dart';
 import 'package:illume/illume.dart';
 import 'dart:math';
 
@@ -103,6 +104,8 @@ class PaddleO extends GameObject with Backwardable, CollisionFront {
           _lastCollisionMove = RightLeft.left;
         }
         position = Vector2(x, y);
+      } else if (col.component is BallO) {
+        (col.component as BallO).setLastHitPaddle(this);
       }
     }
   }

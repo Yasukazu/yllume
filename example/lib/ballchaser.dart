@@ -4,6 +4,7 @@ import 'package:illume/illume.dart';
 import 'Ball.dart';
 import 'Wall.dart';
 import 'WallBase.dart';
+import 'Paddle.dart';
 import 'dart:collection';
 import 'package:vector_math/vector_math.dart' hide Colors;
 import 'dart:math';
@@ -26,6 +27,7 @@ class BallChaser extends GameObject {
   double _xMin = 0;
   double _xMax = 0;
   double yMin = 0;
+
   /// forward calculated ball position.
   static const int defaultForward = 900; // ms
   final int forwardTime;
@@ -72,8 +74,7 @@ class BallChaser extends GameObject {
   bool? ballIsApproaching() {
     if (_dPQueue.length < 2) {
       return null;
-    }
-    else {
+    } else {
       final dY = _dPQueue[1].y - _dPQueue[0].y;
       return dY < 0;
     }
@@ -84,16 +85,15 @@ class BallChaser extends GameObject {
     if (deltaPosition == null) {
       _dPQueue.clear();
       logger.finer("dPQueue clear.");
-    }
-    else {
+    } else {
       _dPQueue.putIn(deltaPosition);
     }
   }
 
-
   /// returns null if ballDPs.length is not enough to calculate.
-  Matrix2 getBallCurPos(Vector2 cursor, List<DeltaPosition> ballDPs,
-      Duration delta, {setCurPos = true}) {
+  Matrix2 getBallCurPos(
+      Vector2 cursor, List<DeltaPosition> ballDPs, Duration delta,
+      {setCurPos = true}) {
     assert(sampleCount >= 3);
     assert(ballDPs.length >= sampleCount);
 
@@ -103,15 +103,15 @@ class BallChaser extends GameObject {
     final proceed = nextPos - startPos;
     final proceed2 = nextPos2 - nextPos;
     final rotation = proceed.angleToSigned(proceed2);
-    final rotator = Matrix2(
-        cos(rotation), -sin(rotation), sin(rotation), cos(rotation));
+    final rotator =
+        Matrix2(cos(rotation), -sin(rotation), sin(rotation), cos(rotation));
     cursor.setFrom(startPos);
 
     /// proceed to current ball position
     if (setCurPos) {
       /// step time [ms]
-      final stepTime = ballDPs[1].delta.inMilliseconds -
-          ballDPs[0].delta.inMilliseconds;
+      final stepTime =
+          ballDPs[1].delta.inMilliseconds - ballDPs[0].delta.inMilliseconds;
       final steps = (delta - ballDPs[0].delta).inMilliseconds / stepTime;
       logger.fine("steps = $steps.");
       for (int i = 0; i < steps; ++i) {
@@ -133,7 +133,8 @@ class BallChaser extends GameObject {
 
   /// calculate about landing position into cursor.
   /// returns false if over max bounce.
-  bool calcLandingPos(Vector2 cursor, List<DeltaPosition> ballDPs, Matrix2 rotator) {
+  bool calcLandingPos(
+      Vector2 cursor, List<DeltaPosition> ballDPs, Matrix2 rotator) {
     assert(sampleCount >= 3);
     assert(ballDPs.length >= sampleCount);
 
@@ -166,46 +167,40 @@ class BallChaser extends GameObject {
           child: Container(
             color: color,
             height: thickness,
-          )
-      ),
+          )),
       Align(
           alignment: Alignment.center,
           child: Container(
             color: color,
             width: thickness,
-          )
-      ),
+          )),
     ]);
   }
-
 
   @override
   void update(Duration delta) {
     if (lastHitPaddleIsEnemy) {
       return;
     }
-      final List<DeltaPosition>? ballDPs = _dPQueue.putOut();
-      if (ballDPs == null) {
-        return;
-      }
-      final Vector2 cursor = Vector2(0, 0);
-      final rotator = getBallCurPos(cursor, ballDPs, delta, setCurPos: true);
-      final calcSuccess = calcLandingPos(cursor, ballDPs, rotator);
-      if (calcSuccess) {
-        logger.finer("calculated current ball Position = $cursor");
-      }
-      else {
-        logger.info("ball landing position to enemy failed.");
-      }
+    final List<DeltaPosition>? ballDPs = _dPQueue.putOut();
+    if (ballDPs == null) {
+      return;
+    }
+    final Vector2 cursor = Vector2(0, 0);
+    final rotator = getBallCurPos(cursor, ballDPs, delta, setCurPos: true);
+    final calcSuccess = calcLandingPos(cursor, ballDPs, rotator);
+    if (calcSuccess) {
+      logger.finer("calculated current ball Position = $cursor");
+    } else {
+      logger.info("ball landing position to enemy failed.");
+    }
     position.setFrom(cursor);
     _calculatedPos.setFrom(cursor);
   }
 
   @override
-  void onCollision(List<Collision> collisions) {
-  }
+  void onCollision(List<Collision> collisions) {}
 }
-
 
 class DelayBuffer {
   final _queue = Queue<DeltaPosition>();
