@@ -121,15 +121,13 @@ class PaddleO extends GameObject with Backwardable, CollisionFront {
         Container(
             decoration: BoxDecoration(
                 shape: shape, color: Colors.black.withOpacity(0.0)),
-            child: Center(
-                child: Row(children: [
-              Transform(
+            child: Center( child: Row(children: [
+              Flexible( child: Transform(
                   alignment: Alignment.center,
                   transform: Matrix4.skewY(-paddleSlant),
                   child: Container(
-                      color: color, width: size.x / 2, height: size.y / 2)),
-              Flexible(
-                  child: Transform(
+                      color: color, width: size.x / 2, height: size.y / 2))),
+              Flexible( child: Transform(
                       alignment: Alignment.center,
                       transform: Matrix4.skewY(paddleSlant),
                       child: Container(
