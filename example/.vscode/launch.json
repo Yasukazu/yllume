@@ -8,9 +8,9 @@
             "name": "Debug-Dev",
             "request": "launch",
             "type": "dart",
-            "program": "lib/orgMain.dart",
+            "program": "lib/main.dart",
             "flutterMode": "debug",
-            "args": [ "--flavor", "dev"]
+            "args": [ "--flavor", "staging"]
         },
         {
             "program": "lib/main.dart",
