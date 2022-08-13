@@ -121,12 +121,12 @@ class _PongGamePageState extends State<PongGamePage> {
     // gameController.startGame();
     PongGamePage.statusBar = PongGamePage.mainText + ": Tap to start:";
     gameController.gameObjects.addAll([
+      enemyPaddle,
+      selfPaddle,
       topWall,
       bottomWall,
       leftWall,
       rightWall,
-      enemyPaddle,
-      selfPaddle,
     ]);
     for (var motionLine in motionLines) {
       gameController.gameObjects.add(motionLine);
@@ -153,7 +153,7 @@ class _PongGamePageState extends State<PongGamePage> {
 
   bool gamePaused = false;
 
-  void pause(GameObject cause) {
+  void pause(GameObject? cause) {
     gameController.pause();
     gamePaused = true;
     setState(() {
@@ -179,6 +179,10 @@ class _PongGamePageState extends State<PongGamePage> {
       pos = cause.pos;
       causeText = "Paddle";
       logger.info("pause by Paddle pos: $pos does not score.");
+    }
+    else if (cause == null) {
+      logger.info("Pause by null.");
+      return;
     }
     if (pos == null) {
       logger.warning("pause cause is not proper.");
@@ -217,7 +221,11 @@ class _PongGamePageState extends State<PongGamePage> {
           selfPaddle.moveRight();
           logger.finer("selfPaddle moveRight by arrowRight key");
         }
-      },
+        else if (event.isKeyPressed(LogicalKeyboardKey.escape)) {
+          pause(null);
+          logger.info("Pause by keyboard escape key.");
+        }
+    },
       child: GestureDetector(
         onTap: () {
           if (!gameStarted) {
