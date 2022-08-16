@@ -277,7 +277,14 @@ class BallO extends GameObject with Backwardable {
       _lastUpdate = delta.inMilliseconds;
 
       steps.postmultiply(_stepRotator);
-      position.add(steps); // setFrom(stepForward());
+      final stepsAddedPosition = position + steps;
+      if (stepsAddedPosition.x > 0 && stepsAddedPosition.y > 0 && stepsAddedPosition.x < gameSize.x && stepsAddedPosition.y < gameSize.y) {
+        position.add(steps); // setFrom(stepForward());
+      }
+      else {
+        logger.warning("steps added position not in screen range.");
+        return;
+      }
 
       iPos = iPos + (_rotateCW ? 1 : -1);
       coreAlignment = coreAlignments[iPos % coreAlignments.length];
@@ -307,13 +314,14 @@ class BallO extends GameObject with Backwardable {
         logger.fine("Motionline[$motionNumber] position is set to $position.");
         // motionLine.size = size;
         motionLine.turnOn();
-        motionLine.update(delta);
+        // motionLine.update(delta);
         _motionCount++;
       }
     }
   }
 
-  void unstep() => position.add(-steps);
+  void unstep(double k) => position.add(steps * -k);
+  final unstepFactor = 0.5;
 
   bool bounceAtWall(WallO wall, Rect rect) {
     // Vector2 offsets) {
@@ -321,7 +329,8 @@ class BallO extends GameObject with Backwardable {
       return false;
     }
     else {
-      /* final xLap = rect.width; // + wall.gap(position.y);
+      /*
+      final xLap = rect.width; // + wall.gap(position.y);
       final yLap = rect.height;
       final dist = Vector2( steps.x < 0
               ? xLap + collisionGap : -xLap - collisionGap,
@@ -329,15 +338,15 @@ class BallO extends GameObject with Backwardable {
       logger.info("going to add position($position): $dist");
       position.add(dist);
       */
-      unstep();
+      unstep(unstepFactor);
       final gap = wall.gap(position.y);
       final wallVector = Vector2(wall.pos == wallPos.right ? gap : -gap,
           steps.y > 0 ? position.y : -position.y);
       logger.info(
-          "wall angle: ${atan2(wallVector.x, wallVector.y) * 180}[degree], steps angle = ${atan2(steps.x, steps.y) * 180}");
-      final double rotation = this.rotation +
-          steps.angleToSigned(wallVector) * 2; // ((wall.pos == wallPos.right) ? 2 : -2);
-      logger.info("bounceToWall rotation angle = ${rotation * 180}[degree].");
+          "wall angle: ${atan2(wallVector.x, wallVector.y) * 180 / pi}[degree], steps angle = ${atan2(steps.x, steps.y) * 180}");
+      final double rotation = (this.rotation +
+          steps.angleToSigned(wallVector)) * 2; // ((wall.pos == wallPos.right) ? 2 : -2);
+      logger.info("bounceToWall rotation angle = ${rotation * 180 / pi}[degree].");
       final rotator =
           Matrix2(cos(rotation), -sin(rotation), sin(rotation), cos(rotation));
       steps.postmultiply(rotator);
@@ -348,10 +357,11 @@ class BallO extends GameObject with Backwardable {
   }
 
   static const collisionGap = 0;
-  bool bounceAtPaddle(PaddleO paddle, Rect intersectionRect) {
-    final rx = position[0];
-    if (rx >= intersectionRect.left && rx <= intersectionRect.right) {
+  bool bounceAtPaddle(PaddleO paddle, Rect iRect) {
+    final rx = position.x;
+    if (rx >= iRect.left && rx <= iRect.right) {
       logger.fine("Paddle top/bottom hit Ball.");
+    /*
       // final backwardResult = stepBackward();
       steps.multiply(
           Vector2(1, -1)); // _reverseDy(); // _dy = -_dy; // reverse dy
@@ -369,18 +379,25 @@ class BallO extends GameObject with Backwardable {
               : -lap - collisionGap);
       logger.fine("Get distance from paddle:($position): $dist");
       position.add(dist);
-      logger.fine("position is moved to $position");
-      logger.fine("before rotate dx, dy = ($_dx, $_dy).");
-      steps.postmultiply(_bounceRotator); // _rotate();
-      logger.fine("after rotate dx, dy = ($_dx, $_dy).");
-      logger.fine("before steps: $steps.");
-      // _setSteps(gameSize);
-      logger.fine("after steps: $steps.");
-      // _pickupDeltaPositionQueue.clear();
+      */
+      unstep(unstepFactor / 2);
+      logger.fine("position is unstepped to ($position) by steps($steps).");
+      final slant = paddle.paddleSlant;
+      final paddleVector = Vector2(paddle.size.x / 2,
+          position.x > paddle.position.x ?
+           slant : -slant);
+      logger.info(
+          "wall angle: ${atan2(paddleVector.x, paddleVector.y) * 180 / pi}[degree], steps angle = ${atan2(steps.x, steps.y) * 180}");
+      final double angle = steps.angleToSigned(paddleVector) * (steps.x > 0 ? -2 : 2);
+      logger.info("bounceToPaddle bounce angle = ${angle * 180 / pi}[degree].");
+      final rotator =
+      Matrix2(cos(angle + rotation), -sin(angle + rotation), sin(angle + rotation), cos(angle + rotation));
+      logger.fine("before paddle bounce (dx, dy) = (${steps.x}, ${steps.y}).");
+      steps.postmultiply(rotator);
+      logger.fine("after paddle bounce (dx, dy) = (${steps.x}, ${steps.y}).");
       return true;
     } else {
       logger.fine("Paddle side hit Ball.");
-      // reverseDx();
       return false;
     }
   }
