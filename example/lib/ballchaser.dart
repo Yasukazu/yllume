@@ -35,7 +35,8 @@ class BallChaser extends GameObject {
   bool lastHitPaddleIsEnemy = false;
 
   BallChaser(this.posToWall, this._ballRatio,
-      {this.sizeRatio = 0.2, this.forwardTime = defaultForward});
+      {this.sizeRatio = 0.2, this.forwardTime = defaultForward, this.chaseOnlyEnemy = true,
+      this.forwardSteps = 0});
 
   @override
   void init() {
@@ -92,7 +93,7 @@ class BallChaser extends GameObject {
 
   /// returns null if ballDPs.length is not enough to calculate.
   Matrix2 getBallCurPos(
-      Vector2 cursor, List<DeltaPosition> ballDPs, Duration delta,
+      Vector2 cursor, Vector2 proceed, List<DeltaPosition> ballDPs, Duration delta,
       {setCurPos = true}) {
     assert(sampleCount >= 3);
     assert(ballDPs.length >= sampleCount);
@@ -100,7 +101,7 @@ class BallChaser extends GameObject {
     final startPos = Vector2(ballDPs[0].x, ballDPs[0].y);
     final nextPos = Vector2(ballDPs[1].x, ballDPs[1].y);
     final nextPos2 = Vector2(ballDPs[2].x, ballDPs[2].y);
-    final proceed = nextPos - startPos;
+    proceed.setFrom(nextPos - startPos);
     final proceed2 = nextPos2 - nextPos;
     final rotation = proceed.angleToSigned(proceed2);
     final rotator =
@@ -177,9 +178,18 @@ class BallChaser extends GameObject {
     ]);
   }
 
+  int forwardSteps = 0;
+  void forwardCursor(Vector2 cursor, Matrix2 rotator, Vector2 proceed) {
+    for (int i = 0; i < forwardSteps; ++i) {
+      cursor.add(proceed);
+      cursor.postmultiply(rotator);
+    }
+  }
+
+  bool chaseOnlyEnemy;
   @override
   void update(Duration delta) {
-    if (lastHitPaddleIsEnemy) {
+    if (chaseOnlyEnemy && lastHitPaddleIsEnemy) {
       return;
     }
     final List<DeltaPosition>? ballDPs = _dPQueue.putOut();
@@ -187,12 +197,19 @@ class BallChaser extends GameObject {
       return;
     }
     final Vector2 cursor = Vector2(0, 0);
-    final rotator = getBallCurPos(cursor, ballDPs, delta, setCurPos: true);
-    final calcSuccess = calcLandingPos(cursor, ballDPs, rotator);
-    if (calcSuccess) {
-      logger.finer("calculated current ball Position = $cursor");
-    } else {
-      logger.info("ball landing position to enemy failed.");
+    final Vector2 proceed = Vector2(0, 0);
+    final rotator = getBallCurPos(cursor, proceed, ballDPs, delta, setCurPos: true);
+    if (forwardSteps > 0) {
+      forwardCursor(cursor, rotator, proceed);
+      logger.info("cursor is set as [$cursor].");
+    }
+    else {
+      final calcSuccess = calcLandingPos(cursor, ballDPs, rotator);
+      if (calcSuccess) {
+        logger.finer("calculated current ball Position = $cursor");
+      } else {
+        logger.info("ball landing position to enemy failed.");
+      }
     }
     position.setFrom(cursor);
     _calculatedPos.setFrom(cursor);
