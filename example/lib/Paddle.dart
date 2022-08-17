@@ -111,10 +111,9 @@ class PaddleO extends GameObject with Backwardable, CollisionFront {
   }
 
   int paddleNose() => 1;
-
+  double get paddleSlant => atan(size.y / size.x) * paddleNose();
   @override
   Widget build(BuildContext context) {
-    final double paddleSlant = atan(size.y / size.x) * paddleNose();
     return
         // Container( //alignment: Alignment(x, y), child:
         // Stack(alignment: AlignmentDirectional.center, children: [
