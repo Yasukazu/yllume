@@ -94,7 +94,8 @@ class _PongGamePageState extends State<PongGamePage> {
     };
     selfPaddle = PaddleO(posToWall, wallPos.bottom, PongGamePage.paddleWidth,
         PongGamePage.paddleStep);
-    ballChaser = BallChaser(posToWall, PongGamePage.ballSize, forwardTime: 1300);
+    ballChaser = BallChaser(posToWall, PongGamePage.ballSize, forwardTime: 1300,
+      chaseOnlyEnemy: false, forwardSteps: 30);
     enemyPaddle = EnemyPaddleO(ballChaser, posToWall, wallPos.top,
         PongGamePage.enemyPaddleWidth, 0.15);
     // motionLine = MotionLine();
@@ -105,7 +106,7 @@ class _PongGamePageState extends State<PongGamePage> {
     }
   }
 
-  static const motionCount = 3;
+  static const motionCount = 8;
 
   void addWithDuration(GameObject object) {
     gameController.gameObjects.add(object);
