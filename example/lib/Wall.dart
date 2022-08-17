@@ -136,6 +136,9 @@ class SideWallO extends WallO {
     logger.info("gap ratio = $r, maxGap = $maxGap, return = $r2.");
     return r2;
   }
+
+  Vector2 get angle => Vector2(pos == wallPos.left ? maxGap : -maxGap, size.y);
+
   @override
   Widget build(BuildContext context) {
     final alpha = maxGap / size.y;
