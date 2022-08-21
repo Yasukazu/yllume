@@ -208,6 +208,8 @@ class _PongGamePageState extends State<PongGamePage> {
     }
   }
 
+  var ballAngleText = '';
+
   @override
   Widget build(BuildContext context) {
     return RawKeyboardListener(
@@ -249,6 +251,7 @@ class _PongGamePageState extends State<PongGamePage> {
               child: Row( // Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    Text(ballAngleText),
                     SizedBox(width: 100,  child:
                     RotatedBox(
                       quarterTurns: 3,
