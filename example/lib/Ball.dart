@@ -102,6 +102,7 @@ class BallO extends GameObject with Backwardable {
 
   late final RandAngleIterator? angleProvider;
   final RandSignIterator randSignIterator = RandSignIterator();
+  /// angle to Y axis
   BallO.withAngleProvider(this.motionLines, this.selfPaddle, this.ballChaser,
       this.pause, this.angleProvider, this._speed, this.ratio,
       [this.pickupCycle = 2,
@@ -342,14 +343,18 @@ class BallO extends GameObject with Backwardable {
       final gap = wall.gap(position.y);
       final wallVector = Vector2(wall.pos == wallPos.right ? gap : -gap,
           steps.y > 0 ? position.y : -position.y);
-      logger.info(
-          "wall angle: ${atan2(wallVector.x, wallVector.y) * 180 / pi}[degree], steps angle = ${atan2(steps.x, steps.y) * 180}");
-      final double rotation = (this.rotation +
-          steps.angleToSigned(wallVector)) * 2; // ((wall.pos == wallPos.right) ? 2 : -2);
-      logger.info("bounceToWall rotation angle = ${rotation * 180 / pi}[degree].");
+      final vLine = Vector2(0, steps.y > 0 ? 1 : -1);
+      logger.fine(
+          "wall angle to Vertical line: ${wallVector.angleToSigned(vLine) * 180 / pi}");
+      logger.fine("steps angle to vertical line:${steps.angleToSigned(vLine) * 180 / pi}");
+      logger.fine("steps angle to wall:${steps.angleToSigned(wallVector) * 180 / pi}");
+      // * atan2(wallVector.x, wallVector.y) * 180 / pi}[degree], steps angle = ${atan2(steps.x, steps.y) * 180}");
+      // final double rotation = (this.rotation + steps.angleToSigned(wallVector)) * 2; // ((wall.pos == wallPos.right) ? 2 : -2);
+      logger.fine("bounceToWall rotation angle = ${rotation * 180 / pi}[degree].");
       final rotator =
           Matrix2(cos(rotation), -sin(rotation), sin(rotation), cos(rotation));
       steps.postmultiply(rotator);
+      steps.multiply(Vector2(-1, 1)); // reverse x
       // steps.postmultiply(_bounceRotator);
       // position.add(steps);
       return true;
@@ -388,12 +393,13 @@ class BallO extends GameObject with Backwardable {
            slant : -slant);
       logger.info(
           "wall angle: ${atan2(paddleVector.x, paddleVector.y) * 180 / pi}[degree], steps angle = ${atan2(steps.x, steps.y) * 180}");
-      final double angle = steps.angleToSigned(paddleVector) * (steps.x > 0 ? -2 : 2);
-      logger.info("bounceToPaddle bounce angle = ${angle * 180 / pi}[degree].");
+      // final double angle = steps.angleToSigned(paddleVector) * (steps.x > 0 ? -2 : 2);
+      // logger.info("bounceToPaddle bounce angle = ${angle * 180 / pi}[degree].");
       final rotator =
-      Matrix2(cos(angle + rotation), -sin(angle + rotation), sin(angle + rotation), cos(angle + rotation));
+      Matrix2(cos(rotation), -sin(rotation), sin(rotation), cos(rotation));
       logger.fine("before paddle bounce (dx, dy) = (${steps.x}, ${steps.y}).");
       steps.postmultiply(rotator);
+      steps.multiply(Vector2(1, -1)); // reverse y
       logger.fine("after paddle bounce (dx, dy) = (${steps.x}, ${steps.y}).");
       return true;
     } else {
