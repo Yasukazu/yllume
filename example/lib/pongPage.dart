@@ -144,6 +144,10 @@ class _PongGamePageState extends State<PongGamePage> {
     }
     // gameController.gameObjects.removeLast();
     // ballAngleIterator.moveNext();
+    /// hide ball motionlines
+    for (var motionLine in motionLines) {
+      motionLine.turnOff();
+    }
     ball.reset();
     enemyPaddle.center();
     selfPaddle.center();
